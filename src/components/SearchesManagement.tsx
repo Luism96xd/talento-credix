@@ -26,23 +26,28 @@ const SearchesManagement: React.FC = () => {
 
   const fetchSearches = async () => {
     try {
-      const { data, error } = await supabase.rpc('sql', {
-        query: `
-          SELECT 
-            s.id, 
-            s.job_title, 
-            s.location, 
-            s.created_at, 
-            s.company_id,
-            c.name as company_name
-          FROM mayoreo.searches s
-          LEFT JOIN mayoreo.companies c ON s.company_id = c.id
-          ORDER BY s.created_at DESC
-        `
-      });
+      const { data, error } = await supabase
+        .from('searches')
+        .select(`
+          id,
+          job_title,
+          location,
+          created_at,
+          company_id,
+          companies (
+            name
+          )
+        `)
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setSearches(data || []);
+      
+      const formattedData = data?.map(search => ({
+        ...search,
+        company_name: search.companies?.name || null
+      })) || [];
+      
+      setSearches(formattedData);
     } catch (error) {
       console.error('Error fetching searches:', error);
       toast({

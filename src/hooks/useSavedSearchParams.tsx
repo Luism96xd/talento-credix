@@ -1,16 +1,18 @@
 
 import { useState } from 'react';
 
+interface Company {
+  id: string;
+  name: string;
+  description: string;
+  mission: string;
+  vision: string;
+}
+
 export interface SearchParams {
   position: string;
   location: string;
-  company: {
-    id: string;
-    name: string;
-    description: string;
-    mission: string;
-    vision: string;
-  };
+  company: Company | null;
   jobDetails: {
     requirements: string;
     responsibilities: string;
@@ -33,13 +35,7 @@ export interface SearchParams {
 const initialSearchParams: SearchParams = {
   position: '',
   location: '',
-  company: {
-    id: '',
-    name: '',
-    description: '',
-    mission: '',
-    vision: ''
-  },
+  company: null,
   jobDetails: {
     requirements: '',
     responsibilities: '',
@@ -66,7 +62,9 @@ export const useSavedSearchParams = () => {
   const updateParams = (section: keyof SearchParams, data: any) => {
     setSearchParams(prev => ({
       ...prev,
-      [section]: typeof data === 'object' && data !== null ? { ...prev[section], ...data } : data
+      [section]: typeof data === 'object' && data !== null && section !== 'company' 
+        ? { ...prev[section] as object, ...data } 
+        : data
     }));
   };
 

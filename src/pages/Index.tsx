@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import SearchBar from '@/components/SearchBar';
 import CompanySelector from '@/components/CompanySelector';
@@ -122,6 +123,22 @@ const Index = () => {
     }, 300);
 
     try {
+      // Save search to database
+      const { data: searchData, error: searchError } = await supabase
+        .from('searches')
+        .insert([{
+          job_title: position,
+          location: location,
+          company_id: selectedCompany?.id || null,
+          file_path: jobDescriptionFile || null
+        }])
+        .select()
+        .single();
+
+      if (searchError) {
+        console.error('Error saving search:', searchError);
+      }
+
       // Prepare webhook payload
       const webhookPayload = {
         job_title: position,
@@ -141,19 +158,6 @@ const Index = () => {
 
       console.log('Sending webhook request with payload:', webhookPayload);
 
-      // Save search to database
-      const { data: searchData, error: searchError } = await supabase.rpc('sql', {
-        query: `
-          INSERT INTO mayoreo.searches (job_title, location, company_id, file_path) 
-          VALUES ('${position}', '${location}', ${selectedCompany?.id ? `'${selectedCompany.id}'` : 'NULL'}, ${jobDescriptionFile ? `'${jobDescriptionFile}'` : 'NULL'})
-          RETURNING id
-        `
-      });
-
-      if (searchError) {
-        console.error('Error saving search:', searchError);
-      }
-
       // Send webhook request (replace with your actual webhook URL)
       const webhookUrl = 'https://your-webhook-url.com/search';
       
@@ -170,10 +174,11 @@ const Index = () => {
         console.log('Webhook response:', webhookResponse);
 
         // Update search record with webhook response
-        if (searchData && searchData[0] && !searchError) {
-          await supabase.rpc('sql', {
-            query: `UPDATE mayoreo.searches SET webhook_response = '${JSON.stringify(webhookResponse)}' WHERE id = '${searchData[0].id}'`
-          });
+        if (searchData && !searchError) {
+          await supabase
+            .from('searches')
+            .update({ webhook_response: webhookResponse })
+            .eq('id', searchData.id);
         }
       } catch (webhookError) {
         console.error('Webhook request failed:', webhookError);

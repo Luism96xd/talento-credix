@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Building, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -33,9 +34,10 @@ const CompaniesManagement: React.FC = () => {
 
   const fetchCompanies = async () => {
     try {
-      const { data, error } = await supabase.rpc('sql', {
-        query: 'SELECT id, name, description, mission, vision, created_at FROM mayoreo.companies ORDER BY created_at DESC'
-      });
+      const { data, error } = await supabase
+        .from('companies')
+        .select('id, name, description, mission, vision, created_at')
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setCompanies(data || []);
@@ -54,17 +56,28 @@ const CompaniesManagement: React.FC = () => {
     
     try {
       if (editingId) {
-        const { error } = await supabase.rpc('sql', {
-          query: `UPDATE mayoreo.companies SET name = '${formData.name}', description = '${formData.description}', mission = '${formData.mission}', vision = '${formData.vision}' WHERE id = '${editingId}'`
-        });
+        const { error } = await supabase
+          .from('companies')
+          .update({
+            name: formData.name,
+            description: formData.description,
+            mission: formData.mission,
+            vision: formData.vision
+          })
+          .eq('id', editingId);
         
         if (error) throw error;
         toast({ title: "Success", description: "Company updated successfully" });
         setEditingId(null);
       } else {
-        const { error } = await supabase.rpc('sql', {
-          query: `INSERT INTO mayoreo.companies (name, description, mission, vision) VALUES ('${formData.name}', '${formData.description}', '${formData.mission}', '${formData.vision}')`
-        });
+        const { error } = await supabase
+          .from('companies')
+          .insert([{
+            name: formData.name,
+            description: formData.description,
+            mission: formData.mission,
+            vision: formData.vision
+          }]);
         
         if (error) throw error;
         toast({ title: "Success", description: "Company created successfully" });
@@ -96,9 +109,10 @@ const CompaniesManagement: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      const { error } = await supabase.rpc('sql', {
-        query: `DELETE FROM mayoreo.companies WHERE id = '${id}'`
-      });
+      const { error } = await supabase
+        .from('companies')
+        .delete()
+        .eq('id', id);
       
       if (error) throw error;
       toast({ title: "Success", description: "Company deleted successfully" });
@@ -149,10 +163,11 @@ const CompaniesManagement: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
               />
-              <Input
+              <Textarea
                 placeholder="Description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                rows={3}
               />
               <Input
                 placeholder="Mission"

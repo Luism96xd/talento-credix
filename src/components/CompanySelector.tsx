@@ -41,9 +41,9 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({
   const fetchCompanies = async () => {
     try {
       const { data, error } = await supabase
-        .rpc('sql', {
-          query: 'SELECT id, name, description, mission, vision FROM mayoreo.companies ORDER BY name'
-        });
+        .from('companies')
+        .select('id, name, description, mission, vision')
+        .order('name');
 
       if (error) throw error;
       setCompanies(data || []);
