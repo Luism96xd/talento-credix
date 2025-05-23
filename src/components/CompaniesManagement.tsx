@@ -34,7 +34,7 @@ const CompaniesManagement: React.FC = () => {
   const fetchCompanies = async () => {
     try {
       const { data, error } = await supabase
-        .from('companies')
+        .from('mayoreo.companies')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -56,7 +56,7 @@ const CompaniesManagement: React.FC = () => {
     try {
       if (editingId) {
         const { error } = await supabase
-          .from('companies')
+          .from('mayoreo.companies')
           .update(formData)
           .eq('id', editingId);
         
@@ -65,7 +65,7 @@ const CompaniesManagement: React.FC = () => {
         setEditingId(null);
       } else {
         const { error } = await supabase
-          .from('companies')
+          .from('mayoreo.companies')
           .insert([formData]);
         
         if (error) throw error;
@@ -99,7 +99,7 @@ const CompaniesManagement: React.FC = () => {
   const handleDelete = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('companies')
+        .from('mayoreo.companies')
         .delete()
         .eq('id', id);
       

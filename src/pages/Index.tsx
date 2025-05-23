@@ -150,7 +150,7 @@ const Index = () => {
 
       // Save search to database
       const { data: searchData, error: searchError } = await supabase
-        .from('searches')
+        .from('mayoreo.searches')
         .insert([{
           job_title: position,
           location: location,
@@ -182,7 +182,7 @@ const Index = () => {
         // Update search record with webhook response
         if (searchData && !searchError) {
           await supabase
-            .from('searches')
+            .from('mayoreo.searches')
             .update({ webhook_response: webhookResponse })
             .eq('id', searchData.id);
         }

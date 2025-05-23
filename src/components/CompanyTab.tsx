@@ -52,7 +52,7 @@ const CompanyTab: React.FC<CompanyTabProps> = ({
   const fetchCompanies = async () => {
     try {
       const { data, error } = await supabase
-        .from('companies')
+        .from('mayoreo.companies')
         .select('*')
         .order('name');
 

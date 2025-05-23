@@ -29,7 +29,7 @@ const SearchesManagement: React.FC = () => {
   const fetchSearches = async () => {
     try {
       const { data, error } = await supabase
-        .from('searches')
+        .from('mayoreo.searches')
         .select(`
           id,
           job_title,
