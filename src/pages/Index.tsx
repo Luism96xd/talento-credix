@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import SearchBar from '@/components/SearchBar';
-import Sidebar from '@/components/Sidebar';
+import CompanySelector from '@/components/CompanySelector';
 import CandidateCard from '@/components/CandidateCard';
 import { Progress } from '@/components/ui/progress';
 import { useSavedSearchParams } from '@/hooks/useSavedSearchParams';
 import { Loader } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 
 // Mock data for the candidate results
@@ -93,11 +92,12 @@ const MOCK_CANDIDATES = [
 ];
 
 const Index = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchInitiated, setSearchInitiated] = useState(false);
   const [candidates, setCandidates] = useState<typeof MOCK_CANDIDATES>([]);
   const [searchProgress, setSearchProgress] = useState(0);
   const [showLoadingScreen, setShowLoadingScreen] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState<any>(null);
+  const [jobDescriptionFile, setJobDescriptionFile] = useState('');
   
   const { 
     searchParams, 
@@ -105,10 +105,6 @@ const Index = () => {
     isSearching, 
     startSearch 
   } = useSavedSearchParams();
-  
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
   
   const handleSearch = async (position: string, location: string) => {
     updateParams('position', position);
@@ -130,13 +126,10 @@ const Index = () => {
       const webhookPayload = {
         job_title: position,
         location: location,
-        company_description: searchParams.company.description,
-        company_mission: searchParams.company.mission,
-        company_vision: searchParams.company.vision,
-        requirements: searchParams.jobDetails.requirements,
-        responsibilities: searchParams.jobDetails.responsibilities,
-        benefits: searchParams.jobDetails.benefits,
-        file_url: searchParams.jobDetails.fileUrl,
+        company_description: selectedCompany?.description || '',
+        company_mission: selectedCompany?.mission || '',
+        company_vision: selectedCompany?.vision || '',
+        file_url: jobDescriptionFile,
         candidate_experience: searchParams.candidateProfile.experience,
         candidate_skills: searchParams.candidateProfile.skills,
         candidate_education: searchParams.candidateProfile.education,
@@ -149,16 +142,13 @@ const Index = () => {
       console.log('Sending webhook request with payload:', webhookPayload);
 
       // Save search to database
-      const { data: searchData, error: searchError } = await supabase
-        .from('mayoreo.searches')
-        .insert([{
-          job_title: position,
-          location: location,
-          company_id: searchParams.company.id || null,
-          file_path: searchParams.jobDetails.fileUrl || null
-        }])
-        .select()
-        .single();
+      const { data: searchData, error: searchError } = await supabase.rpc('sql', {
+        query: `
+          INSERT INTO mayoreo.searches (job_title, location, company_id, file_path) 
+          VALUES ('${position}', '${location}', ${selectedCompany?.id ? `'${selectedCompany.id}'` : 'NULL'}, ${jobDescriptionFile ? `'${jobDescriptionFile}'` : 'NULL'})
+          RETURNING id
+        `
+      });
 
       if (searchError) {
         console.error('Error saving search:', searchError);
@@ -180,11 +170,10 @@ const Index = () => {
         console.log('Webhook response:', webhookResponse);
 
         // Update search record with webhook response
-        if (searchData && !searchError) {
-          await supabase
-            .from('mayoreo.searches')
-            .update({ webhook_response: webhookResponse })
-            .eq('id', searchData.id);
+        if (searchData && searchData[0] && !searchError) {
+          await supabase.rpc('sql', {
+            query: `UPDATE mayoreo.searches SET webhook_response = '${JSON.stringify(webhookResponse)}' WHERE id = '${searchData[0].id}'`
+          });
         }
       } catch (webhookError) {
         console.error('Webhook request failed:', webhookError);
@@ -208,22 +197,9 @@ const Index = () => {
     }, 2500);
   };
   
-  // Main content padding to account for sidebar when open
-  const mainContentClasses = cn(
-    "min-h-screen flex flex-col transition-all duration-300",
-    sidebarOpen ? "md:pl-[340px]" : ""
-  );
-  
   return (
     <div className="bg-gradient-to-br from-blue-50 to-slate-100 min-h-screen">
-      <Sidebar 
-        isOpen={sidebarOpen} 
-        toggleSidebar={toggleSidebar} 
-        searchParams={searchParams}
-        updateParams={updateParams}
-      />
-      
-      <div className={mainContentClasses}>
+      <div className="min-h-screen flex flex-col">
         <header className="py-6 px-4 md:px-8">
           <div className="max-w-7xl mx-auto">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Find Top LinkedIn Talent</h1>
@@ -233,6 +209,13 @@ const Index = () => {
               onSearch={handleSearch} 
               placeholderPosition="Frontend Developer" 
               placeholderLocation="San Francisco, CA"
+            />
+            
+            <CompanySelector
+              selectedCompany={selectedCompany}
+              onCompanySelect={setSelectedCompany}
+              jobDescriptionFile={jobDescriptionFile}
+              onFileUpload={(fileUrl, fileName) => setJobDescriptionFile(fileUrl)}
             />
           </div>
         </header>
@@ -274,13 +257,7 @@ const Index = () => {
             
             {!searchInitiated && !showLoadingScreen && (
               <div className="mt-16 text-center">
-                <p className="text-gray-600">Use the sidebar to define your search parameters and start searching</p>
-                <button 
-                  onClick={toggleSidebar}
-                  className="mt-4 bg-linkedin hover:bg-linkedin/90 text-white py-2 px-6 rounded-lg transition-all duration-200"
-                >
-                  Open Search Parameters
-                </button>
+                <p className="text-gray-600">Enter your search criteria above and select a company to start finding candidates</p>
               </div>
             )}
           </div>

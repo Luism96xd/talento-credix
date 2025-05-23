@@ -33,10 +33,9 @@ const CompaniesManagement: React.FC = () => {
 
   const fetchCompanies = async () => {
     try {
-      const { data, error } = await supabase
-        .from('mayoreo.companies')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.rpc('sql', {
+        query: 'SELECT id, name, description, mission, vision, created_at FROM mayoreo.companies ORDER BY created_at DESC'
+      });
 
       if (error) throw error;
       setCompanies(data || []);
@@ -55,18 +54,17 @@ const CompaniesManagement: React.FC = () => {
     
     try {
       if (editingId) {
-        const { error } = await supabase
-          .from('mayoreo.companies')
-          .update(formData)
-          .eq('id', editingId);
+        const { error } = await supabase.rpc('sql', {
+          query: `UPDATE mayoreo.companies SET name = '${formData.name}', description = '${formData.description}', mission = '${formData.mission}', vision = '${formData.vision}' WHERE id = '${editingId}'`
+        });
         
         if (error) throw error;
         toast({ title: "Success", description: "Company updated successfully" });
         setEditingId(null);
       } else {
-        const { error } = await supabase
-          .from('mayoreo.companies')
-          .insert([formData]);
+        const { error } = await supabase.rpc('sql', {
+          query: `INSERT INTO mayoreo.companies (name, description, mission, vision) VALUES ('${formData.name}', '${formData.description}', '${formData.mission}', '${formData.vision}')`
+        });
         
         if (error) throw error;
         toast({ title: "Success", description: "Company created successfully" });
@@ -98,10 +96,9 @@ const CompaniesManagement: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('mayoreo.companies')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.rpc('sql', {
+        query: `DELETE FROM mayoreo.companies WHERE id = '${id}'`
+      });
       
       if (error) throw error;
       toast({ title: "Success", description: "Company deleted successfully" });
@@ -135,7 +132,7 @@ const CompaniesManagement: React.FC = () => {
           className="flex items-center gap-1"
         >
           <Plus className="h-4 w-4" />
-          Add
+          Add Company
         </Button>
       </div>
 
@@ -180,33 +177,49 @@ const CompaniesManagement: React.FC = () => {
         </Card>
       )}
 
-      <div className="space-y-2 max-h-60 overflow-y-auto">
+      <div className="grid gap-4">
         {companies.map((company) => (
-          <Card key={company.id} className="p-3">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <h4 className="font-medium text-sm">{company.name}</h4>
-                {company.description && (
-                  <p className="text-xs text-gray-600 mt-1">{company.description}</p>
-                )}
+          <Card key={company.id}>
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <h4 className="font-medium text-lg">{company.name}</h4>
+                  {company.description && (
+                    <p className="text-gray-600 mt-1">{company.description}</p>
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 text-sm">
+                    {company.mission && (
+                      <div>
+                        <span className="font-medium">Mission:</span>
+                        <p className="text-gray-600">{company.mission}</p>
+                      </div>
+                    )}
+                    {company.vision && (
+                      <div>
+                        <span className="font-medium">Vision:</span>
+                        <p className="text-gray-600">{company.vision}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="flex gap-1 ml-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleEdit(company)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDelete(company.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-              <div className="flex gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleEdit(company)}
-                >
-                  <Edit className="h-3 w-3" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleDelete(company.id)}
-                >
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
+            </CardContent>
           </Card>
         ))}
       </div>

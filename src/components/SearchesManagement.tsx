@@ -12,9 +12,7 @@ interface SearchRecord {
   location: string;
   created_at: string;
   company_id?: string;
-  companies?: {
-    name: string;
-  };
+  company_name?: string;
 }
 
 const SearchesManagement: React.FC = () => {
@@ -28,19 +26,20 @@ const SearchesManagement: React.FC = () => {
 
   const fetchSearches = async () => {
     try {
-      const { data, error } = await supabase
-        .from('mayoreo.searches')
-        .select(`
-          id,
-          job_title,
-          location,
-          created_at,
-          company_id,
-          companies (
-            name
-          )
-        `)
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.rpc('sql', {
+        query: `
+          SELECT 
+            s.id, 
+            s.job_title, 
+            s.location, 
+            s.created_at, 
+            s.company_id,
+            c.name as company_name
+          FROM mayoreo.searches s
+          LEFT JOIN mayoreo.companies c ON s.company_id = c.id
+          ORDER BY s.created_at DESC
+        `
+      });
 
       if (error) throw error;
       setSearches(data || []);
@@ -56,7 +55,8 @@ const SearchesManagement: React.FC = () => {
 
   const filteredSearches = searches.filter(search =>
     search.job_title.toLowerCase().includes(filter.toLowerCase()) ||
-    search.location.toLowerCase().includes(filter.toLowerCase())
+    search.location.toLowerCase().includes(filter.toLowerCase()) ||
+    (search.company_name && search.company_name.toLowerCase().includes(filter.toLowerCase()))
   );
 
   return (
@@ -69,29 +69,29 @@ const SearchesManagement: React.FC = () => {
       <div className="relative">
         <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         <Input
-          placeholder="Filter by job title or location..."
+          placeholder="Filter by job title, location, or company..."
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           className="pl-10"
         />
       </div>
 
-      <div className="space-y-2 max-h-60 overflow-y-auto">
+      <div className="grid gap-4">
         {filteredSearches.length === 0 ? (
-          <p className="text-sm text-gray-500 text-center py-4">No searches found</p>
+          <p className="text-sm text-gray-500 text-center py-8">No searches found</p>
         ) : (
           filteredSearches.map((search) => (
-            <Card key={search.id} className="p-3 hover:bg-gray-50 cursor-pointer">
-              <CardContent className="p-0">
+            <Card key={search.id} className="hover:bg-gray-50 cursor-pointer">
+              <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h4 className="font-medium text-sm">{search.job_title}</h4>
-                    <p className="text-xs text-gray-600">{search.location}</p>
-                    {search.companies?.name && (
-                      <p className="text-xs text-blue-600">{search.companies.name}</p>
+                    <h4 className="font-medium">{search.job_title}</h4>
+                    <p className="text-sm text-gray-600">{search.location}</p>
+                    {search.company_name && (
+                      <p className="text-sm text-blue-600">{search.company_name}</p>
                     )}
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <div className="flex items-center gap-1 text-sm text-gray-500">
                     <Calendar className="h-3 w-3" />
                     {new Date(search.created_at).toLocaleDateString()}
                   </div>
