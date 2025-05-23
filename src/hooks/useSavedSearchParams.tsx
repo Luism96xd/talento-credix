@@ -1,74 +1,80 @@
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 
 export interface SearchParams {
   position: string;
   location: string;
   company: {
+    id: string;
     name: string;
-    industry: string;
-    size: string;
+    description: string;
+    mission: string;
+    vision: string;
   };
   jobDetails: {
-    title: string;
-    experience: string;
-    skills: string[];
+    requirements: string;
+    responsibilities: string;
+    benefits: string;
+    fileUrl: string;
   };
   candidateProfile: {
-    education: string;
-    skills: string[];
     experience: string;
+    skills: string;
+    education: string;
   };
   cultureFit: {
-    values: string[];
-    traits: string[];
+    values: string;
+    workStyle: string;
+    teamFit: string;
   };
   notes: string;
 }
 
-const defaultParams: SearchParams = {
+const initialSearchParams: SearchParams = {
   position: '',
   location: '',
   company: {
+    id: '',
     name: '',
-    industry: '',
-    size: ''
+    description: '',
+    mission: '',
+    vision: ''
   },
   jobDetails: {
-    title: '',
-    experience: '',
-    skills: []
+    requirements: '',
+    responsibilities: '',
+    benefits: '',
+    fileUrl: ''
   },
   candidateProfile: {
-    education: '',
-    skills: [],
-    experience: ''
+    experience: '',
+    skills: '',
+    education: ''
   },
   cultureFit: {
-    values: [],
-    traits: []
+    values: '',
+    workStyle: '',
+    teamFit: ''
   },
   notes: ''
 };
 
 export const useSavedSearchParams = () => {
-  const [searchParams, setSearchParams] = useState<SearchParams>(defaultParams);
+  const [searchParams, setSearchParams] = useState<SearchParams>(initialSearchParams);
   const [isSearching, setIsSearching] = useState(false);
 
-  const updateParams = useCallback((section: keyof SearchParams, data: any) => {
+  const updateParams = (section: keyof SearchParams, data: any) => {
     setSearchParams(prev => ({
       ...prev,
-      [section]: typeof data === 'object' ? { ...prev[section], ...data } : data
+      [section]: typeof data === 'object' && data !== null ? { ...prev[section], ...data } : data
     }));
-  }, []);
+  };
 
-  const startSearch = useCallback(() => {
+  const startSearch = () => {
     setIsSearching(true);
-    // In a real app, this would trigger an API call
-    setTimeout(() => {
-      setIsSearching(false);
-    }, 2000);
-  }, []);
+    // Reset after some time (this would be replaced with actual API call)
+    setTimeout(() => setIsSearching(false), 3000);
+  };
 
   return {
     searchParams,

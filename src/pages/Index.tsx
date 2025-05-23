@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import SearchBar from '@/components/SearchBar';
 import Sidebar from '@/components/Sidebar';
@@ -7,6 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { useSavedSearchParams } from '@/hooks/useSavedSearchParams';
 import { Loader } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 // Mock data for the candidate results
 const MOCK_CANDIDATES = [
@@ -110,7 +110,7 @@ const Index = () => {
     setSidebarOpen(!sidebarOpen);
   };
   
-  const handleSearch = (position: string, location: string) => {
+  const handleSearch = async (position: string, location: string) => {
     updateParams('position', position);
     updateParams('location', location);
     setShowLoadingScreen(true);
@@ -124,6 +124,76 @@ const Index = () => {
         return newProgress >= 100 ? 100 : newProgress;
       });
     }, 300);
+
+    try {
+      // Prepare webhook payload
+      const webhookPayload = {
+        job_title: position,
+        location: location,
+        company_description: searchParams.company.description,
+        company_mission: searchParams.company.mission,
+        company_vision: searchParams.company.vision,
+        requirements: searchParams.jobDetails.requirements,
+        responsibilities: searchParams.jobDetails.responsibilities,
+        benefits: searchParams.jobDetails.benefits,
+        file_url: searchParams.jobDetails.fileUrl,
+        candidate_experience: searchParams.candidateProfile.experience,
+        candidate_skills: searchParams.candidateProfile.skills,
+        candidate_education: searchParams.candidateProfile.education,
+        culture_values: searchParams.cultureFit.values,
+        culture_work_style: searchParams.cultureFit.workStyle,
+        culture_team_fit: searchParams.cultureFit.teamFit,
+        notes: searchParams.notes
+      };
+
+      console.log('Sending webhook request with payload:', webhookPayload);
+
+      // Save search to database
+      const { data: searchData, error: searchError } = await supabase
+        .from('searches')
+        .insert([{
+          job_title: position,
+          location: location,
+          company_id: searchParams.company.id || null,
+          file_path: searchParams.jobDetails.fileUrl || null
+        }])
+        .select()
+        .single();
+
+      if (searchError) {
+        console.error('Error saving search:', searchError);
+      }
+
+      // Send webhook request (replace with your actual webhook URL)
+      const webhookUrl = 'https://your-webhook-url.com/search';
+      
+      try {
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(webhookPayload)
+        });
+
+        const webhookResponse = await response.json();
+        console.log('Webhook response:', webhookResponse);
+
+        // Update search record with webhook response
+        if (searchData && !searchError) {
+          await supabase
+            .from('searches')
+            .update({ webhook_response: webhookResponse })
+            .eq('id', searchData.id);
+        }
+      } catch (webhookError) {
+        console.error('Webhook request failed:', webhookError);
+        // Continue with mock data even if webhook fails
+      }
+
+    } catch (error) {
+      console.error('Search error:', error);
+    }
     
     // Simulate API call delay
     setTimeout(() => {

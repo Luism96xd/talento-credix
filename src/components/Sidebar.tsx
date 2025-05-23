@@ -1,12 +1,14 @@
 
 import React, { useState } from 'react';
-import { X, ChevronLeft, ChevronRight, Briefcase, User, Calendar, FileText } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Briefcase, User, Calendar, FileText, Building, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CompanyTab from './CompanyTab';
 import ProfileTab from './ProfileTab';
 import CultureTab from './CultureTab';
 import NotesTab from './NotesTab';
+import CompaniesManagement from './CompaniesManagement';
+import SearchesManagement from './SearchesManagement';
 import { SearchParams } from '@/hooks/useSavedSearchParams';
 
 interface SidebarProps {
@@ -47,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         
         <div className="flex-1 overflow-y-auto p-4">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-4 mb-4">
+            <TabsList className="grid grid-cols-3 mb-4">
               <TabsTrigger value="company" className="flex flex-col items-center py-2">
                 <Briefcase className="h-4 w-4 mb-1" />
                 <span className="text-xs">Company</span>
@@ -60,9 +62,20 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <Calendar className="h-4 w-4 mb-1" />
                 <span className="text-xs">Culture</span>
               </TabsTrigger>
+            </TabsList>
+
+            <TabsList className="grid grid-cols-3 mb-4">
               <TabsTrigger value="notes" className="flex flex-col items-center py-2">
                 <FileText className="h-4 w-4 mb-1" />
                 <span className="text-xs">Notes</span>
+              </TabsTrigger>
+              <TabsTrigger value="companies" className="flex flex-col items-center py-2">
+                <Building className="h-4 w-4 mb-1" />
+                <span className="text-xs">Companies</span>
+              </TabsTrigger>
+              <TabsTrigger value="searches" className="flex flex-col items-center py-2">
+                <Search className="h-4 w-4 mb-1" />
+                <span className="text-xs">Searches</span>
               </TabsTrigger>
             </TabsList>
             
@@ -94,6 +107,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                 notes={searchParams.notes}
                 updateNotes={(notes) => updateParams('notes', notes)}
               />
+            </TabsContent>
+
+            <TabsContent value="companies">
+              <CompaniesManagement />
+            </TabsContent>
+
+            <TabsContent value="searches">
+              <SearchesManagement />
             </TabsContent>
           </Tabs>
         </div>
