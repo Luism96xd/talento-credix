@@ -8,98 +8,94 @@ import { useSavedSearchParams } from '@/hooks/useSavedSearchParams';
 import { Loader } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
-// Mock data for the candidate results
-const MOCK_CANDIDATES = [
-  {
-    id: '1',
-    name: 'Alex Johnson',
-    position: 'Senior Frontend Developer',
-    company: 'Tech Innovators',
-    location: 'San Francisco, CA',
-    avatar: '',
-    score: 92,
-    skills: ['React', 'TypeScript', 'Node.js', 'GraphQL', 'AWS'],
-    match: {
-      experience: 95,
-      skills: 90,
-      education: 85,
-      culture: 95
-    }
-  },
-  {
-    id: '2',
-    name: 'Jamie Smith',
-    position: 'Frontend Engineer',
-    company: 'DevCorp',
-    location: 'Austin, TX',
-    avatar: '',
-    score: 85,
-    skills: ['JavaScript', 'React', 'CSS', 'HTML', 'Redux'],
-    match: {
-      experience: 80,
-      skills: 90,
-      education: 90,
-      culture: 85
-    }
-  },
-  {
-    id: '3',
-    name: 'Taylor Wilson',
-    position: 'UI Developer',
-    company: 'Creative Solutions',
-    location: 'New York, NY',
-    avatar: '',
-    score: 78,
-    skills: ['JavaScript', 'React', 'CSS', 'UI Design'],
-    match: {
-      experience: 75,
-      skills: 80,
-      education: 80,
-      culture: 75
-    }
-  },
-  {
-    id: '4',
-    name: 'Morgan Davis',
-    position: 'Frontend Developer',
-    company: 'Innovation Labs',
-    location: 'Remote',
-    avatar: '',
-    score: 73,
-    skills: ['React', 'JavaScript', 'CSS', 'Responsive Design'],
-    match: {
-      experience: 70,
-      skills: 75,
-      education: 85,
-      culture: 65
-    }
-  },
-  {
-    id: '5',
-    name: 'Jordan Miller',
-    position: 'React Developer',
-    company: 'WebTech Inc.',
-    location: 'Chicago, IL',
-    avatar: '',
-    score: 68,
-    skills: ['React', 'Redux', 'JavaScript', 'Bootstrap'],
-    match: {
-      experience: 65,
-      skills: 70,
-      education: 75,
-      culture: 60
-    }
+interface Candidate {
+    id: string;
+    name: string;
+    title: string;
+    link: string;
+    connections: string;
+    description: string;
+    education: string;
+    experience: string;
+    search_id: string;
+    image: string;
   }
-];
+  
+// Mock data for the candidate results
+const MOCK_CANDIDATES: Candidate[] = [
+    {
+      id: 'cand_001',
+      name: 'Dr. Evelyn Reed',
+      title: 'Lead Data Scientist | AI & ML Specialist',
+      link: 'https://linkedin.com/in/evelynreed',
+      connections: '500+',
+      description: 'Accomplished Lead Data Scientist with 10+ years of experience in leveraging AI and Machine Learning to solve complex business problems. Proven ability to lead teams and deliver impactful data-driven solutions in the tech and finance sectors.',
+      education: 'PhD in Computer Science (AI Specialization) - MIT; M.Sc. Statistics - Stanford University',
+      experience: 'Lead Data Scientist - FinTech Solutions (4 years); Senior ML Engineer - Innovatech (3 years); Data Scientist - DataCorp (3 years)',
+      search_id: 'search_xyz_123',
+      image: "https://thispersondoesnotexist.com"
+    },
+    {
+      id: 'cand_002',
+      name: 'Marcus Chen',
+      title: 'Senior Software Engineer - Backend Systems',
+      link: 'https://linkedin.com/in/marcuschen',
+      connections: '450',
+      description: 'Versatile Senior Software Engineer with 8 years of experience in designing, developing, and deploying scalable backend systems. Expertise in microservices architecture, cloud platforms (AWS, Azure), and various programming languages (Java, Python, Go).',
+      education: 'B.Sc. Software Engineering - University of California, Berkeley',
+      experience: 'Senior Backend Engineer - CloudNet (Current, 5 years); Software Engineer - AlphaSoft (3 years)',
+      search_id: 'search_xyz_123',
+      image: "https://picsum.photos/id/1/200/300"
+    },
+    {
+      id: 'cand_003',
+      name: 'Aisha Khan',
+      title: 'Product Manager - SaaS & Enterprise Solutions',
+      link: 'https://linkedin.com/in/aishakhanpm',
+      connections: '500+',
+      description: 'Dynamic Product Manager with a strong track record of launching successful SaaS products and driving growth in enterprise markets. Passionate about user-centric design and agile methodologies. 7 years in product leadership.',
+      education: 'MBA - Harvard Business School; B.A. Economics - Yale University',
+      experience: 'Senior Product Manager - EnterpriseFlow (3 years); Product Manager - SaaSGen (4 years)',
+      search_id: 'search_abc_456',
+      image: "https://picsum.photos/id/1/200/300"
+    },
+    {
+      id: 'cand_004',
+      name: 'David Miller',
+      title: 'Cybersecurity Analyst | Threat Intelligence',
+      link: 'https://linkedin.com/in/davidmillercyber',
+      connections: '320',
+      description: 'Dedicated Cybersecurity Analyst specializing in threat intelligence, incident response, and vulnerability management. Certified CISSP and CISM with 6 years of experience protecting critical infrastructure and sensitive data.',
+      education: 'M.Sc. Cybersecurity - Carnegie Mellon University; B.Sc. Information Technology - Purdue University',
+      experience: 'Cybersecurity Analyst - SecureNet (Current, 4 years); IT Security Specialist - GlobalBank (2 years)',
+      search_id: 'search_xyz_123',
+      image: "https://picsum.photos/id/1/200/300"
+    },
+    {
+      id: 'cand_005',
+      name: 'Sophie Dubois',
+      title: 'UX Design Lead | Mobile & Web Applications',
+      link: 'https://linkedin.com/in/sophieduboisux',
+      connections: '500+',
+      description: 'Creative and strategic UX Design Lead with 9 years of experience crafting intuitive and engaging user experiences for mobile and web platforms. Proficient in user research, wireframing, prototyping, and usability testing.',
+      education: 'M.A. Human-Computer Interaction - University of Washington; B.F.A. Graphic Design - RISD',
+      experience: 'UX Design Lead - AppMakers (5 years); Senior UX Designer - WebCrafters (4 years)',
+      search_id: 'search_abc_456',
+      image: "https://picsum.photos/id/1/200/300"
+    }
+  ];
 
 const Index = () => {
   const [searchInitiated, setSearchInitiated] = useState(false);
-  const [candidates, setCandidates] = useState<typeof MOCK_CANDIDATES>([]);
+  const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [searchProgress, setSearchProgress] = useState(0);
   const [showLoadingScreen, setShowLoadingScreen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<any>(null);
   const [jobDescriptionFile, setJobDescriptionFile] = useState('');
-  
+  const [jobRequisitionFile, setJobRequisitionFile] = useState('');
+  const [referenceCompanies, setReferenceCompanies] = useState(false);
+  const [competenceCompanies, setCompetenceCompanies] = useState(false);
+
   const { 
     searchParams, 
     updateParams, 
@@ -110,57 +106,73 @@ const Index = () => {
   const handleSearch = async (position: string, location: string) => {
     updateParams('position', position);
     updateParams('location', location);
+  
     setShowLoadingScreen(true);
-    setSearchProgress(0);
-    setSearchInitiated(false);
-    
-    // Simulate search progress
-    const progressInterval = setInterval(() => {
-      setSearchProgress(prev => {
-        const newProgress = prev + Math.random() * 15;
-        return newProgress >= 100 ? 100 : newProgress;
-      });
-    }, 300);
+    setSearchInitiated(false); // Reset search initiated state
+    setCandidates([]); // Clear previous candidates
 
+    const progressInterval = setInterval(() => {
+        setSearchProgress(prev => {
+          const newProgress = prev + Math.random() * 15;
+          return newProgress >= 100 ? 100 : newProgress;
+        });
+      }, 300);
+  
+    let searchRecordId = null; // To store the ID of the saved search
+  
     try {
-      // Save search to database
+      // 1. Save search to database
       const { data: searchData, error: searchError } = await supabase
         .from('searches')
         .insert([{
           job_title: position,
           location: location,
+          // Assuming these state variables exist and are correct:
+          reference: referenceCompanies,
+          competence: competenceCompanies,
           company_id: selectedCompany?.id || null,
-          file_path: jobDescriptionFile || null
+          job_description: jobDescriptionFile || null, 
+          job_requisition: jobRequisitionFile || null,
         }])
-        .select()
+        .select('id') // Only select the ID, as that's what we need
         .single();
-
+  
       if (searchError) {
-        console.error('Error saving search:', searchError);
+        console.error('Error saving search to Supabase:', searchError);
+        throw searchError;
       }
-
-      // Prepare webhook payload
+  
+      if (!searchData || !searchData.id) {
+          console.error('Search data or ID is missing after insert.');
+          throw new Error("Failed to retrieve search ID after saving.");
+      }
+      
+      searchRecordId = searchData.id;
+      console.log('Search saved with ID:', searchRecordId);
+  
+      // 2. Prepare and send webhook payload
       const webhookPayload = {
         job_title: position,
         location: location,
-        company_description: selectedCompany?.description || '',
-        company_mission: selectedCompany?.mission || '',
-        company_vision: selectedCompany?.vision || '',
-        file_url: jobDescriptionFile,
-        candidate_experience: searchParams.candidateProfile.experience,
-        candidate_skills: searchParams.candidateProfile.skills,
-        candidate_education: searchParams.candidateProfile.education,
-        culture_values: searchParams.cultureFit.values,
-        culture_work_style: searchParams.cultureFit.workStyle,
-        culture_team_fit: searchParams.cultureFit.teamFit,
-        notes: searchParams.notes
+        company_id: selectedCompany?.id,
+        search_id: searchRecordId,
+        job_description_url: jobDescriptionFile, // Name was swapped in original code, ensure this is correct
+        job_requisition_url: jobRequisitionFile, // Name was swapped in original code, ensure this is correct
+        referenceCompanies: referenceCompanies,
+        competenceCompanies: competenceCompanies, // Assuming this is the correct variable name
+        // candidate_experience: searchParams.candidateProfile.experience,
+        // candidate_skills: searchParams.candidateProfile.skills,
+        // candidate_education: searchParams.candidateProfile.education,
+        // culture_values: searchParams.cultureFit.values,
+        // culture_work_style: searchParams.cultureFit.workStyle,
+        // culture_team_fit: searchParams.cultureFit.teamFit,
+        // notes: searchParams.notes
       };
-
+  
       console.log('Sending webhook request with payload:', webhookPayload);
-
-      // Send webhook request (replace with your actual webhook URL)
-      const webhookUrl = 'https://your-webhook-url.com/search';
-      
+      const webhookUrl = 'https://mayoreo.app.n8n.cloud/webhook-test/2cd021aa-7f0d-4800-a4b1-d88fe3a2cc3c';
+      let webhookResponseData;
+  
       try {
         const response = await fetch(webhookUrl, {
           method: 'POST',
@@ -169,37 +181,74 @@ const Index = () => {
           },
           body: JSON.stringify(webhookPayload)
         });
-
-        const webhookResponse = await response.json();
-        console.log('Webhook response:', webhookResponse);
-
-        // Update search record with webhook response
-        if (searchData && !searchError) {
-          await supabase
-            .from('searches')
-            .update({ webhook_response: webhookResponse })
-            .eq('id', searchData.id);
+  
+        if (!response.ok) {
+          // Non-2xx responses
+          const errorBody = await response.text(); // Or response.json() if the error is JSON
+          console.error(`Webhook request failed with status ${response.status}:`, errorBody);
+          throw new Error(`Webhook request failed with status ${response.status}. ${errorBody}`);
         }
+  
+        webhookResponseData = await response.json();
+        console.log('Webhook response:', webhookResponseData);
+  
+        // 3. Update search record with webhook response
+        const { error: updateError } = await supabase
+          .from('searches')
+          .update({ webhook_response: webhookResponseData })
+          .eq('id', searchRecordId);
+  
+        if (updateError) {
+          console.error('Error updating search with webhook response:', updateError);
+        }
+  
       } catch (webhookError) {
-        console.error('Webhook request failed:', webhookError);
-        // Continue with mock data even if webhook fails
+        console.error('Webhook request or processing failed:', webhookError);
       }
-
+  
+      if (webhookResponseData && webhookResponseData['success'] === true) {
+        console.log('Webhook successful, fetching candidates for search ID:', searchRecordId);
+        try {
+          const { data: candidatesData, error: candidatesError } = await supabase
+            .from('candidates')
+            .select('id, name, title, link, description, connections, education, experience, image, search_id') // 'image' was in select, ensure it's in your Candidate interface if used
+            .eq('search_id', searchRecordId); // IMPORTANT FIX: Filter by search_id
+  
+          if (candidatesError) {
+            console.error('Error fetching candidates from Supabase:', candidatesError);
+            throw candidatesError;
+          }
+          setSearchProgress(100)
+          console.log('Candidates fetched:', candidatesData);
+          setCandidates(candidatesData || []);
+        } catch (error) {
+          console.error('Error in candidate fetching process:', error);
+          // setCandidates([]); // Already cleared at the beginning
+        }
+      } else {
+        console.log('Webhook was not successful or response missing, skipping candidate fetch.');
+        // If webhook failed catastrophically (webhookError caught), a toast was already shown.
+        setCandidates([]); // Ensure candidates are empty if not fetched
+      }
+  
     } catch (error) {
-      console.error('Search error:', error);
+      console.error('Overall search process error:', error);
+      setCandidates([]);
+    } finally {
+      setShowLoadingScreen(false);
+      setSearchInitiated(true); // Set to true so UI can update (e.g., show "No results" or the results)
     }
-    
-    // Simulate API call delay
-    setTimeout(() => {
-      clearInterval(progressInterval);
-      setSearchProgress(100);
-      
-      setTimeout(() => {
-        setCandidates(MOCK_CANDIDATES);
-        setSearchInitiated(true);
-        setShowLoadingScreen(false);
-      }, 500);
-    }, 2500);
+  };
+
+  
+  const handleReferenceCompaniesChange = (checked: boolean) => {
+    setReferenceCompanies(checked);
+    console.log('Reference companies:', checked);
+  };
+
+  const handleCompetenceChange = (checked: boolean) => {
+    setCompetenceCompanies(checked);
+    console.log('Analyze competence:', checked);
   };
   
   return (
@@ -207,7 +256,7 @@ const Index = () => {
       <div className="min-h-screen flex flex-col">
         <header className="py-6 px-4 md:px-8">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Find Top LinkedIn Talent</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Buscador de talento automatizado Mayoreo</h1>
             <p className="text-gray-600 mb-6">Search for candidates that match your specific requirements</p>
             
             <SearchBar 
@@ -219,8 +268,15 @@ const Index = () => {
             <CompanySelector
               selectedCompany={selectedCompany}
               onCompanySelect={setSelectedCompany}
-              jobDescriptionFile={jobDescriptionFile}
-              onFileUpload={(fileUrl, fileName) => setJobDescriptionFile(fileUrl)}
+              referenceCompaniesChecked={referenceCompanies}
+              onReferenceCompaniesChange={handleReferenceCompaniesChange}
+              competenceChecked={competenceCompanies}
+              onCompetenceChange={handleCompetenceChange}
+              jobDescriptionFileUrl={jobDescriptionFile}
+              jobRequisitionFileUrl={jobRequisitionFile}
+              searchInitiated={searchInitiated}
+              onJobDescriptionUpload={(fileUrl, fileName) => setJobDescriptionFile(fileUrl)}
+              onRequisitionFileUpload={(fileUrl, fileName) => setJobRequisitionFile(fileUrl)}
             />
           </div>
         </header>
@@ -254,7 +310,7 @@ const Index = () => {
                 
                 <div className="space-y-4">
                   {candidates.map((candidate) => (
-                    <CandidateCard key={candidate.id} {...candidate} />
+                    <CandidateCard key={candidate.id} {...candidate} score={75} />
                   ))}
                 </div>
               </div>

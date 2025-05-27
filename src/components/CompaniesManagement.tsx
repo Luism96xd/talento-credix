@@ -36,8 +36,7 @@ const CompaniesManagement: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('companies')
-        .select('id, name, description, mission, vision, created_at')
-        .order('created_at', { ascending: false });
+        .select('id, name, description, mission, vision')
 
       if (error) throw error;
       setCompanies(data || []);
@@ -138,7 +137,7 @@ const CompaniesManagement: React.FC = () => {
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold flex items-center gap-2">
           <Building className="h-5 w-5" />
-          Companies
+          Compañías<aside></aside>
         </h3>
         <Button 
           onClick={() => setIsCreating(true)} 
@@ -146,7 +145,7 @@ const CompaniesManagement: React.FC = () => {
           className="flex items-center gap-1"
         >
           <Plus className="h-4 w-4" />
-          Add Company
+          Añadir compañía
         </Button>
       </div>
 
@@ -169,7 +168,7 @@ const CompaniesManagement: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={3}
               />
-              <Input
+              {/*(<Input
                 placeholder="Mission"
                 value={formData.mission}
                 onChange={(e) => setFormData({ ...formData, mission: e.target.value })}
@@ -178,7 +177,7 @@ const CompaniesManagement: React.FC = () => {
                 placeholder="Vision"
                 value={formData.vision}
                 onChange={(e) => setFormData({ ...formData, vision: e.target.value })}
-              />
+              />*/}
               <div className="flex gap-2">
                 <Button type="submit" size="sm">
                   {editingId ? 'Update' : 'Create'}

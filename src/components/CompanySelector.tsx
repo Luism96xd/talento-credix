@@ -1,12 +1,12 @@
-
 import React, { useState, useEffect } from 'react';
-import { Building, Upload, File } from 'lucide-react';
+import { Building, Upload, File, CheckSquare, Square } from 'lucide-react'; // Added CheckSquare, Square
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Checkbox } from './ui/checkbox'; // Assuming this is ShadCN UI Checkbox
 
 interface Company {
   id: string;
@@ -19,24 +19,59 @@ interface Company {
 interface CompanySelectorProps {
   selectedCompany: Company | null;
   onCompanySelect: (company: Company | null) => void;
-  jobDescriptionFile: string;
-  onFileUpload: (fileUrl: string, fileName: string) => void;
+  searchInitiated: boolean;
+  jobDescriptionFileUrl: string; // Renamed for clarity
+  onJobDescriptionUpload: (fileUrl: string, fileName: string) => void; // Renamed for clarity
+
+  // New props for checkboxes
+  referenceCompaniesChecked: boolean;
+  onReferenceCompaniesChange: (checked: boolean) => void;
+  competenceChecked: boolean;
+  onCompetenceChange: (checked: boolean) => void;
+
+  // New props for requisition file
+  jobRequisitionFileUrl: string;
+  onRequisitionFileUpload: (fileUrl: string, fileName: string) => void;
 }
 
 const CompanySelector: React.FC<CompanySelectorProps> = ({
   selectedCompany,
   onCompanySelect,
-  jobDescriptionFile,
-  onFileUpload
+  searchInitiated,
+  jobDescriptionFileUrl,
+  onJobDescriptionUpload,
+  referenceCompaniesChecked,
+  onReferenceCompaniesChange,
+  competenceChecked,
+  onCompetenceChange,
+  jobRequisitionFileUrl, // We might not use this directly for display if fileName is enough
+  onRequisitionFileUpload
 }) => {
   const [companies, setCompanies] = useState<Company[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [fileName, setFileName] = useState('');
+  const [uploadingJobDescription, setUploadingJobDescription] = useState(false);
+  const [jobDescriptionFileName, setJobDescriptionFileName] = useState('');
+
+  // State for the new file upload
+  const [uploadingRequisition, setUploadingRequisition] = useState(false);
+  const [requisitionFileName, setRequisitionFileName] = useState('');
+  
   const { toast } = useToast();
 
   useEffect(() => {
     fetchCompanies();
   }, []);
+
+  // If initial file names need to be set from props (e.g., if loading existing data)
+  // useEffect(() => {
+  //   if (jobDescriptionFileUrl) {
+  //     // Potentially extract filename from URL if not passed separately
+  //     // For simplicity, assuming we'd get filename from parent if it's pre-loaded
+  //   }
+  //   if (jobRequisitionFileUrl) {
+  //     // same for requisition
+  //   }
+  // }, [jobDescriptionFileUrl, jobRequisitionFileUrl]);
+
 
   const fetchCompanies = async () => {
     try {
@@ -49,6 +84,11 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({
       setCompanies(data || []);
     } catch (error) {
       console.error('Error fetching companies:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch companies.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -57,61 +97,125 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({
     onCompanySelect(company || null);
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleJobDescriptionUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     if (file.type !== 'application/pdf') {
       toast({
         title: "Error",
-        description: "Please upload a PDF file",
+        description: "Please upload a PDF file for job description.",
         variant: "destructive"
       });
       return;
     }
 
-    setUploading(true);
+    setUploadingJobDescription(true);
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `job-descriptions/${fileName}`;
+      const newFileName = `${Date.now()}_jd.${fileExt}`; // Added _jd for distinction
+      const filePath = `job-descriptions/${newFileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('job_descriptions')
+        .from('documentos') // Ensure this bucket exists and has correct policies
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('job_descriptions')
+      const { data } = supabase.storage // Removed : { publicUrl } for clarity
+        .from('documentos')
         .getPublicUrl(filePath);
 
-      onFileUpload(publicUrl, file.name);
-      setFileName(file.name);
+      if (!data || !data.publicUrl) {
+        throw new Error("Failed to get public URL for job description.");
+      }
+      
+      onJobDescriptionUpload(data.publicUrl, file.name);
+      setJobDescriptionFileName(file.name);
       
       toast({
         title: "Success",
         description: "Job description uploaded successfully"
       });
     } catch (error) {
-      console.error('Error uploading file:', error);
+      console.error('Error uploading job description:', error);
       toast({
         title: "Error",
-        description: "Failed to upload file",
+        description: `Failed to upload job description: ${error instanceof Error ? error.message : String(error)}`,
         variant: "destructive"
       });
     } finally {
-      setUploading(false);
+      setUploadingJobDescription(false);
+      // Clear the file input so the same file can be re-selected if needed after an error
+      if (event.target) event.target.value = '';
+    }
+  };
+
+  const handleRequisitionFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      toast({
+        title: "Error",
+        description: "Please upload a PDF file for job requisition.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setUploadingRequisition(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const newFileName = `${Date.now()}_req.${fileExt}`; // Added _req for distinction
+      // IMPORTANT: Choose a different bucket or a different path
+      // Option 1: Different bucket (e.g., 'job_requisitions')
+      // Option 2: Subfolder in existing bucket (e.g., 'job_descriptions/requisitions/')
+      // Let's use a new bucket 'job_requisitions' for clarity. Ensure it exists.
+      const filePath = `job-requisitions/${newFileName}`; 
+
+      const { error: uploadError } = await supabase.storage
+        .from('documentos') // Make sure this bucket exists in Supabase Storage
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage // Removed : { publicUrl } for clarity
+        .from('documentos')
+        .getPublicUrl(filePath);
+
+      if (!data || !data.publicUrl) {
+        throw new Error("Failed to get public URL for job requisition.");
+      }
+
+      onRequisitionFileUpload(data.publicUrl, file.name);
+      setRequisitionFileName(file.name);
+      
+      toast({
+        title: "Success",
+        description: "Job requisition format uploaded successfully"
+      });
+    } catch (error) {
+      console.error('Error uploading job requisition:', error);
+      toast({
+        title: "Error",
+        description: `Failed to upload job requisition: ${error instanceof Error ? error.message : String(error)}`,
+        variant: "destructive"
+      });
+    } finally {
+      setUploadingRequisition(false);
+      if (event.target) event.target.value = '';
     }
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto mt-6 space-y-4">
+    <div className="w-full max-w-4xl mx-auto mt-6 space-y-6"> {/* Increased space-y */}
+      {/* Row 1: Company Select & Job Description Upload */}
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1">
           <Label className="flex items-center gap-2 mb-2">
             <Building className="h-4 w-4" />
-            Select Company
+            Seleccionar compañía
           </Label>
           <Select value={selectedCompany?.id || ''} onValueChange={handleCompanySelect}>
             <SelectTrigger>
@@ -130,22 +234,22 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({
         <div className="flex-1">
           <Label className="flex items-center gap-2 mb-2">
             <Upload className="h-4 w-4" />
-            Job Description (PDF)
+            Descripción del cargo (PDF)
           </Label>
           <div className="flex items-center gap-2">
             <Input
               type="file"
               accept=".pdf"
-              onChange={handleFileUpload}
-              disabled={uploading}
+              onChange={handleJobDescriptionUpload}
+              disabled={uploadingJobDescription}
               className="hidden"
-              id="job-description-upload"
+              id="job-description-upload" // Keep this ID unique
             />
             <label htmlFor="job-description-upload" className="flex-1">
-              <Button variant="outline" disabled={uploading} asChild className="w-full">
-                <span className="flex items-center gap-2 cursor-pointer">
+              <Button variant="outline" disabled={uploadingJobDescription} asChild className="w-full">
+                <span className="flex items-center justify-center gap-2 cursor-pointer">
                   <File className="h-4 w-4" />
-                  {uploading ? 'Uploading...' : fileName || 'Choose PDF'}
+                  {uploadingJobDescription ? 'Uploading...' : jobDescriptionFileName || 'Choose PDF'}
                 </span>
               </Button>
             </label>
@@ -153,8 +257,63 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({
         </div>
       </div>
 
-      {selectedCompany && (
-        <div className="p-4 bg-gray-50 rounded-lg">
+      {/* Row 2: Checkboxes & Requisition Format Upload */}
+      <div className="flex flex-col md:flex-row gap-4 items-end"> {/* items-end to align checkboxes with upload button if they are shorter */}
+        {/* Checkboxes Section */}
+        <div className="flex-1 flex flex-col space-y-3">
+          <Label className="mb-1 text-sm font-medium">Opciones Adicionales</Label>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="referenceCompanies"
+              checked={referenceCompaniesChecked}
+              onCheckedChange={onReferenceCompaniesChange}
+            />
+            <Label htmlFor="referenceCompanies" className="text-sm font-normal cursor-pointer">
+              Incluir compañías de referencia
+            </Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="competence"
+              checked={competenceChecked}
+              onCheckedChange={onCompetenceChange}
+            />
+            <Label htmlFor="competence" className="text-sm font-normal cursor-pointer">
+              Analizar competencias clave
+            </Label>
+          </div>
+        </div>
+
+        {/* Requisition File Upload Section */}
+        <div className="flex-1">
+          <Label className="flex items-center gap-2 mb-2">
+            <Upload className="h-4 w-4" />
+            Formato de requisición (PDF)
+          </Label>
+          <div className="flex items-center gap-2">
+            <Input
+              type="file"
+              accept=".pdf"
+              onChange={handleRequisitionFileUpload}
+              disabled={uploadingRequisition}
+              className="hidden"
+              id="job-requisition-upload" // New unique ID
+            />
+            <label htmlFor="job-requisition-upload" className="flex-1">
+              <Button variant="outline" disabled={uploadingRequisition} asChild className="w-full">
+                <span className="flex items-center justify-center gap-2 cursor-pointer">
+                  <File className="h-4 w-4" />
+                  {uploadingRequisition ? 'Uploading...' : requisitionFileName || 'Choose PDF'}
+                </span>
+              </Button>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {/* Selected Company Details */}
+      {selectedCompany && searchInitiated && (
+        <div className="p-4 bg-gray-50 rounded-lg mt-6">
           <h4 className="font-medium mb-2">{selectedCompany.name}</h4>
           {selectedCompany.description && (
             <p className="text-sm text-gray-600 mb-2">{selectedCompany.description}</p>

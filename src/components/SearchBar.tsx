@@ -11,8 +11,8 @@ interface SearchBarProps {
 
 const SearchBar: React.FC<SearchBarProps> = ({
   onSearch,
-  placeholderPosition = "Frontend Developer",
-  placeholderLocation = "San Francisco, CA"
+  placeholderPosition = "Asesor de ventas",
+  placeholderLocation = "Valencia, Venezuela"
 }) => {
   const [position, setPosition] = useState('');
   const [location, setLocation] = useState('');
