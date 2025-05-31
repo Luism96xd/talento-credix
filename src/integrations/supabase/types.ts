@@ -39,6 +39,7 @@ export type Database = {
           job_title: string
           location: string
           company_id: string
+          keywords: string,
           job_description: string
           job_requisition: string
           webhook_response: string
@@ -48,6 +49,7 @@ export type Database = {
           id?: string
           job_title: string
           location: string
+          keywords?: string | null,
           company_id?: string  | null
           job_description?: string | null
           job_requisition?: string | null
@@ -59,6 +61,7 @@ export type Database = {
           job_title?: string  | null
           location?: string  | null
           company_id?: string  | null
+          keywords?: string | null,
           job_description?: string | null
           job_requisition?: string | null
           webhook_response?: string  | null
@@ -78,6 +81,9 @@ export type Database = {
           education: string
           experience: string
           search_id: string
+          score: number
+          technical_score: number
+          filtered: boolean
         }
         Insert: {
           id?: string
@@ -90,6 +96,9 @@ export type Database = {
           education: string
           experience: string
           search_id: string
+          score: number
+          technical_score: number
+          filtered: boolean
         }
         Update: {
           id?: string
@@ -102,6 +111,9 @@ export type Database = {
           education?: string | null
           experience?: string | null
           search_id?: string | null
+          score?: number | null,
+          technical_score?: number | null,
+          filtered: boolean | null,
         } 
         Relationships: []
       }

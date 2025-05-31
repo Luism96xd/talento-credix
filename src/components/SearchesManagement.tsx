@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Link } from 'react-router-dom';
 
 interface SearchRecord {
   id: string;
@@ -41,12 +42,12 @@ const SearchesManagement: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
+
       const formattedData = data?.map(search => ({
         ...search,
         company_name: search.companies?.name || null
       })) || [];
-      
+
       setSearches(formattedData);
     } catch (error) {
       console.error('Error fetching searches:', error);
@@ -86,23 +87,25 @@ const SearchesManagement: React.FC = () => {
           <p className="text-sm text-gray-500 text-center py-8">No searches found</p>
         ) : (
           filteredSearches.map((search) => (
-            <Card key={search.id} className="hover:bg-gray-50 cursor-pointer">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h4 className="font-medium">{search.job_title}</h4>
-                    <p className="text-sm text-gray-600">{search.location}</p>
-                    {search.company_name && (
-                      <p className="text-sm text-blue-600">{search.company_name}</p>
-                    )}
+            <Link key={search.id} to={`/searches/${search.id}`}>
+              <Card key={search.id} className="hover:bg-gray-50 cursor-pointer">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h4 className="font-medium">{search.job_title}</h4>
+                      <p className="text-sm text-gray-600">{search.location}</p>
+                      {search.company_name && (
+                        <p className="text-sm text-blue-600">{search.company_name}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 text-sm text-gray-500">
+                      <Calendar className="h-3 w-3" />
+                      {new Date(search.created_at).toLocaleDateString()}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 text-sm text-gray-500">
-                    <Calendar className="h-3 w-3" />
-                    {new Date(search.created_at).toLocaleDateString()}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </Link>
           ))
         )}
       </div>

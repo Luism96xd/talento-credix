@@ -17,6 +17,8 @@ interface Company {
 }
 
 interface CompanySelectorProps {
+  keywords: string,
+  onChangeKeywords: (text: string) => void;
   selectedCompany: Company | null;
   onCompanySelect: (company: Company | null) => void;
   searchInitiated: boolean;
@@ -35,6 +37,8 @@ interface CompanySelectorProps {
 }
 
 const CompanySelector: React.FC<CompanySelectorProps> = ({
+  keywords,
+  onChangeKeywords,
   selectedCompany,
   onCompanySelect,
   searchInitiated,
@@ -54,7 +58,7 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({
   // State for the new file upload
   const [uploadingRequisition, setUploadingRequisition] = useState(false);
   const [requisitionFileName, setRequisitionFileName] = useState('');
-  
+
   const { toast } = useToast();
 
   useEffect(() => {
@@ -129,10 +133,10 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({
       if (!data || !data.publicUrl) {
         throw new Error("Failed to get public URL for job description.");
       }
-      
+
       onJobDescriptionUpload(data.publicUrl, file.name);
       setJobDescriptionFileName(file.name);
-      
+
       toast({
         title: "Success",
         description: "Job description uploaded successfully"
@@ -172,7 +176,7 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({
       // Option 1: Different bucket (e.g., 'job_requisitions')
       // Option 2: Subfolder in existing bucket (e.g., 'job_descriptions/requisitions/')
       // Let's use a new bucket 'job_requisitions' for clarity. Ensure it exists.
-      const filePath = `job-requisitions/${newFileName}`; 
+      const filePath = `job-requisitions/${newFileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('documentos') // Make sure this bucket exists in Supabase Storage
@@ -190,7 +194,7 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({
 
       onRequisitionFileUpload(data.publicUrl, file.name);
       setRequisitionFileName(file.name);
-      
+
       toast({
         title: "Success",
         description: "Job requisition format uploaded successfully"
@@ -273,7 +277,13 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({
             </Label>
           </div>
           <div className="flex items-center space-x-2">
-            <Checkbox
+            <Input id="keywords"
+              value={keywords || ''}
+              onChange={(e) => onChangeKeywords(e.target.value)}
+              placeholder="Buscar por palabras clave"
+              className="w-full text-black">
+            </Input>
+            {/*<Checkbox
               id="competence"
               checked={competenceChecked}
               onCheckedChange={onCompetenceChange}
@@ -281,6 +291,7 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({
             <Label htmlFor="competence" className="text-sm font-normal cursor-pointer">
               Analizar competencias clave
             </Label>
+            */}
           </div>
         </div>
 
@@ -312,7 +323,7 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({
       </div>
 
       {/* Selected Company Details */}
-      {selectedCompany && searchInitiated && (
+      {selectedCompany && false && searchInitiated && (
         <div className="p-4 bg-gray-50 rounded-lg mt-6">
           <h4 className="font-medium mb-2">{selectedCompany.name}</h4>
           {selectedCompany.description && (

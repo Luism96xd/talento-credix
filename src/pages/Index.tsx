@@ -19,6 +19,7 @@ interface Candidate {
     experience: string;
     search_id: string;
     image: string;
+    score: number;
   }
   
 // Mock data for the candidate results
@@ -33,7 +34,8 @@ const MOCK_CANDIDATES: Candidate[] = [
       education: 'PhD in Computer Science (AI Specialization) - MIT; M.Sc. Statistics - Stanford University',
       experience: 'Lead Data Scientist - FinTech Solutions (4 years); Senior ML Engineer - Innovatech (3 years); Data Scientist - DataCorp (3 years)',
       search_id: 'search_xyz_123',
-      image: "https://thispersondoesnotexist.com"
+      image: "https://thispersondoesnotexist.com",
+      score: 75,
     },
     {
       id: 'cand_002',
@@ -45,7 +47,8 @@ const MOCK_CANDIDATES: Candidate[] = [
       education: 'B.Sc. Software Engineering - University of California, Berkeley',
       experience: 'Senior Backend Engineer - CloudNet (Current, 5 years); Software Engineer - AlphaSoft (3 years)',
       search_id: 'search_xyz_123',
-      image: "https://picsum.photos/id/1/200/300"
+      image: "https://picsum.photos/id/1/200/300",
+      score: 75,
     },
     {
       id: 'cand_003',
@@ -57,7 +60,8 @@ const MOCK_CANDIDATES: Candidate[] = [
       education: 'MBA - Harvard Business School; B.A. Economics - Yale University',
       experience: 'Senior Product Manager - EnterpriseFlow (3 years); Product Manager - SaaSGen (4 years)',
       search_id: 'search_abc_456',
-      image: "https://picsum.photos/id/1/200/300"
+      image: "https://picsum.photos/id/1/200/300",
+      score: 75,
     },
     {
       id: 'cand_004',
@@ -69,7 +73,8 @@ const MOCK_CANDIDATES: Candidate[] = [
       education: 'M.Sc. Cybersecurity - Carnegie Mellon University; B.Sc. Information Technology - Purdue University',
       experience: 'Cybersecurity Analyst - SecureNet (Current, 4 years); IT Security Specialist - GlobalBank (2 years)',
       search_id: 'search_xyz_123',
-      image: "https://picsum.photos/id/1/200/300"
+      image: "https://picsum.photos/id/1/200/300",
+      score: 75,
     },
     {
       id: 'cand_005',
@@ -81,11 +86,13 @@ const MOCK_CANDIDATES: Candidate[] = [
       education: 'M.A. Human-Computer Interaction - University of Washington; B.F.A. Graphic Design - RISD',
       experience: 'UX Design Lead - AppMakers (5 years); Senior UX Designer - WebCrafters (4 years)',
       search_id: 'search_abc_456',
-      image: "https://picsum.photos/id/1/200/300"
+      image: "https://picsum.photos/id/1/200/300",
+      score: 75
     }
   ];
 
 const Index = () => {
+  const [keywords, setKeywords] = useState("");
   const [searchInitiated, setSearchInitiated] = useState(false);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [searchProgress, setSearchProgress] = useState(0);
@@ -127,7 +134,7 @@ const Index = () => {
         .insert([{
           job_title: position,
           location: location,
-          // Assuming these state variables exist and are correct:
+          keywords: keywords,
           reference: referenceCompanies,
           competence: competenceCompanies,
           company_id: selectedCompany?.id || null,
@@ -156,6 +163,7 @@ const Index = () => {
         location: location,
         company_id: selectedCompany?.id,
         search_id: searchRecordId,
+        keywords: keywords,
         job_description_url: jobDescriptionFile, // Name was swapped in original code, ensure this is correct
         job_requisition_url: jobRequisitionFile, // Name was swapped in original code, ensure this is correct
         referenceCompanies: referenceCompanies,
@@ -170,7 +178,8 @@ const Index = () => {
       };
   
       console.log('Sending webhook request with payload:', webhookPayload);
-      const webhookUrl = 'https://mayoreo.app.n8n.cloud/webhook-test/2cd021aa-7f0d-4800-a4b1-d88fe3a2cc3c';
+      //const webhookUrl = 'https://mayoreo.app.n8n.cloud/webhook-test/2cd021aa-7f0d-4800-a4b1-d88fe3a2cc3c';
+      const webhookUrl = 'https://mayoreo.app.n8n.cloud/webhook/2cd021aa-7f0d-4800-a4b1-d88fe3a2cc3c'
       let webhookResponseData;
   
       try {
@@ -211,7 +220,7 @@ const Index = () => {
         try {
           const { data: candidatesData, error: candidatesError } = await supabase
             .from('candidates')
-            .select('id, name, title, link, description, connections, education, experience, image, search_id') // 'image' was in select, ensure it's in your Candidate interface if used
+            .select('id, name, title, link, description, connections, education, experience, image, search_id, score') // 'image' was in select, ensure it's in your Candidate interface if used
             .eq('search_id', searchRecordId); // IMPORTANT FIX: Filter by search_id
   
           if (candidatesError) {
@@ -261,11 +270,13 @@ const Index = () => {
             
             <SearchBar 
               onSearch={handleSearch} 
-              placeholderPosition="Frontend Developer" 
-              placeholderLocation="San Francisco, CA"
+              placeholderPosition="Gerente de control" 
+              placeholderLocation="Valencia, Venezuela"
             />
             
             <CompanySelector
+              keywords={keywords}
+              onChangeKeywords={setKeywords}
               selectedCompany={selectedCompany}
               onCompanySelect={setSelectedCompany}
               referenceCompaniesChecked={referenceCompanies}
@@ -310,7 +321,7 @@ const Index = () => {
                 
                 <div className="space-y-4">
                   {candidates.map((candidate) => (
-                    <CandidateCard key={candidate.id} {...candidate} score={75} />
+                    <CandidateCard key={candidate.id} {...candidate} />
                   ))}
                 </div>
               </div>
