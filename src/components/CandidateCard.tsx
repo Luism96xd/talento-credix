@@ -4,20 +4,25 @@ import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Info } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 
 interface CandidateProps {
-  id: string
+  id: number
   name: string
   title: string
   link: string
-  connections: string
+  connections: number
   description: String
   education: string
   experience: string
   search_id: string
   image: string
   score: number
+  technical_score: number
+  strengths: string
+  opportunities: string
+  leadership: string
+  soft_skills: string
 }
 
 
@@ -31,8 +36,23 @@ const CandidateCard: React.FC<CandidateProps> = ({
   experience,
   education,
   image,
-  score
+  score,
+  technical_score,
+  strengths,
+  opportunities,
+  leadership,
+  soft_skills,
 }) => {
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-4 flex flex-col md:flex-row gap-4 animate-fade-in">
       <div className="flex-shrink-0 flex justify-center">
@@ -56,7 +76,7 @@ const CandidateCard: React.FC<CandidateProps> = ({
         </div>
         <div className="flex flex-row justify-between w-full items-center">
           <div className="flex flex-wrap gap-2 pt-2">
-            <p>Conexiones:{connections && <div>{connections}</div>}</p>
+            {connections && <p>Conexiones: {connections}</p>}
           </div>
         </div>
         {/*<div className="flex flex-wrap gap-2 pt-2">
@@ -98,12 +118,35 @@ const CandidateCard: React.FC<CandidateProps> = ({
         </div>
         <div className='flex flex-row gap-4'>
           <span>Match criteria</span>
-          <button className="text-linkedin hover:text-linkedin/80 flex items-center">
+          <button className="text-linkedin hover:text-linkedin/80 flex items-center" onClick={openModal}>
             <Info className="h-3 w-3 mr-1" />
             Details
           </button>
+          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{name}</DialogTitle>
+                <DialogDescription>
+                  Details for {name}
+                </DialogDescription>
+              </DialogHeader>
+              <div>
+                <p>Description: {description}</p>
+                <h3 className='mt-2 font-semibold'>Fortalezas</h3>
+                <p>{strengths}</p>
+                <h3 className='mt-2 font-semibold'>Oportunidades</h3>
+                <p>{opportunities}</p>
+                <h3 className='mt-2 font-semibold'>Liderazgo</h3>
+                <p>{leadership}</p>
+                <h3 className='mt-2 font-semibold'>Soft Skills</h3>
+                <p>{soft_skills}</p>
+                <p className='mt-2'><b>Puntuación técnica</b>: {technical_score}%</p>
+                <p className='mt-2'><b>Recomendación general</b>: {score}%</p>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
-        <Link to={link} className="text-linkedin bg-linkedin hover:bg-linkedin/90 text-white py-2 px-6 rounded-xl transition-all duration-200 hidden md:flex items-center justify-center">
+        <Link to={link} target='_blank' className="text-center text-linkedin bg-linkedin hover:bg-linkedin/90 text-white py-2 px-6 rounded-xl transition-all duration-200 md:flex items-center justify-center">
           Ver perfil
         </Link>
       </div>

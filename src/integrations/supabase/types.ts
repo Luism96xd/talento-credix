@@ -9,310 +9,163 @@ export type Json =
 export type Database = {
   mayoreo: {
     Tables: {
-      companies: {
-        Row: {
-          id: string
-          name: string
-          description: string
-          vision: string
-          mission: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          description: string
-          vision: string
-          mission: string
-        }
-        Update: {
-          id?: string
-          name: string
-          description: string
-          vision: string
-          mission: string
-        }
-        Relationships: []
-      },
-      searches: {
-        Row: {
-          id: string
-          job_title: string
-          location: string
-          company_id: string
-          keywords: string,
-          job_description: string
-          job_requisition: string
-          webhook_response: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          job_title: string
-          location: string
-          keywords?: string | null,
-          company_id?: string  | null
-          job_description?: string | null
-          job_requisition?: string | null
-          webhook_response?: string  | null
-          created_at?: string   | null
-        }
-        Update: {
-          id?: string
-          job_title?: string  | null
-          location?: string  | null
-          company_id?: string  | null
-          keywords?: string | null,
-          job_description?: string | null
-          job_requisition?: string | null
-          webhook_response?: string  | null
-          created_at?: string   | null
-        } 
-        Relationships: []
-      },
       candidates: {
         Row: {
-          id: string
-          name: string
-          title: string
-          link: string
-          connections: string
-          description: string
-          image: string
-          education: string
-          experience: string
-          search_id: string
-          score: number
-          technical_score: number
-          filtered: boolean
+          connections: number | null
+          description: string | null
+          education: string | null
+          experience: string | null
+          filtered: boolean | null
+          id: number
+          image: string | null
+          leadership?: string | null
+          link: string | null
+          location: string | null
+          name: string | null
+          opportunities?: string | null
+          score: number | null
+          search_id: string | null
+          soft_skills?: string | null
+          strengths?: string | null
+          technical_score?: number | null
+          title: string | null
         }
         Insert: {
-          id?: string
-          name: string
-          title: string
-          link: string
-          connections: string
-          description: string
-          image: string
-          education: string
-          experience: string
-          search_id: string
-          score: number
-          technical_score: number
-          filtered: boolean
-        }
-        Update: {
-          id?: string
-          name?: string | null
-          title?: string  | null
-          link?: string  | null
-          connections?: string  | null
-          description?: string  | null
-          image?: string  | null
+          connections?: number | null
+          description?: string | null
           education?: string | null
           experience?: string | null
+          filtered?: boolean | null
+          id?: number
+          image?: string | null
+          leadership?: string | null
+          link?: string | null
+          location?: string | null
+          name?: string | null
+          opportunities?: string | null
+          score?: number | null
           search_id?: string | null
-          score?: number | null,
-          technical_score?: number | null,
-          filtered: boolean | null,
-        } 
+          soft_skills?: string | null
+          strengths?: string | null
+          technical_score?: number | null
+          title?: string | null
+        }
+        Update: {
+          connections?: number | null
+          description?: string | null
+          education?: string | null
+          experience?: string | null
+          filtered?: boolean | null
+          id?: number
+          image?: string | null
+          leadership?: string | null
+          link?: string | null
+          location?: string | null
+          name?: string | null
+          opportunities?: string | null
+          score?: number | null
+          search_id?: string | null
+          soft_skills?: string | null
+          strengths?: string | null
+          technical_score?: number | null
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidates_search_id_fkey"
+            columns: ["search_id"]
+            isOneToOne: false
+            referencedRelation: "searches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      companies: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          location: string | null
+          mission: string | null
+          name: string
+          vision: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          location?: string | null
+          mission?: string | null
+          name: string
+          vision?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          location?: string | null
+          mission?: string | null
+          name?: string
+          vision?: string | null
+        }
         Relationships: []
+      }
+      searches: {
+        Row: {
+          company_id: string | null
+          competence: boolean | null
+          created_at: string
+          id: string
+          job_description: string | null
+          job_requisition: string | null
+          job_title: string
+          keywords: string | null
+          location: string
+          reference: boolean
+          webhook_response: Json | null
+        }
+        Insert: {
+          company_id?: string | null
+          competence?: boolean | null
+          created_at?: string
+          id?: string
+          job_description?: string | null
+          job_requisition?: string | null
+          job_title: string
+          keywords?: string | null
+          location: string
+          reference?: boolean
+          webhook_response?: Json | null
+        }
+        Update: {
+          company_id?: string | null
+          competence?: boolean | null
+          created_at?: string
+          id?: string
+          job_description?: string | null
+          job_requisition?: string | null
+          job_title?: string
+          keywords?: string | null
+          location?: string
+          reference?: boolean
+          webhook_response?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "searches_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      binary_quantize: {
-        Args: { "": string } | { "": unknown }
-        Returns: unknown
-      }
-      halfvec_avg: {
-        Args: { "": number[] }
-        Returns: unknown
-      }
-      halfvec_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      halfvec_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      halfvec_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
-      hnsw_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnsw_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnsw_sparsevec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnswhandler: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflat_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflat_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflathandler: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      l2_norm: {
-        Args: { "": unknown } | { "": unknown }
-        Returns: number
-      }
-      l2_normalize: {
-        Args: { "": string } | { "": unknown } | { "": unknown }
-        Returns: string
-      }
-      match_clientes_beval: {
-        Args: { query_embedding: string; match_count?: number; filter?: Json }
-        Returns: {
-          id: number
-          content: string
-          metadata: Json
-          similarity: number
-        }[]
-      }
-      match_clientes_cofersa: {
-        Args: { query_embedding: string; match_count?: number; filter?: Json }
-        Returns: {
-          id: number
-          content: string
-          metadata: Json
-          similarity: number
-        }[]
-      }
-      match_clientes_febeca: {
-        Args: { query_embedding: string; match_count?: number; filter?: Json }
-        Returns: {
-          id: number
-          content: string
-          metadata: Json
-          similarity: number
-        }[]
-      }
-      match_clientes_sillaca: {
-        Args: { query_embedding: string; match_count?: number; filter?: Json }
-        Returns: {
-          id: number
-          content: string
-          metadata: Json
-          similarity: number
-        }[]
-      }
-      match_documentos_aida: {
-        Args: { query_embedding: string; match_count?: number; filter?: Json }
-        Returns: {
-          id: number
-          content: string
-          metadata: Json
-          similarity: number
-        }[]
-      }
-      match_documentos_aida_test: {
-        Args: { query_embedding: string; match_count?: number; filter?: Json }
-        Returns: {
-          id: number
-          content: string
-          metadata: Json
-          similarity: number
-        }[]
-      }
-      match_documentos_mayoreo: {
-        Args: { query_embedding: string; match_count?: number; filter?: Json }
-        Returns: {
-          id: number
-          content: string
-          metadata: Json
-          similarity: number
-        }[]
-      }
-      match_documentos_olo: {
-        Args: { query_embedding: string; match_count?: number; filter?: Json }
-        Returns: {
-          id: number
-          content: string
-          metadata: Json
-          similarity: number
-        }[]
-      }
-      match_fichas: {
-        Args: { query_embedding: string; match_count?: number; filter?: Json }
-        Returns: {
-          id: number
-          content: string
-          metadata: Json
-          similarity: number
-        }[]
-      }
-      match_product_images: {
-        Args: { query_embedding: string; match_count?: number; filter?: Json }
-        Returns: {
-          id: number
-          content: string
-          metadata: Json
-          similarity: number
-        }[]
-      }
-      match_products_sillaca: {
-        Args: { query_embedding: string; match_count?: number; filter?: Json }
-        Returns: {
-          id: number
-          content: string
-          metadata: Json
-          similarity: number
-        }[]
-      }
-      sparsevec_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      sparsevec_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      sparsevec_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
-      vector_avg: {
-        Args: { "": number[] }
-        Returns: string
-      }
-      vector_dims: {
-        Args: { "": string } | { "": unknown }
-        Returns: number
-      }
-      vector_norm: {
-        Args: { "": string }
-        Returns: number
-      }
-      vector_out: {
-        Args: { "": string }
-        Returns: unknown
-      }
-      vector_send: {
-        Args: { "": string }
-        Returns: string
-      }
-      vector_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never

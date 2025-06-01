@@ -262,7 +262,7 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({
       </div>
 
       {/* Row 2: Checkboxes & Requisition Format Upload */}
-      <div className="flex flex-col md:flex-row gap-4 items-end"> {/* items-end to align checkboxes with upload button if they are shorter */}
+      <div className="flex flex-col md:flex-row gap-4"> {/* items-end to align checkboxes with upload button if they are shorter */}
         {/* Checkboxes Section */}
         <div className="flex-1 flex flex-col space-y-3">
           <Label className="mb-1 text-sm font-medium">Opciones Adicionales</Label>
@@ -296,7 +296,7 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({
         </div>
 
         {/* Requisition File Upload Section */}
-        <div className="flex-1">
+        <div className="flex-1 flex flex-col space-y-3">
           <Label className="flex items-center gap-2 mb-2">
             <Upload className="h-4 w-4" />
             Formato de requisición (PDF)
@@ -323,7 +323,7 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({
       </div>
 
       {/* Selected Company Details */}
-      {selectedCompany && false && searchInitiated && (
+      {selectedCompany && searchInitiated && (
         <div className="p-4 bg-gray-50 rounded-lg mt-6">
           <h4 className="font-medium mb-2">{selectedCompany.name}</h4>
           {selectedCompany.description && (
