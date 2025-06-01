@@ -210,13 +210,6 @@ const Index = () => {
         job_requisition_url: jobRequisitionFile, // Name was swapped in original code, ensure this is correct
         referenceCompanies: referenceCompanies,
         competenceCompanies: competenceCompanies, // Assuming this is the correct variable name
-        // candidate_experience: searchParams.candidateProfile.experience,
-        // candidate_skills: searchParams.candidateProfile.skills,
-        // candidate_education: searchParams.candidateProfile.education,
-        // culture_values: searchParams.cultureFit.values,
-        // culture_work_style: searchParams.cultureFit.workStyle,
-        // culture_team_fit: searchParams.cultureFit.teamFit,
-        // notes: searchParams.notes
       };
 
       console.log('Sending webhook request with payload:', webhookPayload);
