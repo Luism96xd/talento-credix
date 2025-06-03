@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, Calendar } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -14,6 +14,7 @@ interface SearchRecord {
   created_at: string;
   company_id?: string;
   company_name?: string;
+  sheet_url?: string;
 }
 
 const SearchesManagement: React.FC = () => {
@@ -35,6 +36,7 @@ const SearchesManagement: React.FC = () => {
           location,
           created_at,
           company_id,
+          sheet_url,
           companies (
             name
           )
@@ -87,10 +89,10 @@ const SearchesManagement: React.FC = () => {
           <p className="text-sm text-gray-500 text-center py-8">No searches found</p>
         ) : (
           filteredSearches.map((search) => (
-            <Link key={search.id} to={`/searches/${search.id}`}>
-              <Card key={search.id} className="hover:bg-gray-50 cursor-pointer">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between">
+            <Card key={search.id} className="hover:bg-gray-50 cursor-pointer">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between">
+                  <Link key={search.id} to={`/searches/${search.id}`} className='flex flex-1'>
                     <div className="flex-1">
                       <h4 className="font-medium">{search.job_title}</h4>
                       <p className="text-sm text-gray-600">{search.location}</p>
@@ -98,14 +100,17 @@ const SearchesManagement: React.FC = () => {
                         <p className="text-sm text-blue-600">{search.company_name}</p>
                       )}
                     </div>
+                  </Link>
+                  <div className='flex flex-col gap-1 justify-between items-end'>
                     <div className="flex items-center gap-1 text-sm text-gray-500">
                       <Calendar className="h-3 w-3" />
                       {new Date(search.created_at).toLocaleDateString()}
                     </div>
+                    <a href={search.sheet_url} className='text-blue-600 text-sm'>Ver hoja de cálculo</a>
                   </div>
-                </CardContent>
-              </Card>
-            </Link>
+                </div>
+              </CardContent>
+            </Card>
           ))
         )}
       </div>

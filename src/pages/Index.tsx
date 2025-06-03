@@ -213,8 +213,6 @@ const Index = () => {
       };
 
       console.log('Sending webhook request with payload:', webhookPayload);
-      //const webhookUrl = 'https://mayoreo.app.n8n.cloud/webhook/2cd021aa-7f0d-4800-a4b1-d88fe3a2cc3c'
-
       const webhookUrl = "https://mayoreo.app.n8n.cloud/webhook/2cd021aa-7f0d-4800-a4b1-d88fe3a2cc3c"
       
       let webhookResponseData;
@@ -303,7 +301,7 @@ const Index = () => {
       <div className="min-h-screen flex flex-col">
         <header className="py-6 px-4 md:px-8">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Buscador de talento automatizado Mayoreo</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Buscador automatizado de talento Mayoreo</h1>
             <p className="text-gray-600 mb-6">Search for candidates that match your specific requirements</p>
 
             <SearchBar
