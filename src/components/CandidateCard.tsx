@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Info } from 'lucide-react';
-import { Link } from 'react-router-dom';import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
+import { Link } from 'react-router-dom'; import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 
 interface CandidateProps {
   id: number
@@ -96,19 +96,23 @@ const CandidateCard: React.FC<CandidateProps> = ({
 
       <div className="text-xs text-gray-500 flex flex-col gap-4 min-w-[150px]">
         <div>
-          <div className="flex items-center space-x-1 mt-1 md:mt-0">
-            <span className="text-sm font-medium">Match Score:</span>
-            <span
-              className={cn(
-                "font-bold",
-                score >= 85 ? "text-success" :
-                  score >= 70 ? "text-amber-500" :
-                    "text-gray-500"
-              )}
-            >
-              {score}%
-            </span>
-          </div>
+          {(score > 0) ?
+            <div className="flex items-center space-x-1 mt-1 md:mt-0">
+              <span className="text-sm font-medium">Match Score:</span>
+              <span
+                className={cn(
+                  "font-bold",
+                  score >= 85 ? "text-success" :
+                    score >= 70 ? "text-amber-500" :
+                      "text-gray-500"
+                )}
+              >
+                {score}%
+              </span>
+            </div> :
+            <span>
+              No se ha calificado aún
+            </span>}
         </div>
         <div className="w-full bg-gray-100 h-2 rounded-full">
           <div

@@ -323,7 +323,7 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({
       </div>
 
       {/* Selected Company Details */}
-      {selectedCompany && searchInitiated && (
+      {selectedCompany && false && searchInitiated && (
         <div className="p-4 bg-gray-50 rounded-lg mt-6">
           <h4 className="font-medium mb-2">{selectedCompany.name}</h4>
           {selectedCompany.description && (

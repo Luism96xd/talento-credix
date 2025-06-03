@@ -213,8 +213,10 @@ const Index = () => {
       };
 
       console.log('Sending webhook request with payload:', webhookPayload);
-      const webhookUrl = 'https://mayoreo.app.n8n.cloud/webhook/2cd021aa-7f0d-4800-a4b1-d88fe3a2cc3c'
+      //const webhookUrl = 'https://mayoreo.app.n8n.cloud/webhook/2cd021aa-7f0d-4800-a4b1-d88fe3a2cc3c'
 
+      const webhookUrl = "https://mayoreo.app.n8n.cloud/webhook/2cd021aa-7f0d-4800-a4b1-d88fe3a2cc3c"
+      
       let webhookResponseData;
 
       try {
@@ -355,11 +357,12 @@ const Index = () => {
                   <p className="text-gray-600">Found <span className="font-medium">{candidates.length}</span> matching candidates</p>
                 </div>
 
-                {sheetUrl && <div className='space-y-4 mt-2 flex flex-row gap-4'>
-                  <p>Puedes ver los resultados completos en el siguiente enlace:</p>
+                {sheetUrl && 
+                <div className='space-y-2 my-4 flex flex-row gap-4 items-center justify-between'>
+                  <span>Puedes ver los resultados completos en el siguiente enlace:</span>
                   <Link to={sheetUrl}
                     target="_blank"
-                    className='text-center text-linkedin bg-linkedin hover:bg-linkedin/90 text-white py-2 px-6 rounded-xl transition-all duration-200 md:flex items-center justify-center0'>
+                    className='text-center text-linkedin bg-linkedin hover:bg-linkedin/90 text-white py-2 px-6 rounded-xl transition-all duration-200 md:flex items-center justify-center'>
                     Ver hoja de cálculo
                   </Link>
                 </div>}

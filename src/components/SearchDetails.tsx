@@ -42,7 +42,6 @@ const SearchDetails: React.FC<SearchDetailsProps> = ({ searchId }) => {
                 .from('candidates')
                 .select('id, name, title, link, description, connections, education, experience, image, search_id, score, technical_score, strengths, opportunities, leadership, soft_skills') // 'image' was in select, ensure it's in your Candidate interface if used
                 .eq('search_id', searchId)
-                .eq('filtered', true)
                 .order('score', { ascending: false });
 
             if (error) throw error;

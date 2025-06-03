@@ -119,6 +119,7 @@ export type Database = {
           job_description: string | null
           job_requisition: string | null
           job_title: string
+          sheet_url: string 
           keywords: string | null
           location: string
           reference: boolean
@@ -131,6 +132,7 @@ export type Database = {
           id?: string
           job_description?: string | null
           job_requisition?: string | null
+          sheet_url?: string
           job_title: string
           keywords?: string | null
           location: string
@@ -145,6 +147,7 @@ export type Database = {
           job_description?: string | null
           job_requisition?: string | null
           job_title?: string
+          sheet_url?: string
           keywords?: string | null
           location?: string
           reference?: boolean
