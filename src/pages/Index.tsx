@@ -134,7 +134,10 @@ const Index = () => {
   const [jobRequisitionFile, setJobRequisitionFile] = useState('');
   const [referenceCompanies, setReferenceCompanies] = useState(false);
   const [competenceCompanies, setCompetenceCompanies] = useState(false);
+  const [progressMessage, setProgressMessage] = useState("");
+
   const [sheetUrl, setSheetUrl] = useState("")
+  
   const {
     searchParams,
     updateParams,
@@ -143,34 +146,46 @@ const Index = () => {
   } = useSavedSearchParams();
 
   const handleSearch = async (position: string, location: string) => {
+    // Validaciones iniciales (sin cambios)
     if (!position || !location) {
       toast({
         title: "Error",
         description: `El puesto de trabajo y la ubicación son campos obligatorios.`,
         variant: "destructive"
       });
-      return
+      return;
     }
-
+  
+    if (!(/(venezuela|costa rica|colombia)/i.test(location.toLowerCase().replace(/,/g, '')))) {
+      toast({
+        title: "Error",
+        description: `Incluya el país además de la ciudad`,
+        variant: "destructive"
+      });
+      return;
+    }
+  
+    // Actualizar parámetros y resetear estado
     updateParams('position', position);
     updateParams('location', location);
-
     setShowLoadingScreen(true);
-    setSearchInitiated(false); // Reset search initiated state
-    setCandidates([]); // Clear previous candidates
-
-    const progressInterval = setInterval(() => {
-      setSearchProgress(prev => {
-        const newProgress = prev + Math.random() * 15;
-        return newProgress >= 100 ? 100 : newProgress;
-      });
-    }, 300);
-
-
-    let searchRecordId = null; // To store the ID of the saved search
-
+    setSearchInitiated(false);
+    setCandidates([]);
+    setSearchProgress(0);
+  
+    // Estados para controlar el flujo
+    let progressInterval: NodeJS.Timeout;
+    let pollTimeout: NodeJS.Timeout;
+    let searchId: string | null = null;
+  
     try {
-      // 1. Save search to database
+      // 1. Configurar barra de progreso
+      progressInterval = setInterval(() => {
+        setSearchProgress(prev => Math.min(prev + Math.random() * 15, 95)); // Limitar a 95%
+      }, 300);
+  
+      // 2. Guardar búsqueda en Supabase
+      setProgressMessage("Preparando búsqueda...");
       const { data: searchData, error: searchError } = await supabase
         .from('searches')
         .insert([{
@@ -183,108 +198,95 @@ const Index = () => {
           job_description: jobDescriptionFile || null,
           job_requisition: jobRequisitionFile || null,
         }])
-        .select('id') // Only select the ID, as that's what we need
+        .select('id')
         .single();
+  
+      if (searchError) throw searchError;
+      if (!searchData?.id) throw new Error("Búsqueda no creada");
+      searchId = searchData.id;
 
-      if (searchError) {
-        console.error('Error saving search to Supabase:', searchError);
-        throw searchError;
-      }
+      console.log('Search saved with ID:', searchId);
 
-      if (!searchData || !searchData.id) {
-        console.error('Search data or ID is missing after insert.');
-        throw new Error("Failed to retrieve search ID after saving.");
-      }
-
-      searchRecordId = searchData.id;
-      console.log('Search saved with ID:', searchRecordId);
-
-      // 2. Prepare and send webhook payload
-      const webhookPayload = {
+      // 3. Llamar al webhook
+            const webhookPayload = {
         job_title: position,
         location: location,
         company_id: selectedCompany?.id,
-        search_id: searchRecordId,
+        search_id: searchId,
         keywords: keywords,
         job_description_url: jobDescriptionFile, // Name was swapped in original code, ensure this is correct
         job_requisition_url: jobRequisitionFile, // Name was swapped in original code, ensure this is correct
         referenceCompanies: referenceCompanies,
         competenceCompanies: competenceCompanies, // Assuming this is the correct variable name
-      };
-
-      console.log('Sending webhook request with payload:', webhookPayload);
-      const webhookUrl = "https://mayoreo.app.n8n.cloud/webhook/2cd021aa-7f0d-4800-a4b1-d88fe3a2cc3c"
-      
-      let webhookResponseData;
-
-      try {
-        const response = await fetch(webhookUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(webhookPayload)
-        });
-
-        if (!response.ok) {
-          // Non-2xx responses
-          const errorBody = await response.text(); // Or response.json() if the error is JSON
-          console.error(`Webhook request failed with status ${response.status}:`, errorBody);
-          throw new Error(`Webhook request failed with status ${response.status}. ${errorBody}`);
-        }
-
-        webhookResponseData = await response.json();
-        console.log('Webhook response:', webhookResponseData);
-
-        // 3. Update search record with webhook response
-        const { error: updateError } = await supabase
+      };  
+      setProgressMessage("Buscando candidatos...");
+      const webhookUrl = "https://n8n.mayoreo.biz/webhook/2cd021aa-7f0d-4800-a4b1-d88fe3a2cc3c";
+  
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(webhookPayload)
+      });
+  
+      if (!response.ok) throw new Error(`Error en webhook: ${response.status}`);
+      const webhookResponseData = await response.json();
+  
+      // 4. Procesar respuesta del webhook
+      if (webhookResponseData?.sheet_url) {
+        setSheetUrl(webhookResponseData.sheet_url);
+  
+        // Actualizar estado en base de datos
+        await supabase
           .from('searches')
           .update({ webhook_response: webhookResponseData })
-          .eq('id', searchRecordId);
-
-        if (updateError) {
-          console.error('Error updating search with webhook response:', updateError);
-        }
-
-      } catch (webhookError) {
-        console.error('Webhook request or processing failed:', webhookError);
-      }
-
-      if (webhookResponseData && webhookResponseData['sheet_url'] !== "") {
-        console.log('Webhook successful, fetching candidates for search ID:', searchRecordId);
-        try {
-          setSheetUrl(webhookResponseData['sheet_url']);
-          const { data: candidatesData, error: candidatesError } = await supabase
+          .eq('id', searchId);
+  
+        // 5. Espera de 3 minutos con mensaje
+        setProgressMessage("Comparando candidatos con la cultura...");
+        await new Promise(resolve => setTimeout(resolve, 200000)); // 3 minutos
+  
+        // 6. Polling para obtener candidatos
+        setProgressMessage("Finalizando análisis...");
+        const fetchCandidates = async (): Promise<any[]> => {
+          const { data, error } = await supabase
             .from('candidates')
-            .select('id, name, title, link, description, connections, education, experience, image, search_id, score, technical_score, strengths, opportunities, leadership, soft_skills')
-            .eq('search_id', searchRecordId); // IMPORTANT FIX: Filter by search_id
-
-          if (candidatesError) {
-            console.error('Error fetching candidates from Supabase:', candidatesError);
-            throw candidatesError;
-          }
-          setSearchProgress(100)
-          console.log('Candidates fetched:', candidatesData);
-          setCandidates(candidatesData || []);
-        } catch (error) {
-          console.error('Error in candidate fetching process:', error);
-          // setCandidates([]); // Already cleared at the beginning
+            .select('*')
+            .eq('search_id', searchId);
+  
+          if (error) throw error;
+          return data || [];
+        };
+  
+        // Intentar obtener candidatos hasta 5 veces con espera exponencial
+        let candidates: any[] = [];
+        for (let attempt = 0; attempt < 5; attempt++) {
+          candidates = await fetchCandidates();
+          if (candidates.length > 0) break;
+          await new Promise(resolve => setTimeout(resolve, 30000 * (attempt + 1))); // Espera creciente
         }
+  
+        setCandidates(candidates);
       } else {
-        console.log('Webhook was not successful or response missing, skipping candidate fetch.');
-        // If webhook failed catastrophically (webhookError caught), a toast was already shown.
-        setCandidates([]); // Ensure candidates are empty if not fetched
+        throw new Error("URL de hoja no recibida");
       }
-
     } catch (error) {
-      console.error('Overall search process error:', error);
-      setCandidates([]);
+      console.error("Error en búsqueda:", error);
+      toast({
+        title: "Error",
+        description: "Ocurrió un problema durante la búsqueda",
+        variant: "destructive"
+      });
     } finally {
-      setShowLoadingScreen(false);
-      setSearchInitiated(true); // Set to true so UI can update (e.g., show "No results" or the results)
+      // 7. Finalización
+      clearInterval(progressInterval);
+      clearTimeout(pollTimeout);
+      setSearchProgress(100);
+      setTimeout(() => {
+        setShowLoadingScreen(false);
+        setSearchInitiated(true);
+      }, 500);
     }
   };
-
 
   const handleReferenceCompaniesChange = (checked: boolean) => {
     setReferenceCompanies(checked);
@@ -341,7 +343,7 @@ const Index = () => {
                 <div className="max-w-md mx-auto">
                   <Progress value={searchProgress} className="h-2" />
                   <div className="flex justify-between mt-2 text-sm text-gray-500">
-                    <span>Analyzing profiles</span>
+                    <span>{progressMessage}</span>
                     <span>{Math.round(searchProgress)}%</span>
                   </div>
                 </div>
