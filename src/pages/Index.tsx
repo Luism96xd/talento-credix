@@ -128,7 +128,7 @@ const Index = () => {
         competenceCompanies: competenceCompanies, // Assuming this is the correct variable name
       };  
       setProgressMessage("Buscando candidatos...");
-      const webhookUrl = "https://n8n.mayoreo.biz/webhook-test/2cd021aa-7f0d-4800-a4b1-d88fe3a2cc3c";
+      const webhookUrl = "https://n8n.mayoreo.biz/webhook/2cd021aa-7f0d-4800-a4b1-d88fe3a2cc3c";
   
       const response = await fetch(webhookUrl, {
         method: 'POST',
