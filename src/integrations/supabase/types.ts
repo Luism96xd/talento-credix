@@ -116,6 +116,7 @@ export type Database = {
           competence: boolean | null
           created_at: string
           id: string
+          user_id: string
           job_description: string | null
           job_requisition: string | null
           job_title: string
@@ -130,6 +131,7 @@ export type Database = {
           competence?: boolean | null
           created_at?: string
           id?: string
+          user_id: string
           job_description?: string | null
           job_requisition?: string | null
           sheet_url?: string
@@ -144,6 +146,7 @@ export type Database = {
           competence?: boolean | null
           created_at?: string
           id?: string
+          user_id?: string
           job_description?: string | null
           job_requisition?: string | null
           job_title?: string
@@ -286,6 +289,8 @@ export type CompositeTypes<
 
 export const Constants = {
   mayoreo: {
-    Enums: {},
+    Enums: {
+      user_role: ["compras", "gerencia", "supervisor"],
+    },
   },
 } as const

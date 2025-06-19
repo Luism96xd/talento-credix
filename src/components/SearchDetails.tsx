@@ -6,7 +6,6 @@ import { useToast } from '@/hooks/use-toast';
 import CandidateCard from './CandidateCard';
 import { Link } from 'react-router-dom';
 
-
 interface Candidate {
     id: number;
     name: string;
@@ -25,9 +24,11 @@ interface Candidate {
     leadership: string;
     soft_skills: string;
 }
+
 interface SearchDetailsProps {
     searchId: string;
 }
+
 const SearchDetails: React.FC<SearchDetailsProps> = ({ searchId }) => {
     const [candidates, setCandidates] = useState<Candidate[]>([]);
     const { toast } = useToast();
@@ -36,11 +37,11 @@ const SearchDetails: React.FC<SearchDetailsProps> = ({ searchId }) => {
         fetchCandidates(searchId);
     }, [searchId]);
 
-    const fetchCandidates = async (searchId) => {
+    const fetchCandidates = async (searchId: string) => {
         try {
             const { data, error } = await supabase
                 .from('candidates')
-                .select('id, name, title, link, description, connections, education, experience, image, search_id, score, technical_score, strengths, opportunities, leadership, soft_skills') // 'image' was in select, ensure it's in your Candidate interface if used
+                .select('id, name, title, link, description, connections, education, experience, image, search_id, score, technical_score, strengths, opportunities, leadership, soft_skills')
                 .eq('search_id', searchId)
                 .order('score', { ascending: false });
 
@@ -62,7 +63,6 @@ const SearchDetails: React.FC<SearchDetailsProps> = ({ searchId }) => {
                 <h3 className="text-lg font-semibold flex justify-between items-center gap-2">
                     <Users2Icon className="h-5 w-5" />
                     Candidatos
-                    <aside></aside>
                 </h3>
                 <Link to="/searches" className='flex justify-between items-center gap-2'>
                     <Undo2 className="h-5 w-5" />

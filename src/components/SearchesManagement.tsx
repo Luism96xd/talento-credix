@@ -1,11 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, Calendar } from 'lucide-react';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 interface SearchRecord {
   id: string;
@@ -21,10 +22,13 @@ const SearchesManagement: React.FC = () => {
   const [searches, setSearches] = useState<SearchRecord[]>([]);
   const [filter, setFilter] = useState('');
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
-    fetchSearches();
-  }, []);
+    if (user) {
+      fetchSearches();
+    }
+  }, [user]);
 
   const fetchSearches = async () => {
     try {
@@ -41,6 +45,7 @@ const SearchesManagement: React.FC = () => {
             name
           )
         `)
+        .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -106,7 +111,11 @@ const SearchesManagement: React.FC = () => {
                       <Calendar className="h-3 w-3" />
                       {new Date(search.created_at).toLocaleDateString()}
                     </div>
-                    <a href={search.sheet_url} className='text-blue-600 text-sm'>Ver hoja de cálculo</a>
+                    {search.sheet_url && (
+                      <a href={search.sheet_url} className='text-blue-600 text-sm' target="_blank" rel="noopener noreferrer">
+                        Ver hoja de cálculo
+                      </a>
+                    )}
                   </div>
                 </div>
               </CardContent>
