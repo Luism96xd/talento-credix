@@ -1881,6 +1881,45 @@ export type Database = {
           },
         ]
       }
+      registro_venezuela: {
+        Row: {
+          cedula: string
+          chat_id: string
+          codigo: string | null
+          empresa: string
+          estado: string | null
+          fecha_creacion: string
+          id: number
+          nombre: string
+          rol: string
+          telefono: string
+        }
+        Insert: {
+          cedula: string
+          chat_id: string
+          codigo?: string | null
+          empresa: string
+          estado?: string | null
+          fecha_creacion?: string
+          id?: number
+          nombre: string
+          rol: string
+          telefono: string
+        }
+        Update: {
+          cedula?: string
+          chat_id?: string
+          codigo?: string | null
+          empresa?: string
+          estado?: string | null
+          fecha_creacion?: string
+          id?: number
+          nombre?: string
+          rol?: string
+          telefono?: string
+        }
+        Relationships: []
+      }
       rutas: {
         Row: {
           DESCRIPCION: string | null
