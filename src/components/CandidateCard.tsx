@@ -12,6 +12,7 @@ interface CandidateProps {
   title: string
   link: string
   connections: number
+  location: string
   description: String
   education: string
   experience: string
@@ -31,6 +32,7 @@ const CandidateCard: React.FC<CandidateProps> = ({
   name,
   title,
   link,
+  location,
   connections,
   description,
   experience,
@@ -54,7 +56,7 @@ const CandidateCard: React.FC<CandidateProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-4 flex flex-col md:flex-row gap-4 animate-fade-in">
+    <div className="bg-white my-2 rounded-xl shadow-sm hover:shadow-md transition-shadow p-4 flex flex-col md:flex-row gap-4 animate-fade-in">
       <div className="flex-shrink-0 flex justify-center">
         <Avatar className="h-16 w-16">
           <AvatarImage src={image} alt={name} />
@@ -74,11 +76,10 @@ const CandidateCard: React.FC<CandidateProps> = ({
           {experience && <div>{experience}</div>}
           {education && <div>{education}</div>}
         </div>
-        <div className="flex flex-row justify-between w-full items-center">
-          <div className="flex flex-wrap gap-2 pt-2">
-            {connections && <p>Conexiones: {connections}</p>}
+          <div className="flex flex-col md:flex-row text-sm text-gray-600 gap-y-1 md:gap-x-4">
+            {connections && <span>Conexiones: {connections}</span>}
+            {location && <span>Ubicación: {location}</span>}
           </div>
-        </div>
         {/*<div className="flex flex-wrap gap-2 pt-2">
           {skills.slice(0, 3).map((skill, i) => (
             <Badge key={i} variant="secondary" className="bg-gray-100 text-gray-700 hover:bg-gray-200">

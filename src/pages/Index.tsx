@@ -15,6 +15,7 @@ interface Candidate {
   id: number;
   name: string;
   title: string;
+  location: string;
   link: string;
   connections: number;
   description: string;
@@ -62,7 +63,7 @@ const Index = () => {
       });
       return;
     }
-  
+
     if (!(/(venezuela|costa rica|colombia)/i.test(location.toLowerCase().replace(/,/g, '')))) {
       toast({
         title: "Error",
@@ -71,7 +72,7 @@ const Index = () => {
       });
       return;
     }
-  
+
     // Actualizar parámetros y resetear estado
     updateParams('position', position);
     updateParams('location', location);
@@ -79,18 +80,18 @@ const Index = () => {
     setSearchInitiated(false);
     setCandidates([]);
     setSearchProgress(0);
-  
+
     // Estados para controlar el flujo
     let progressInterval: NodeJS.Timeout;
     let pollTimeout: NodeJS.Timeout;
     let searchId: string | null = null;
-  
+
     try {
       // 1. Configurar barra de progreso
       progressInterval = setInterval(() => {
         setSearchProgress(prev => Math.min(prev + Math.random() * 15, 95)); // Limitar a 95%
       }, 300);
-  
+
       // 2. Guardar búsqueda en Supabase
       setProgressMessage("Preparando búsqueda...");
       const { data: searchData, error: searchError } = await supabase
@@ -108,7 +109,7 @@ const Index = () => {
         }])
         .select('id')
         .single();
-  
+
       if (searchError) throw searchError;
       if (!searchData?.id) throw new Error("Búsqueda no creada");
       searchId = searchData.id;
@@ -116,7 +117,7 @@ const Index = () => {
       console.log('Search saved with ID:', searchId);
 
       // 3. Llamar al webhook
-            const webhookPayload = {
+      const webhookPayload = {
         job_title: position,
         location: location,
         company_id: selectedCompany?.id,
@@ -126,33 +127,33 @@ const Index = () => {
         job_requisition_url: jobRequisitionFile, // Name was swapped in original code, ensure this is correct
         referenceCompanies: referenceCompanies,
         competenceCompanies: competenceCompanies, // Assuming this is the correct variable name
-      };  
+      };
       setProgressMessage("Buscando candidatos...");
       const webhookUrl = "https://n8n.mayoreo.biz/webhook/2cd021aa-7f0d-4800-a4b1-d88fe3a2cc3c";
-  
+
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(webhookPayload)
       });
-  
+
       if (!response.ok) throw new Error(`Error en webhook: ${response.status}`);
       const webhookResponseData = await response.json();
-  
+
       // 4. Procesar respuesta del webhook
       if (webhookResponseData?.sheet_url) {
         setSheetUrl(webhookResponseData.sheet_url);
-  
+
         // Actualizar estado en base de datos
         await supabase
           .from('searches')
           .update({ webhook_response: webhookResponseData })
           .eq('id', searchId);
-  
+
         // 5. Espera de 3 minutos con mensaje
         setProgressMessage("Comparando candidatos con la cultura...");
         await new Promise(resolve => setTimeout(resolve, 200000)); // 3 minutos
-  
+
         // 6. Polling para obtener candidatos
         setProgressMessage("Finalizando análisis...");
         const fetchCandidates = async (): Promise<any[]> => {
@@ -160,11 +161,11 @@ const Index = () => {
             .from('candidates')
             .select('*')
             .eq('search_id', searchId);
-  
+
           if (error) throw error;
           return data || [];
         };
-  
+
         // Intentar obtener candidatos hasta 5 veces con espera exponencial
         let candidates: any[] = [];
         for (let attempt = 0; attempt < 5; attempt++) {
@@ -172,7 +173,7 @@ const Index = () => {
           if (candidates.length > 0) break;
           await new Promise(resolve => setTimeout(resolve, 30000 * (attempt + 1))); // Espera creciente
         }
-  
+
         setCandidates(candidates);
       } else {
         throw new Error("URL de hoja no recibida");
@@ -270,15 +271,15 @@ const Index = () => {
                   <p className="text-gray-600">Found <span className="font-medium">{candidates.length}</span> matching candidates</p>
                 </div>
 
-                {sheetUrl && 
-                <div className='space-y-2 my-4 flex flex-row gap-4 items-center justify-between'>
-                  <span>Puedes ver los resultados completos en el siguiente enlace:</span>
-                  <Link to={sheetUrl}
-                    target="_blank"
-                    className='text-center text-linkedin bg-linkedin hover:bg-linkedin/90 text-white py-2 px-6 rounded-xl transition-all duration-200 md:flex items-center justify-center'>
-                    Ver hoja de cálculo
-                  </Link>
-                </div>}
+                {sheetUrl &&
+                  <div className='space-y-2 my-4 flex flex-row gap-4 items-center justify-between'>
+                    <span>Puedes ver los resultados completos en el siguiente enlace:</span>
+                    <Link to={sheetUrl}
+                      target="_blank"
+                      className='text-center text-linkedin bg-linkedin hover:bg-linkedin/90 text-white py-2 px-6 rounded-xl transition-all duration-200 md:flex items-center justify-center'>
+                      Ver hoja de cálculo
+                    </Link>
+                  </div>}
 
                 <div className="space-y-4">
                   {candidates.map((candidate) => (

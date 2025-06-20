@@ -11,6 +11,7 @@ interface Candidate {
     name: string;
     title: string;
     link: string;
+    location: string;
     connections: number;
     description: string;
     education: string;
@@ -41,7 +42,7 @@ const SearchDetails: React.FC<SearchDetailsProps> = ({ searchId }) => {
         try {
             const { data, error } = await supabase
                 .from('candidates')
-                .select('id, name, title, link, description, connections, education, experience, image, search_id, score, technical_score, strengths, opportunities, leadership, soft_skills')
+                .select('id, name, title, link, description, location, connections, education, experience, image, search_id, score, technical_score, strengths, opportunities, leadership, soft_skills')
                 .eq('search_id', searchId)
                 .order('score', { ascending: false });
 
