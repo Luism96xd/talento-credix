@@ -215,15 +215,15 @@ const Index = () => {
             <div className="flex justify-between items-center mb-4">
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Buscador automatizado de talento Mayoreo</h1>
-                <p className="text-gray-600 mb-6">Search for candidates that match your specific requirements</p>
+                <p className="text-gray-600 mb-6">Busque candidatos que se ajusten a sus requisitos específicos</p>
               </div>
               <UserMenu />
             </div>
 
             <SearchBar
               onSearch={handleSearch}
-              placeholderPosition="Gerente de control"
-              placeholderLocation="Valencia, Venezuela"
+              placeholderPosition="Escriba el cargo a buscar"
+              placeholderLocation="Ciudad, País"
             />
 
             <CompanySelector
@@ -291,7 +291,7 @@ const Index = () => {
 
             {!searchInitiated && !showLoadingScreen && (
               <div className="mt-16 text-center">
-                <p className="text-gray-600">Enter your search criteria above and select a company to start finding candidates</p>
+                <p className="text-gray-600">Introduzca sus criterios de búsqueda y seleccione una empresa para empezar a encontrar candidatos.</p>
               </div>
             )}
           </div>

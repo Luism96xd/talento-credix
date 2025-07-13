@@ -266,7 +266,7 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({
         {/* Checkboxes Section */}
         <div className="flex-1 flex flex-col space-y-3">
           <Label className="mb-1 text-sm font-medium">Opciones Adicionales</Label>
-          <div className="flex items-center space-x-2">
+          {/*<div className="flex items-center space-x-2">
             <Checkbox
               id="referenceCompanies"
               checked={referenceCompaniesChecked}
@@ -275,7 +275,7 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({
             <Label htmlFor="referenceCompanies" className="text-sm font-normal cursor-pointer">
               Incluir compañías de referencia
             </Label>
-          </div>
+          </div>*/}
           <div className="flex items-center space-x-2">
             <Input id="keywords"
               value={keywords || ''}
