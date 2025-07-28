@@ -154,9 +154,12 @@ export const CandidateAnalysisForm: React.FC = () => {
     formData.psychometricTests.forEach((file) => {
       data.append('psychometricTests', file);
     });
-    formData.discTests.forEach((file) => {
-      data.append('discTests', file);
-    });
+
+    if (formData.discTests && formData.discTests.length > 0) {
+      formData.discTests.forEach((file) => {
+        data.append('discTests', file);
+      });
+    }
 
     // Append single file inputs
     if (formData.jobDescriptionFile && formData.jobDescriptionFile.length > 0) {
@@ -193,7 +196,7 @@ export const CandidateAnalysisForm: React.FC = () => {
         description: 'Hubo un problema al enviar los datos. Inténtalo de nuevo.',
         variant: 'destructive',
       });
-    } 
+    }
   };
 
   return (

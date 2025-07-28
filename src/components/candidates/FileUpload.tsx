@@ -44,8 +44,12 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     setIsDragging(false);
     const droppedFiles = e.dataTransfer.files;
     if (droppedFiles.length > 0) {
-      const selectedFiles = multiple ? Array.from(droppedFiles).slice(0, maxFiles) : [droppedFiles[0]];
-      onFileSelect(selectedFiles);
+      const currentFiles = files || [];
+      const newFilesArray = Array.from(droppedFiles);
+      const allFiles = multiple
+        ? [...currentFiles, ...newFilesArray].slice(0, maxFiles)
+        : [newFilesArray[0]];
+      onFileSelect(allFiles);
     }
   };
 
@@ -56,6 +60,12 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       onFileSelect(newFiles);
     }
     // Limpiar el valor para permitir seleccionar el mismo archivo de nuevo
+    const currentFiles = files || [];
+    const newFilesArray = Array.from(selectedFiles);
+    const allFiles = multiple
+      ? [...currentFiles, ...newFilesArray].slice(0, maxFiles)
+      : [newFilesArray[0]];
+    onFileSelect(allFiles);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -79,7 +89,26 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       </label>
       {description && <p className="text-xs text-gray-500 mt-1">{description}</p>}
 
-      {files && files.length > 0 ? (
+      <div
+          className={cn(
+            'mt-2 border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors',
+            isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400',
+          )}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+          <p className="text-sm text-gray-600">
+            Arrastra los archivos aquí o <span className="font-semibold text-blue-600">haz clic para buscar</span>
+          </p>
+          <p className="text-xs text-gray-500 mt-1">
+            {accept ? `Soportados: ${accept.toUpperCase()}` : ''}
+            {multiple && ` (hasta ${maxFiles} archivos)`}
+          </p>
+        </div>
+      {files && files.length > 0 && (
         <div className="mt-2 space-y-2">
           {files.map((file, index) => (
             <div
@@ -103,26 +132,6 @@ export const FileUpload: React.FC<FileUploadProps> = ({
               </Button>
             </div>
           ))}
-        </div>
-      ) : (
-        <div
-          className={cn(
-            'mt-2 border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors',
-            isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400',
-          )}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-          <p className="text-sm text-gray-600">
-            Arrastra los archivos aquí o <span className="font-semibold text-blue-600">haz clic para buscar</span>
-          </p>
-          <p className="text-xs text-gray-500 mt-1">
-            {accept ? `Soportados: ${accept.toUpperCase()}` : ''}
-            {multiple && ` (hasta ${maxFiles} archivos)`}
-          </p>
         </div>
       )}
       <input
