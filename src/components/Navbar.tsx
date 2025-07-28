@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Building, Search, Menu } from 'lucide-react';
+import { Home, Building, Search, Menu, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Navbar = () => {
@@ -11,6 +11,7 @@ const Navbar = () => {
     { icon: Home, label: 'Home', path: '/' },
     { icon: Building, label: 'Companies', path: '/companies' },
     { icon: Search, label: 'Searches', path: '/searches' },
+    { icon: Users, label: 'Comparativos', path: '/candidate-analysis' },
   ];
 
   return (

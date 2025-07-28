@@ -13,6 +13,7 @@ import Searches from "./pages/Searches";
 import NotFound from "./pages/NotFound";
 import SearchPage from "./pages/SearchPage";
 import Auth from "./pages/Auth";
+import CVAnalysisPage from "./pages/cv-analysis";
 
 const queryClient = new QueryClient();
 
@@ -35,7 +36,7 @@ const App = () => (
                       <Route path="/companies" element={<Companies />} />
                       <Route path="/searches" element={<Searches />} />
                       <Route path="/searches/:searchId" element={<SearchPage />} />
-                      <Route path="*" element={<NotFound />} />
+                      <Route path="/candidate-analysis" element={<CVAnalysisPage />} />
                     </Routes>
                   </div>
                 </div>
