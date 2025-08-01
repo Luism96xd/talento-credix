@@ -14,6 +14,8 @@ import NotFound from "./pages/NotFound";
 import SearchPage from "./pages/SearchPage";
 import Auth from "./pages/Auth";
 import CVAnalysisPage from "./pages/cv-analysis";
+import { Interviews } from "./pages/Interviews";
+import { InterviewScripts } from "./pages/Scripts";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +39,9 @@ const App = () => (
                       <Route path="/searches" element={<Searches />} />
                       <Route path="/searches/:searchId" element={<SearchPage />} />
                       <Route path="/candidate-analysis" element={<CVAnalysisPage />} />
+                      <Route path="/interview-analysis" element={<Interviews />} />
+                      <Route path="/interview-scripts" element={<InterviewScripts />} />
+                      <Route path="*" element={<NotFound />} />
                     </Routes>
                   </div>
                 </div>

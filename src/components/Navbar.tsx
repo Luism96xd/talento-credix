@@ -1,17 +1,19 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Building, Search, Menu, Users } from 'lucide-react';
+import { Home, Building, Search, Menu, Users, ClipboardCheck, Speech } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Navbar = () => {
   const location = useLocation();
   
   const navItems = [
-    { icon: Home, label: 'Home', path: '/' },
-    { icon: Building, label: 'Companies', path: '/companies' },
-    { icon: Search, label: 'Searches', path: '/searches' },
+    { icon: Home, label: 'Inicio', path: '/' },
+    { icon: Building, label: 'Compañías', path: '/companies' },
+    { icon: Search, label: 'Búsquedas', path: '/searches' },
     { icon: Users, label: 'Comparativos', path: '/candidate-analysis' },
+    { icon: Speech, label: 'Guiones de entrevista', path: '/interview-scripts' },
+    { icon: ClipboardCheck, label: 'Análisis de entrevista', path: '/interview-analysis' },
   ];
 
   return (
@@ -21,7 +23,7 @@ const Navbar = () => {
           <div className="flex items-center">
             <Menu className="h-6 w-6 text-gray-600" />
             <span className="ml-3 font-semibold text-gray-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              Navigation
+              Navegación
             </span>
           </div>
         </div>
