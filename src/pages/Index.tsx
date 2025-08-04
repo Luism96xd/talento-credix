@@ -214,7 +214,7 @@ const Index = () => {
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-4">
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Ecosistema de Personal Mayoreo</h1>
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Ecosistema de Automatizaciones Personal</h1>
                 <p className="text-gray-600 mb-6">Busque candidatos que se ajusten a sus requisitos específicos</p>
               </div>
               <UserMenu />
