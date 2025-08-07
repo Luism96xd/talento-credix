@@ -1,7 +1,6 @@
 
-import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Building, Search, Menu, Users, ClipboardCheck, Speech } from 'lucide-react';
+import { Home, Search, Menu, Users, ClipboardCheck, Speech, FileText, Briefcase, SettingsIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Navbar = () => {
@@ -9,11 +8,13 @@ const Navbar = () => {
   
   const navItems = [
     { icon: Home, label: 'Inicio', path: '/' },
-    { icon: Building, label: 'Compañías', path: '/companies' },
+    //{ icon: FileText, label: 'Fases', path: '/fases' },
+    //{ icon: Briefcase, label: 'Procesos', path: '/procesos' },
     { icon: Search, label: 'Búsquedas', path: '/searches' },
     { icon: Users, label: 'Comparativos', path: '/candidate-analysis' },
     { icon: Speech, label: 'Guiones de entrevista', path: '/interview-scripts' },
     { icon: ClipboardCheck, label: 'Análisis de entrevista', path: '/interview-analysis' },
+    //{ icon: SettingsIcon, label: 'Configuraciones', path: '/settings' },
   ];
 
   return (
