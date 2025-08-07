@@ -85,7 +85,7 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({
         .order('name');
 
       if (error) throw error;
-      setCompanies(data || []);
+      setCompanies((data as unknown as Company[]) || []);
     } catch (error) {
       console.error('Error fetching companies:', error);
       toast({

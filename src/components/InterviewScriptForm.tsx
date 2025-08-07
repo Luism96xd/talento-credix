@@ -105,11 +105,7 @@ export const InterviewScriptForm: React.FC = () => {
 
     const taskId = generateTaskId();
     const data = new FormData();
-    await supabase.from('task_progress').insert({
-      task_id: taskId,
-      step: 0,
-      status: "processing"
-    })
+    ;(supabase as any).from('task_progress').insert({ task_id: taskId, step: 0, status: 'processing' } as any)
     setTaskId(taskId);
 
     // Append all text fields
@@ -182,10 +178,9 @@ export const InterviewScriptForm: React.FC = () => {
                 <label className="text-sm font-medium text-gray-700">Nombre del cargo a entrevistar</label>
                 <p className="text-xs text-gray-500">Escriba el nombre del cargo </p>
                 <Input
-                label="Nombre del cargo"
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              />
+                  value={formData.name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                />
               </div>
             
        

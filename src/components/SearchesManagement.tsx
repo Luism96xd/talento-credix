@@ -45,16 +45,17 @@ const SearchesManagement: React.FC = () => {
             name
           )
         `)
-        .eq('user_id', user?.id)
+        .eq('user_id', user?.id as any)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      const formattedData = data?.map(search => ({
+      const raw = (data as any[]) || [];
+      const formattedData = raw.map((search: any) => ({
         ...search,
         company_name: search.companies?.name || null
-      })) || [];
-
+      }));
+ 
       setSearches(formattedData);
     } catch (error) {
       console.error('Error fetching searches:', error);

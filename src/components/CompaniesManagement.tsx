@@ -39,7 +39,7 @@ const CompaniesManagement: React.FC = () => {
         .select('id, name, description, mission, vision')
 
       if (error) throw error;
-      setCompanies(data || []);
+      setCompanies((data as unknown as Company[]) || []);
     } catch (error) {
       console.error('Error fetching companies:', error);
       toast({
@@ -62,8 +62,8 @@ const CompaniesManagement: React.FC = () => {
             description: formData.description,
             mission: formData.mission,
             vision: formData.vision
-          })
-          .eq('id', editingId);
+          } as any)
+          .eq('id', editingId as any);
         
         if (error) throw error;
         toast({ title: "Success", description: "Company updated successfully" });
@@ -76,7 +76,7 @@ const CompaniesManagement: React.FC = () => {
             description: formData.description,
             mission: formData.mission,
             vision: formData.vision
-          }]);
+          }] as any);
         
         if (error) throw error;
         toast({ title: "Success", description: "Company created successfully" });
@@ -111,7 +111,7 @@ const CompaniesManagement: React.FC = () => {
       const { error } = await supabase
         .from('companies')
         .delete()
-        .eq('id', id);
+        .eq('id', id as any);
       
       if (error) throw error;
       toast({ title: "Success", description: "Company deleted successfully" });

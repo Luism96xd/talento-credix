@@ -135,11 +135,7 @@ export const InterviewAnalysisForm: React.FC = () => {
 
     const taskId = generateTaskId();
     const data = new FormData();
-    await supabase.from('task_progress').insert({
-      task_id: taskId,
-      step: 0,
-      status: "processing"
-    })
+    ;(supabase as any).from('task_progress').insert({ task_id: taskId, step: 0, status: 'processing' } as any)
     setTaskId(taskId);
 
     // Append all text fields

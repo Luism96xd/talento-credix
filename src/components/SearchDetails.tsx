@@ -43,11 +43,11 @@ const SearchDetails: React.FC<SearchDetailsProps> = ({ searchId }) => {
             const { data, error } = await supabase
                 .from('candidates')
                 .select('id, name, title, link, description, location, connections, education, experience, image, search_id, score, technical_score, strengths, opportunities, leadership, soft_skills')
-                .eq('search_id', searchId)
+                .eq('search_id', searchId as any)
                 .order('score', { ascending: false });
 
             if (error) throw error;
-            setCandidates(data || []);
+            setCandidates((data as unknown as Candidate[]) || []);
         } catch (error) {
             console.error('Error fetching candidates:', error);
             toast({
