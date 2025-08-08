@@ -17,6 +17,7 @@ import { InterviewScripts } from "./pages/Scripts";
 import { Settings } from "./components/Settings";
 import { Phases } from "./pages/Phases";
 import { Processes } from "./pages/Processes";
+import Searches from "./pages/Searches";
 
 const queryClient = new QueryClient();
 
@@ -36,8 +37,9 @@ const App = () => (
                   <div className="flex-1 ml-16">
                     <Routes>
                       <Route path="/" element={<Index />} />
-                      <Route path="/fases" element={<Phases />} />
-                      <Route path="/procesos" element={<Processes />} />
+                      {/*<Route path="/fases" element={<Phases />} />
+                      <Route path="/procesos" element={<Processes />} />*/}
+                      <Route path="/searches" element={<Searches />} />
                       <Route path="/searches/:searchId" element={<SearchPage />} />
                       <Route path="/candidate-analysis" element={<CVAnalysisPage />} />
                       <Route path="/interview-analysis" element={<Interviews />} />

@@ -15,7 +15,7 @@ const Auth = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Mayoreo Talent Search
+            Automatizaciones de Personal
           </h1>
           <p className="text-gray-600">
             Accede a tu cuenta para buscar talento
