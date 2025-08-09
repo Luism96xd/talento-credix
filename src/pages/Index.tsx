@@ -96,23 +96,26 @@ const Index = () => {
       setProgressMessage("Preparando búsqueda...");
       const { data: searchData, error: searchError } = await supabase
         .from('searches')
-        .insert([{
-          job_title: position,
-          location: location,
-          keywords: keywords,
-          user_id: user.id,
-          reference: referenceCompanies,
-          competence: competenceCompanies,
-          company_id: selectedCompany?.id || null,
-          job_description: jobDescriptionFile || null,
-          job_requisition: jobRequisitionFile || null,
-        }])
+        .insert([
+          {
+            job_title: position,
+            location: location,
+            keywords: keywords,
+            user_id: user.id,
+            reference: referenceCompanies,
+            competence: competenceCompanies,
+            company_id: selectedCompany?.id || null,
+            job_description: jobDescriptionFile || null,
+            job_requisition: jobRequisitionFile || null,
+          },
+        ] as any)
         .select('id')
         .single();
 
       if (searchError) throw searchError;
-      if (!searchData?.id) throw new Error("Búsqueda no creada");
-      searchId = searchData.id;
+      const searchDataAny = searchData as any;
+      if (!searchDataAny?.id) throw new Error("Búsqueda no creada");
+      searchId = searchDataAny.id;
 
       console.log('Search saved with ID:', searchId);
 
@@ -147,8 +150,8 @@ const Index = () => {
         // Actualizar estado en base de datos
         await supabase
           .from('searches')
-          .update({ webhook_response: webhookResponseData })
-          .eq('id', searchId);
+          .update({ webhook_response: webhookResponseData } as any)
+          .eq('id', searchId as any);
 
         // 5. Espera de 3 minutos con mensaje
         setProgressMessage("Comparando candidatos con la cultura...");
@@ -160,7 +163,7 @@ const Index = () => {
           const { data, error } = await supabase
             .from('candidates')
             .select('*')
-            .eq('search_id', searchId);
+            .eq('search_id', searchId as any);
 
           if (error) throw error;
           return data || [];
@@ -174,7 +177,7 @@ const Index = () => {
           await new Promise(resolve => setTimeout(resolve, 30000 * (attempt + 1))); // Espera creciente
         }
 
-        setCandidates(candidates);
+        setCandidates(candidates as any);
       } else {
         throw new Error("URL de hoja no recibida");
       }
