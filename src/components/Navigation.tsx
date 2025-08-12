@@ -1,6 +1,6 @@
 
 import { Users, Settings as SettingsIcon, FileText, Briefcase, UserPlus, BarChart3 } from 'lucide-react';
-import type { ViewType } from '@/pages/Index';
+import type { ViewType } from '@/pages/Search';
 
 interface NavigationProps {
   currentView: ViewType;

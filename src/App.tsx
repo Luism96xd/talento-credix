@@ -1,5 +1,5 @@
 
-import {  Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -7,7 +7,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "./components/Navbar";
-import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import SearchPage from "./pages/SearchPage";
 import Auth from "./pages/Auth";
@@ -18,6 +17,9 @@ import { Settings } from "./components/Settings";
 import { Phases } from "./pages/Phases";
 import { Processes } from "./pages/Processes";
 import Searches from "./pages/Searches";
+import { Search } from "./pages/Search";
+import { Requisition } from "./pages/Requisition";
+import { Index } from "./pages/Index";
 
 const queryClient = new QueryClient();
 
@@ -37,8 +39,10 @@ const App = () => (
                   <div className="flex-1 ml-16">
                     <Routes>
                       <Route path="/" element={<Index />} />
-                      {/*<Route path="/fases" element={<Phases />} />
-                      <Route path="/procesos" element={<Processes />} />*/}
+                      <Route path="/fases" element={<Phases />} />
+                      <Route path="/procesos" element={<Processes />} />
+                      <Route path="/search" element={<Search />} />
+                      <Route path="/requisicion" element={<Requisition />} />
                       <Route path="/searches" element={<Searches />} />
                       <Route path="/searches/:searchId" element={<SearchPage />} />
                       <Route path="/candidate-analysis" element={<CVAnalysisPage />} />

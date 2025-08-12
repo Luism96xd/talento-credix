@@ -104,8 +104,14 @@ export const InterviewScriptForm: React.FC = () => {
     }
 
     const taskId = generateTaskId();
+    const { error } = await supabase.from('task_progress').insert({
+      task_id: taskId, 
+      step: 0, 
+      status: 'processing'
+    })
+
+    if (error) throw error;
     const data = new FormData();
-    ;(supabase as any).from('task_progress').insert({ task_id: taskId, step: 0, status: 'processing' } as any)
     setTaskId(taskId);
 
     // Append all text fields
@@ -173,7 +179,7 @@ export const InterviewScriptForm: React.FC = () => {
         {!isLoading && <>
           {currentStep === 1 && (
             <div className='flex flex-col gap-2'>
-                   
+
               <div className='space-y-2'>
                 <label className="text-sm font-medium text-gray-700">Nombre del cargo a entrevistar</label>
                 <p className="text-xs text-gray-500">Escriba el nombre del cargo </p>
@@ -182,8 +188,8 @@ export const InterviewScriptForm: React.FC = () => {
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 />
               </div>
-            
-       
+
+
               <FileUpload
                 label="Descripción del Cargo"
                 description="Documento con requisitos y competencias del puesto en formato PDF"
@@ -191,14 +197,14 @@ export const InterviewScriptForm: React.FC = () => {
                 multiple={false}
                 onFileSelect={(file) => setFormData(prev => ({ ...prev, jobDescriptionFile: file ? file : null }))}
               />
-                     <FileUpload
+              <FileUpload
                 label="CV del candidato"
                 description="Curriculum vitae del candidato en formato PDF."
                 files={formData.cvFiles}
                 multiple={false}
                 onFileSelect={(files) => setFormData(prev => ({ ...prev, cvFiles: files as File[] }))}
               />
-           
+
               <Button onClick={handleSubmit} className='bg-primary w-full'>Enviar</Button>
             </div>
           )}
