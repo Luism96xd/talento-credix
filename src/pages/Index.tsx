@@ -14,13 +14,13 @@ export const Index = () => {
     },
     {
       name: 'Comparador de Candidatos',
-      description: 'Compare perfiles de candidatos lado a lado para tomar decisiones de contratación informadas.',
+      description: 'Compare perfiles de candidatos para tomar decisiones de contratación informadas.',
       icon: Users,
       path: '/candidate-analysis', // Ruta a la pantalla del comparador
     },
     {
       name: 'Guiones de Entrevistas',
-      description: 'Acceda a plantillas personalizables y cree guiones estructurados para sus procesos de entrevista.',
+      description: 'Cree guiones estructurados y personalizados para sus procesos de entrevista.',
       icon: FileText,
       path: '/interview-scripts', // Ruta a la gestión de guiones
     },
