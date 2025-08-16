@@ -56,7 +56,6 @@ export function useRequisitions(filters: any = {}) {
         position_name: item.positions?.name,
         assigned_to: 'Por asignar' // TODO: Add assigned_to field to database
       })) || []
-
       setRequisitions(transformedData)
     } catch (error) {
       console.error('Error fetching requisitions:', error)

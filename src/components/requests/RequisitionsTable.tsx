@@ -111,7 +111,7 @@ export default function RequisitionsTable() {
     console.log('Download PDF for requisition:', requisitionId)
   }
 
-  const handleOpenModal  = (requisition: Requisition) => {
+  const handleOpenModal = (requisition: Requisition) => {
     setSelectedRequisition(requisition);
     setIsModalOpen(true);
   }
@@ -165,46 +165,48 @@ export default function RequisitionsTable() {
 
         {/* Filters */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mt-4">
-          <div className="space-y-2">
-            <Label htmlFor="country-filter">País</Label>
-            <Select
-              value={filters.country}
-              onValueChange={(value) => setFilters(prev => ({ ...prev, country: value }))}
-            >
-              <SelectTrigger id="country-filter">
-                <SelectValue placeholder="Todos los países" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los países</SelectItem>
-                {countries && countries.map((country) => (
-                  <SelectItem key={country.id} value={country.id}>
-                    {country.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="company-filter">Compañía</Label>
-            <Select
-              value={filters.company}
-              onValueChange={(value) => setFilters(prev => ({ ...prev, company: value }))}
-            >
-              <SelectTrigger id="company-filter">
-                <SelectValue placeholder="Todas las compañías" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas las compañías</SelectItem>
-                {companies && companies.map((company) => (
-                  <SelectItem key={company.id} value={company.id}>
-                    {company.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
+          {countries && (
+            <div className="space-y-2">
+              <Label htmlFor="country-filter">País</Label>
+              <Select
+                value={filters.country}
+                onValueChange={(value) => setFilters(prev => ({ ...prev, country: value }))}
+              >
+                <SelectTrigger id="country-filter">
+                  <SelectValue placeholder="Todos los países" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los países</SelectItem>
+                  {countries && countries.map((country) => (
+                    <SelectItem key={country.id} value={country.id}>
+                      {country.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          {companies && (
+            <div className="space-y-2">
+              <Label htmlFor="company-filter">Compañía</Label>
+              <Select
+                value={filters.company}
+                onValueChange={(value) => setFilters(prev => ({ ...prev, company: value }))}
+              >
+                <SelectTrigger id="company-filter">
+                  <SelectValue placeholder="Todas las compañías" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las compañías</SelectItem>
+                  {companies && companies.map((company) => (
+                    <SelectItem key={company.id} value={company.id}>
+                      {company.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="cargo-type-filter">Tipo de Cargo</Label>
             <Select
@@ -368,13 +370,13 @@ export default function RequisitionsTable() {
           </TableBody>
         </Table>
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Requisición #{selectedRequisition.id}</DialogTitle>
-              </DialogHeader>
-              <RequisitionDetails requisition={selectedRequisition}/>
-            </DialogContent>
-          </Dialog>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Requisición #{selectedRequisition?.id}</DialogTitle>
+            </DialogHeader>
+            <RequisitionDetails requisition={selectedRequisition} />
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   )

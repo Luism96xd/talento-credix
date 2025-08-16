@@ -15,7 +15,7 @@ const RequisitionDetails = ({ requisition  }: {requisition: Requisition}) => {
     };
     return (
         <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-100 flex flex-col md:flex-row mb-6">
+            <div className="bg-white rounded-xl max-h-[500px] shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-y-scroll border border-gray-100 flex flex-col md:flex-row mb-6">
                 <div className="p-6 flex-grow">
                     <div className="flex justify-between items-start mb-4">
                         <h2 className="text-xl font-semibold text-gray-800 break-words max-w-[90%]">
@@ -56,17 +56,21 @@ const RequisitionDetails = ({ requisition  }: {requisition: Requisition}) => {
                     {requisition.key_competencies && (
                         <div className="mt-4 p-3 bg-gray-50 rounded-md border border-gray-200">
                             <p className="font-medium text-gray-700 mb-1">Competencias Clave:</p>
-                            <pre className="text-xs text-gray-800 whitespace-pre-wrap font-mono">
-                                {JSON.stringify(requisition.key_competencies, null, 2)}
-                            </pre>
+                            <ul className="mt-4 list-disc list-inside">
+                                {requisition.key_competencies.map((competency, index) => (
+                                    <li key={index} className="mb-1">{competency}</li>
+                                ))}
+                            </ul>
                         </div>
                     )}
                     {requisition.technical_competencies && (
                         <div className="mt-4 p-3 bg-gray-50 rounded-md border border-gray-200">
                             <p className="font-medium text-gray-700 mb-1">Competencias Técnicas:</p>
-                            <pre className="text-xs text-gray-800 whitespace-pre-wrap font-mono">
-                                {JSON.stringify(requisition.technical_competencies, null, 2)}
-                            </pre>
+                            <ul className="mt-4 list-disc list-inside">
+                                {requisition.technical_competencies.map((competency, index) => (
+                                    <li key={index} className="mb-1">{competency}</li>
+                                ))}
+                            </ul>
                         </div>
                     )}
                 </div>

@@ -68,8 +68,9 @@ export interface Requisition {
   requiere_computador: boolean
   requiere_vehiculo: boolean
   academic_level: string
-  technical_competencies: any
-  
+  technical_competencies: string[]
+  key_competencies: string[]
+
   education: string
   experience: string
   manipula_carga: boolean
