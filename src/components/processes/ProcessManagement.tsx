@@ -1,17 +1,113 @@
-import React, { useState } from 'react';
-import { Plus, Edit, Trash2, Briefcase, ToggleLeft, ToggleRight } from 'lucide-react';
-import { Process, Phase } from '../../types';
-import ProcessForm from './ProcessesForm';
+import { useState, useEffect } from 'react';
+import { Plus, Edit, Trash2, Briefcase, Loader2 } from 'lucide-react';
+import { Phase, Process, Country } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import ProcessForm from './ProcessForm';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
+import { Badge } from '../ui/badge';
 
-interface ProcessManagerProps {
-  processes: Process[];
-  phases: Phase[];
-  onProcessesChange: (processes: Process[]) => void;
-}
-
-export default function ProcessManagement({ processes, phases, onProcessesChange }: ProcessManagerProps) {
+export default function ProcessManagement() {
+  const [processes, setProcesses] = useState<Process[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingProcess, setEditingProcess] = useState<Process | null>(null);
+  const [phases, setPhases] = useState<Phase[]>([])
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [companies, setCompanies] = useState<Country[]>([]);
+
+  const { toast } = useToast()
+
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        await Promise.all([
+          fetchProcesses(),
+          fetchPhases(),
+          fetchCompanies(),
+          fetchCountries()
+        ]);
+      } catch (error) {
+        console.error('Error fetching initial data:', error);
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los datos iniciales",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchInitialData();
+  }, []);
+
+
+  const fetchProcesses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('processes')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      setProcesses(data || []);
+    } catch (error) {
+      console.error('Error fetching processes:', error);
+      toast({
+        title: "Error",
+        description: 'Error al cargar los procesos',
+        variant: "destructive"
+      });
+    }
+  };
+
+  const fetchCountries = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('countries')
+        .select('*')
+        .eq('is_active', true)
+        .order('name')
+
+      if (error) throw error
+      setCountries(data || [])
+    } catch (error) {
+      console.error('Error fetching countries:', error)
+    }
+  }
+
+  const fetchCompanies = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('companies')
+        .select('*')
+        .eq('is_active', true)
+        .order('name')
+
+      if (error) throw error
+      setCompanies(data || [])
+    } catch (error) {
+      console.error('Error fetching countries:', error)
+    }
+  }
+
+  const fetchPhases = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('phases')
+        .select('*')
+
+      if (error) throw error;
+      setPhases(data);
+    } catch (error) {
+      console.error('Error fetching phases:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch phases",
+        variant: "destructive"
+      });
+    }
+  };
 
   const handleAddProcess = () => {
     setEditingProcess(null);
@@ -23,41 +119,81 @@ export default function ProcessManagement({ processes, phases, onProcessesChange
     setShowForm(true);
   };
 
-  const handleDeleteProcess = (processId: string) => {
-    if (confirm('¿Está seguro de que desea eliminar este proceso?')) {
-      onProcessesChange(processes.filter(p => p.id !== processId));
+  const handleDeleteProcess = async (processId: string) => {
+    if (!confirm('¿Está seguro de que desea eliminar este proceso?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('processes')
+        .delete()
+        .eq('id', processId);
+
+      if (error) throw error;
+
+      await fetchProcesses();
+    } catch (error) {
+      console.error('Error deleting process:', error);
+      alert('Error al eliminar el proceso');
     }
   };
 
-  const handleToggleActive = (processId: string) => {
-    onProcessesChange(processes.map(p => 
-      p.id === processId ? { ...p, isActive: !p.isActive } : p
-    ));
+  const handleToggleActive = async (processId: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('processes')
+        .update({ is_active: !currentStatus })
+        .eq('id', processId);
+
+      if (error) throw error;
+
+      await fetchProcesses();
+    } catch (error) {
+      console.error('Error toggling process status:', error);
+      alert('Error al cambiar el estado del proceso');
+    }
   };
 
-  const handleFormSubmit = (processData: Omit<Process, 'id' | 'createdAt'>) => {
-    if (editingProcess) {
-      onProcessesChange(processes.map(p => 
-        p.id === editingProcess.id 
-          ? { ...p, ...processData }
-          : p
-      ));
-    } else {
-      const newProcess: Process = {
-        ...processData,
-        id: Date.now().toString(),
-        createdAt: new Date()
-      };
-      onProcessesChange([...processes, newProcess]);
+  const handleFormSubmit = async (processData: Omit<Process, 'id' | 'created_at'>) => {
+    try {
+      if (editingProcess) {
+        const { error } = await supabase
+          .from('processes')
+          .update(processData)
+          .eq('id', editingProcess.id);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('processes')
+          .insert([processData]);
+
+        if (error) throw error;
+      }
+
+      await fetchProcesses();
+      setShowForm(false);
+      setEditingProcess(null);
+    } catch (error) {
+      console.error('Error saving process:', error);
+      alert('Error al guardar el proceso');
     }
-    setShowForm(false);
-    setEditingProcess(null);
   };
 
   const handleFormClose = () => {
     setShowForm(false);
     setEditingProcess(null);
   };
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <span className="ml-2 text-gray-600">Cargando procesos...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
@@ -66,13 +202,13 @@ export default function ProcessManagement({ processes, phases, onProcessesChange
           <h2 className="text-2xl font-bold text-gray-900">Gestión de Procesos</h2>
           <p className="text-gray-600 mt-1">Configure los procesos de selección de la empresa</p>
         </div>
-        <button
+        <Button
           onClick={handleAddProcess}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center transition-colors"
+          className="flex items-center gap-2"
         >
-          <Plus className="h-4 w-4 mr-2" />
-          Nuevo Proceso
-        </button>
+          <Plus className="w-4 h-4" />
+          Nuevo proceso
+        </Button>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -91,71 +227,76 @@ export default function ProcessManagement({ processes, phases, onProcessesChange
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
-            {processes.map((process) => (
-              <div key={process.id} className="p-6">
+            {processes && processes.map((process) => (
+              <Card key={process.id} className="border border-border rounded-lg p-6 transition-colors">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-lg font-medium text-gray-900">{process.name}</h3>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        process.isActive 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {process.isActive ? 'Activo' : 'Inactivo'}
-                      </span>
+                    <div className="flex items-center gap-3 mb-2">
+                      <Briefcase className="w-5 h-5 text-primary-accent" />
+                      <h4 className="font-semibold text-foreground">{process.name}</h4>
+                      <Badge variant={process.is_active ? "default" : "secondary"}>
+                        {process.is_active ? 'Activo' : 'Inactivo'}
+                      </Badge>
                     </div>
-                    {process.description && (
-                      <p className="text-gray-600 text-sm mb-3">{process.description}</p>
-                    )}
-                    <div className="flex flex-wrap gap-2">
-                      {process.phases.map((phase) => (
-                        <span
-                          key={phase.id}
-                          className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full text-white"
-                          style={{ backgroundColor: phase.color }}
-                        >
-                          {phase.name}
-                        </span>
-                      ))}
+
+                    <p className="text-sm text-muted-foreground mb-4">{process.description}</p>
+
+                    <div>
+                      <p className="text-sm font-medium text-foreground mb-2">
+                        Fases del proceso ({phases.length}):
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {phases.map((phase) => {
+                          return phase ? (
+                            <Badge key={phase.id} variant="outline" className="flex items-center gap-1">
+                              <div
+                                className="w-2 h-2 rounded-full"
+                                style={{ backgroundColor: phase.color }}
+                              />
+                              {phase.name}
+                            </Badge>
+                          ) : null;
+                        })}
+                      </div>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center space-x-2 ml-4">
-                    <button
-                      onClick={() => handleToggleActive(process.id)}
-                      className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+
+                  <div className="flex items-center gap-2 ml-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleToggleActive(process.id, process.is_active)}
                     >
-                      {process.isActive ? (
-                        <ToggleRight className="h-5 w-5 text-green-600" />
-                      ) : (
-                        <ToggleLeft className="h-5 w-5" />
-                      )}
-                    </button>
-                    <button
+                      {process.is_active ? 'Desactivar' : 'Activar'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => handleEditProcess(process)}
-                      className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                     >
-                      <Edit className="h-4 w-4" />
-                    </button>
-                    <button
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => handleDeleteProcess(process.id)}
-                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="text-destructive hover:text-destructive"
                     >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         )}
       </div>
-
       {showForm && (
         <ProcessForm
-          process={editingProcess}
           phases={phases}
+          countries={countries}
+          companies={companies}
+          process={editingProcess}
           onSubmit={handleFormSubmit}
           onClose={handleFormClose}
         />

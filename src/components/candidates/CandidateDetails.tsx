@@ -94,10 +94,10 @@ export default function CandidateDetails({ candidate, onClose }: CandidateDetail
             {/* Experiencia y Educación */}
             <div className="lg:col-span-2 space-y-6">
               {/* Resumen */}
-              {candidate.profileData.summary && (
+              {candidate.summary && (
                 <div>
                   <h4 className="font-semibold text-gray-900 mb-3">Resumen Profesional</h4>
-                  <p className="text-gray-700 leading-relaxed">{candidate.profileData.summary}</p>
+                  <p className="text-gray-700 leading-relaxed">{candidate.summary}</p>
                 </div>
               )}
 

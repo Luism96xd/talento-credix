@@ -56,7 +56,7 @@ export function useRequisitionData() {
       setCountries(data || [])
     } catch (error) {
       console.error('Error fetching countries:', error)
-    } finally {
+    } finally{
       setLoading(false)
     }
   }
@@ -108,6 +108,21 @@ export function useRequisitionData() {
       console.error('Error fetching positions:', error)
     }
   }
+  const fetchPositionsByCompany = async (companyId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('positions')
+        .select('*, departments(company_id)')
+        .eq('departments.company_id', companyId)
+        .eq('is_active', true)
+        .order('name')
+
+      if (error) throw error
+      setPositions(data || [])
+    } catch (error) {
+      console.error('Error fetching positions:', error)
+    }
+  }
 
   const fetchLevelsByPosition = async (positionId: string) => {
     try {
@@ -128,11 +143,8 @@ export function useRequisitionData() {
   const submitRequisition = async (formData: any) => {
     try {
       const { data, error } = await supabase
-        .from('personnel_requisitions')
-        .insert({
-          form_data: formData,
-          status: 'submitted'
-        })
+        .from('requisitions')
+        .insert(formData)
         .select()
         .single()
 
@@ -151,6 +163,7 @@ export function useRequisitionData() {
     positions,
     positionLevels,
     loading,
+    fetchPositionsByCompany,
     fetchCompaniesByCountry,
     fetchDepartmentsByCompany,
     fetchPositionsByDepartment,

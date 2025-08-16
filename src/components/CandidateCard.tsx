@@ -1,10 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Info } from 'lucide-react';
-import { Link } from 'react-router-dom'; import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
+import { Link } from 'react-router-dom';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 
 interface CandidateProps {
   id: number
@@ -45,8 +45,7 @@ const CandidateCard: React.FC<CandidateProps> = ({
   leadership,
   soft_skills,
 }) => {
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => {
     setIsModalOpen(true);
   };
@@ -76,10 +75,10 @@ const CandidateCard: React.FC<CandidateProps> = ({
           {experience && <div>{experience}</div>}
           {education && <div>{education}</div>}
         </div>
-          <div className="flex flex-col md:flex-row text-sm text-gray-600 gap-y-1 md:gap-x-4">
-            {connections && <span>Conexiones: {connections}</span>}
-            {location && <span>Ubicación: {location}</span>}
-          </div>
+        <div className="flex flex-col md:flex-row text-sm text-gray-600 gap-y-1 md:gap-x-4">
+          {connections && <span>Conexiones: {connections}</span>}
+          {location && <span>Ubicación: {location}</span>}
+        </div>
         {/*<div className="flex flex-wrap gap-2 pt-2">
           {skills.slice(0, 3).map((skill, i) => (
             <Badge key={i} variant="secondary" className="bg-gray-100 text-gray-700 hover:bg-gray-200">

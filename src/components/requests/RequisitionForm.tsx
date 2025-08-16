@@ -8,9 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CascadingSelect } from '@/components/ui/cascading-select';
 import { AdminInterface } from '@/components/requests/AdminInterface';
-import { useRequisitionData } from '@/hooks/useRequisitionData';
 import { useToast } from '@/hooks/use-toast';
 import { Settings } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useRequisitionData } from '@/hooks/useRequisitionData';
 
 const RequisitionForm = () => {
   const { toast } = useToast();
@@ -33,9 +34,12 @@ const RequisitionForm = () => {
   const [selectedCompany, setSelectedCompany] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [selectedPosition, setSelectedPosition] = useState('');
+  const [selectedLevelMin, setSelectedLevelMin] = useState('');
+  const [selectedLevelMax, setSelectedLevelMax] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('');
 
   const [formData, setFormData] = useState({
+    isConfidential: false,
     // Basic Information
     country: '',
     company: '',
@@ -43,43 +47,45 @@ const RequisitionForm = () => {
     requestDate: new Date().toISOString().split('T')[0],
     requestedPosition: '',
     workLocation: '',
-    positionLevel: '',
-    positionStep: '',
-    
-    // Requisition Details
-    requisitionType: [] as string[],
-    contractType: [] as string[],
-    cargoType: [] as string[],
+
+    // Requisition Details (single selection)
+    requisitionType: '' as string,
+    contractType: '' as string,
+    cargoType: '' as string,
     positionObjective: [] as string[],
-    
+
     // Impact
     departmentImpact: '',
     companyImpact: '',
-    
+
     // Position Requirements
     academicLevel: '',
     professionalCareer: '',
     experience: '',
-    
+
     // Competencies
     keyCompetencies: [] as string[],
     technicalCompetencies: [] as string[],
-    
+
     // Proyección del Cargo
     expectedResultsFirstSemester: '',
     expectedResultsSecondSemester: '',
-    
+
     // Additional Information
     additionalInfo: [] as string[],
     drivingLicense: '',
     foreignDocuments: '',
     communicationResource: '',
-    
+
     // Authorizations
     requestedBy: '',
     requestedByPosition: '',
+    requestedByDate: new Date().toISOString().split('T')[0],
+    requestedBySignature: '',
     approvedBy: '',
     approvedByPosition: '',
+    approvedByDate: new Date().toISOString().split('T')[0],
+    approvedBySignature: '',
     hrValidation: ''
   });
 
@@ -90,7 +96,8 @@ const RequisitionForm = () => {
       setSelectedCompany('');
       setSelectedDepartment('');
       setSelectedPosition('');
-      setSelectedLevel('');
+      setSelectedLevelMin('');
+      setSelectedLevelMax('');
     }
   }, [selectedCountry]);
 
@@ -99,7 +106,8 @@ const RequisitionForm = () => {
       fetchDepartmentsByCompany(selectedCompany);
       setSelectedDepartment('');
       setSelectedPosition('');
-      setSelectedLevel('');
+      setSelectedLevelMin('');
+      setSelectedLevelMax('');
     }
   }, [selectedCompany]);
 
@@ -107,7 +115,8 @@ const RequisitionForm = () => {
     if (selectedDepartment) {
       fetchPositionsByDepartment(selectedDepartment);
       setSelectedPosition('');
-      setSelectedLevel('');
+      setSelectedLevelMin('');
+      setSelectedLevelMax('');
     }
   }, [selectedDepartment]);
 
@@ -115,34 +124,75 @@ const RequisitionForm = () => {
     if (selectedPosition) {
       fetchLevelsByPosition(selectedPosition);
       setSelectedLevel('');
+      setSelectedLevelMin('');
+      setSelectedLevelMax('');
     }
   }, [selectedPosition]);
 
   const handleCheckboxChange = (category: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [category]: prev[category as keyof typeof prev].includes(value)
-        ? (prev[category as keyof typeof prev] as string[]).filter((item: string) => item !== value)
-        : [...(prev[category as keyof typeof prev] as string[]), value]
-    }));
+    setFormData(prev => {
+      const currentValue = prev[category as keyof typeof prev] as string[]
+      return {
+        ...prev,
+        [category]: currentValue.includes(value)
+          ? currentValue.filter((item: string) => item !== value)
+          : [...currentValue, value]
+      }
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     try {
-      // Update form data with selected values
       const finalFormData = {
         ...formData,
         country: selectedCountry,
         company: selectedCompany,
         requestingDepartment: selectedDepartment,
         requestedPosition: selectedPosition,
-        positionLevel: selectedLevel
       };
 
-      await submitRequisition(finalFormData);
-      
+      const payload = {
+        form_data: finalFormData,
+        status: 'open',
+        country_id: selectedCountry || null,
+        company_id: selectedCompany || null,
+        department_id: selectedDepartment || null,
+        position_id: selectedPosition || null,
+        work_location: finalFormData.workLocation || null,
+        request_date: finalFormData.requestDate || null,
+        requisition_type: finalFormData.requisitionType || null,
+        contract_type: finalFormData.contractType || null,
+        cargo_type: finalFormData.cargoType || null,
+        position_level_min_id: selectedLevelMin || null,
+        position_level_max_id: selectedLevelMax || null,
+        department_impact: finalFormData.departmentImpact || null,
+        company_impact: finalFormData.companyImpact || null,
+        academic_level: finalFormData.academicLevel || null,
+        education: finalFormData.professionalCareer || null,
+        experience: finalFormData.experience || null,
+        position_objectives: finalFormData.positionObjective?.length ? finalFormData.positionObjective : null,
+        expected_results_first_semester: finalFormData.expectedResultsFirstSemester || null,
+        expected_results_second_semester: finalFormData.expectedResultsSecondSemester || null,
+        manipula_carga: finalFormData.additionalInfo.includes(leftAdditionalCheckboxes[0]),
+        requiere_computador: finalFormData.additionalInfo.includes(leftAdditionalCheckboxes[1]),
+        requiere_vehiculo: finalFormData.additionalInfo.includes(leftAdditionalCheckboxes[2]),
+        driving_license: finalFormData.drivingLicense || null,
+        foreign_documents: finalFormData.foreignDocuments || null,
+        communication_resource: finalFormData.communicationResource || null,
+        requested_by_name: finalFormData.requestedBy || null,
+        requested_by_position: finalFormData.requestedByPosition || null,
+        requested_by_date: finalFormData.requestedByDate || null,
+        approved_by_name: finalFormData.approvedBy || null,
+        approved_by_position: finalFormData.approvedByPosition || null,
+        approved_by_date: finalFormData.approvedByDate || null,
+        key_competencies: finalFormData.keyCompetencies,
+        technical_competencies: finalFormData.technicalCompetencies,
+        is_confidential: finalFormData.isConfidential,
+      };
+
+      await submitRequisition(payload);
+
       toast({
         title: "Requisición enviada exitosamente",
         description: "El formulario ha sido enviado y guardado en la base de datos.",
@@ -150,17 +200,16 @@ const RequisitionForm = () => {
 
       // Reset form
       setFormData({
+        isConfidential: false,
         country: '',
         company: '',
         requestingDepartment: '',
         requestDate: new Date().toISOString().split('T')[0],
         requestedPosition: '',
         workLocation: '',
-        positionLevel: '',
-        positionStep: '',
-        requisitionType: [],
-        contractType: [],
-        cargoType: [],
+        requisitionType: '',
+        contractType: '',
+        cargoType: '',
         positionObjective: [],
         departmentImpact: '',
         companyImpact: '',
@@ -177,17 +226,21 @@ const RequisitionForm = () => {
         communicationResource: '',
         requestedBy: '',
         requestedByPosition: '',
+        requestedByDate: new Date().toISOString().split('T')[0],
+        requestedBySignature: '',
         approvedBy: '',
         approvedByPosition: '',
+        approvedByDate: new Date().toISOString().split('T')[0],
+        approvedBySignature: '',
         hrValidation: ''
       });
-      
+
       setSelectedCountry('');
       setSelectedCompany('');
       setSelectedDepartment('');
       setSelectedPosition('');
-      setSelectedLevel('');
-
+      setSelectedLevelMin('');
+      setSelectedLevelMax('');
     } catch (error) {
       toast({
         title: "Error al enviar la requisición",
@@ -200,7 +253,7 @@ const RequisitionForm = () => {
   // Checkbox options
   const requisitionTypes = [
     "Reposición de puesto ya existente",
-    "Nueva posición", 
+    "Nueva posición",
     "Posición temporal"
   ];
 
@@ -284,12 +337,12 @@ const RequisitionForm = () => {
   return (
     <>
       {showAdmin && <AdminInterface onClose={() => setShowAdmin(false)} />}
-      
+
       <Card className="w-full max-w-6xl mx-auto bg-background border-2 border-foreground rounded-none">
         <CardHeader className="text-center border-b-2 border-foreground">
           <div className="flex justify-between items-center mb-4">
             <div className="flex-1"></div>
-            <img src="/Logo Mayoreo.png" alt="Infinity Logo" className="h-16 w-auto" />
+            <img src='/Logo Mayoreo.png' alt="Infinity Logo" className="h-16 w-auto" />
             <div className="flex-1 flex justify-end">
               <Button
                 type="button"
@@ -311,6 +364,17 @@ const RequisitionForm = () => {
         <CardContent className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Information Section */}
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="isConfidential"
+                checked={formData.isConfidential}
+                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isConfidential: !!checked }))}
+              />
+              <Label htmlFor="isConfidential" className="text-sm font-medium">
+                Vacante Confidencial  (marcar si la vacante es confidencial)
+              </Label>
+            </div>
+
             <Card className="border-2 border-foreground rounded-none">
               <CardHeader className="border-b-2 border-foreground">
                 <CardTitle className="text-lg font-bold">1. INFORMACIÓN BÁSICA</CardTitle>
@@ -394,27 +458,51 @@ const RequisitionForm = () => {
 
                 {/* Row 4 */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <CascadingSelect
-                    label="Nivel y Paso de la Posición"
-                    placeholder="Seleccionar nivel"
-                    options={positionLevels.map(l => ({ id: l.id, name: `${l.level} - ${l.step}` }))}
-                    value={selectedLevel}
-                    onValueChange={setSelectedLevel}
-                    disabled={!selectedPosition}
-                    required
-                  />
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Paso (Mínimo) *</Label>
+                    <Select
+                      value={selectedLevelMin}
+                      onValueChange={setSelectedLevelMin}
+                      disabled={!selectedPosition}
+                    >
+                      <SelectTrigger className="border-2 border-foreground bg-background rounded-none">
+                        <SelectValue placeholder="Seleccionar nivel mínimo" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border-2 border-foreground rounded-none">
+                        {positionLevels.map((l) => (
+                          <SelectItem key={l.id} value={l.id}>{`${l.step}`}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {/*
+                <Label htmlFor="possitionLevel" className="text-sm font-medium">
+                  Información del Nivel *
+                </Label>
+                <Input
+                  id="possitionLevel"
+                  value={positionLevels.find(l => l.id === selectedLevel)?.level || ''}
+                  className="border-2 border-foreground bg-background rounded-none"
+                  placeholder="Se actualiza automáticamente"
+                  disabled
+                />*/}
+                  </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="positionStep" className="text-sm font-medium">
-                      Información del Nivel *
-                    </Label>
-                    <Input
-                      id="positionStep"
-                      value={positionLevels.find(l => l.id === selectedLevel)?.level || ''}
-                      className="border-2 border-foreground bg-background rounded-none"
-                      placeholder="Se actualiza automáticamente"
-                      disabled
-                    />
+                    <Label className="text-sm font-medium">Paso (Máximo) *</Label>
+                    <Select
+                      value={selectedLevelMax}
+                      onValueChange={setSelectedLevelMax}
+                      disabled={!selectedPosition}
+                    >
+                      <SelectTrigger className="border-2 border-foreground bg-background rounded-none">
+                        <SelectValue placeholder="Seleccionar nivel máximo" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border-2 border-foreground rounded-none">
+                        {positionLevels.map((l) => (
+                          <SelectItem key={l.id} value={l.id}>{`${l.step}`}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </CardContent>
@@ -430,52 +518,52 @@ const RequisitionForm = () => {
                   {/* Tipo de Requisición */}
                   <div className="border border-foreground p-4 rounded-none">
                     <h3 className="font-bold mb-3 text-sm">TIPO DE REQUISICIÓN</h3>
-                    <div className="space-y-2">
-                      {requisitionTypes.map(type => (
+                    <RadioGroup
+                      value={formData.requisitionType}
+                      onValueChange={(v) => setFormData((prev) => ({ ...prev, requisitionType: v }))}
+                      className="space-y-2"
+                    >
+                      {requisitionTypes.map((type) => (
                         <div key={type} className="flex items-center space-x-2">
-                          <Checkbox
-                            checked={formData.requisitionType.includes(type)}
-                            onCheckedChange={() => handleCheckboxChange('requisitionType', type)}
-                            className="border-2 border-foreground rounded-none"
-                          />
-                          <Label className="text-sm">{type}</Label>
+                          <RadioGroupItem value={type} id={`req-${type}`} />
+                          <Label htmlFor={`req-${type}`} className="text-sm">{type}</Label>
                         </div>
                       ))}
-                    </div>
+                    </RadioGroup>
                   </div>
 
                   {/* Tipo de Contrato */}
                   <div className="border border-foreground p-4 rounded-none">
                     <h3 className="font-bold mb-3 text-sm">TIPO DE CONTRATO</h3>
-                    <div className="space-y-2">
-                      {contractTypes.map(type => (
+                    <RadioGroup
+                      value={formData.contractType}
+                      onValueChange={(v) => setFormData((prev) => ({ ...prev, contractType: v }))}
+                      className="space-y-2"
+                    >
+                      {contractTypes.map((type) => (
                         <div key={type} className="flex items-center space-x-2">
-                          <Checkbox
-                            checked={formData.contractType.includes(type)}
-                            onCheckedChange={() => handleCheckboxChange('contractType', type)}
-                            className="border-2 border-foreground rounded-none"
-                          />
-                          <Label className="text-sm">{type}</Label>
+                          <RadioGroupItem value={type} id={`contract-${type}`} />
+                          <Label htmlFor={`contract-${type}`} className="text-sm">{type}</Label>
                         </div>
                       ))}
-                    </div>
+                    </RadioGroup>
                   </div>
 
                   {/* Tipo de Cargo */}
                   <div className="border border-foreground p-4 rounded-none">
                     <h3 className="font-bold mb-3 text-sm">TIPO DE CARGO</h3>
-                    <div className="space-y-2">
-                      {cargoTypes.map(type => (
+                    <RadioGroup
+                      value={formData.cargoType}
+                      onValueChange={(v) => setFormData((prev) => ({ ...prev, cargoType: v }))}
+                      className="space-y-2"
+                    >
+                      {cargoTypes.map((type) => (
                         <div key={type} className="flex items-center space-x-2">
-                          <Checkbox
-                            checked={formData.cargoType.includes(type)}
-                            onCheckedChange={() => handleCheckboxChange('cargoType', type)}
-                            className="border-2 border-foreground rounded-none"
-                          />
-                          <Label className="text-sm">{type}</Label>
+                          <RadioGroupItem value={type} id={`cargo-${type}`} />
+                          <Label htmlFor={`cargo-${type}`} className="text-sm">{type}</Label>
                         </div>
                       ))}
-                    </div>
+                    </RadioGroup>
                   </div>
 
                   {/* Objetivo de la Posición */}
@@ -741,62 +829,109 @@ const RequisitionForm = () => {
               <CardHeader className="border-b-2 border-foreground">
                 <CardTitle className="text-lg font-bold">8. AUTORIZACIONES DE LA REQUISICIÓN</CardTitle>
               </CardHeader>
-              <CardContent className="p-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">Solicitado por *</Label>
-                      <Input
-                        value={formData.requestedBy}
-                        onChange={(e) => setFormData(prev => ({ ...prev, requestedBy: e.target.value }))}
-                        className="border-2 border-foreground rounded-none"
-                        placeholder="Nombre completo"
-                        required
-                      />
+              <CardContent className="p-4 space-y-4">
+                <div className="border-2 border-foreground">
+                  <div className="grid grid-cols-[auto_1fr_1fr_1fr_1fr] divide-y-2">
+                    <div className="contents">
+                      <div className="p-3 border-r-2 font-semibold">&nbsp;</div>
+                      <div className="p-3 border-r-2 font-semibold">Nombre</div>
+                      <div className="p-3 border-r-2 font-semibold">Cargo</div>
+                      <div className="p-3 border-r-2 font-semibold">Firma</div>
+                      <div className="p-3 font-semibold">Fecha</div>
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">Cargo del Solicitante *</Label>
-                      <Input
-                        value={formData.requestedByPosition}
-                        onChange={(e) => setFormData(prev => ({ ...prev, requestedByPosition: e.target.value }))}
-                        className="border-2 border-foreground rounded-none"
-                        placeholder="Cargo"
-                        required
-                      />
+
+                    {/* Row: Solicitado por */}
+                    <div className="contents">
+                      <div className="p-3 border-r-2">Solicitado por</div>
+                      <div className="p-3 border-r-2">
+                        <Input
+                          value={formData.requestedBy}
+                          onChange={(e) => setFormData(prev => ({ ...prev, requestedBy: e.target.value }))}
+                          className="border-2 border-foreground rounded-none"
+                          placeholder="Nombre completo"
+                          required
+                        />
+                      </div>
+                      <div className="p-3 border-r-2">
+                        <Input
+                          value={formData.requestedByPosition}
+                          onChange={(e) => setFormData(prev => ({ ...prev, requestedByPosition: e.target.value }))}
+                          className="border-2 border-foreground rounded-none"
+                          placeholder="Cargo"
+                          required
+                        />
+                      </div>
+                      <div className="p-3 border-r-2">
+                        <Input
+                          value={formData.requestedBySignature}
+                          onChange={(e) => setFormData(prev => ({ ...prev, requestedBySignature: e.target.value }))}
+                          className="border-2 border-foreground rounded-none"
+                          placeholder="Firma"
+                        />
+                      </div>
+                      <div className="p-3">
+                        <Input
+                          type="date"
+                          value={formData.requestedByDate}
+                          onChange={(e) => setFormData(prev => ({ ...prev, requestedByDate: e.target.value }))}
+                          className="border-2 border-foreground rounded-none"
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">Aprobado por *</Label>
-                      <Input
-                        value={formData.approvedBy}
-                        onChange={(e) => setFormData(prev => ({ ...prev, approvedBy: e.target.value }))}
-                        className="border-2 border-foreground rounded-none"
-                        placeholder="Nombre completo"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">Cargo del Aprobador *</Label>
-                      <Input
-                        value={formData.approvedByPosition}
-                        onChange={(e) => setFormData(prev => ({ ...prev, approvedByPosition: e.target.value }))}
-                        className="border-2 border-foreground rounded-none"
-                        placeholder="Cargo"
-                        required
-                      />
+
+                    {/* Row: Aprobado por */}
+                    <div className="contents">
+                      <div className="p-3 border-r-2">Aprobado por</div>
+                      <div className="p-3 border-r-2">
+                        <Input
+                          value={formData.approvedBy}
+                          onChange={(e) => setFormData(prev => ({ ...prev, approvedBy: e.target.value }))}
+                          className="border-2 border-foreground rounded-none"
+                          placeholder="Nombre completo"
+                          required
+                        />
+                      </div>
+                      <div className="p-3 border-r-2">
+                        <Input
+                          value={formData.approvedByPosition}
+                          onChange={(e) => setFormData(prev => ({ ...prev, approvedByPosition: e.target.value }))}
+                          className="border-2 border-foreground rounded-none"
+                          placeholder="Cargo"
+                          required
+                        />
+                      </div>
+                      <div className="p-3 border-r-2">
+                        <Input
+                          value={formData.approvedBySignature}
+                          onChange={(e) => setFormData(prev => ({ ...prev, approvedBySignature: e.target.value }))}
+                          className="border-2 border-foreground rounded-none"
+                          placeholder="Firma"
+                        />
+                      </div>
+                      <div className="p-3">
+                        <Input
+                          type="date"
+                          value={formData.approvedByDate}
+                          onChange={(e) => setFormData(prev => ({ ...prev, approvedByDate: e.target.value }))}
+                          className="border-2 border-foreground rounded-none"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div className="mt-4 space-y-2">
-                  <Label className="text-sm font-medium">Validación de Recursos Humanos</Label>
-                  <Textarea
-                    value={formData.hrValidation}
-                    onChange={(e) => setFormData(prev => ({ ...prev, hrValidation: e.target.value }))}
-                    className="border-2 border-foreground rounded-none"
-                    placeholder="Comentarios de Recursos Humanos"
-                  />
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Validación de Recursos Humanos</Label>
+                    <Textarea
+                      value={formData.hrValidation}
+                      onChange={(e) => setFormData(prev => ({ ...prev, hrValidation: e.target.value }))}
+                      className="border-2 border-foreground rounded-none"
+                      placeholder="Comentarios de Recursos Humanos"
+                    />
+                  </div>
                 </div>
+
               </CardContent>
             </Card>
 
@@ -806,7 +941,7 @@ const RequisitionForm = () => {
                 type="submit"
                 className="bg-primary text-primary-foreground hover:bg-primary/90 border-2 border-foreground rounded-none px-8 py-3"
               >
-                Enviar
+                ENVIAR REQUISICIÓN
               </Button>
             </div>
           </form>

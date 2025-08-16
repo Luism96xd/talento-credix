@@ -20,6 +20,7 @@ export default function KanbanBoard({
   onCandidatesChange, 
   onCandidateClick 
 }: KanbanBoardProps) {
+  
   const handleCandidateDrop = async (e: React.DragEvent, phaseId: string) => {
     e.preventDefault();
     const candidateId = e.dataTransfer.getData('text/plain');

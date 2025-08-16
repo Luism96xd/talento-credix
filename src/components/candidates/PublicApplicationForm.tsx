@@ -20,7 +20,7 @@ export default function PublicApplicationForm({ processes, onCandidateSubmit }: 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  const activeProcesses = processes.filter(p => p.isActive);
+  const activeProcesses = processes.filter(p => p.is_active);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -147,7 +147,7 @@ export default function PublicApplicationForm({ processes, onCandidateSubmit }: 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full">
+      <div className="bg-white rounded-2xl shadow-xl  w-full">
         <div className="p-8 border-b border-gray-200">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Mayoreo</h1>
           <p className="text-gray-600">Únete a nuestro equipo - Aplica ahora</p>

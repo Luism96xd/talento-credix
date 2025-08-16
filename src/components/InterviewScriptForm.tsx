@@ -104,12 +104,12 @@ export const InterviewScriptForm: React.FC = () => {
     }
 
     const taskId = generateTaskId();
-    const { error } = await supabase.from('task_progress').insert({
+    const { data: progressData, error } = await supabase.from('task_progress').insert({
       task_id: taskId, 
       step: 0, 
       status: 'processing'
     })
-
+console.log(progressData)
     if (error) throw error;
     const data = new FormData();
     setTaskId(taskId);

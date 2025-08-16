@@ -45,11 +45,11 @@ export default function ManualCandidateForm({ processes, onCandidateSubmit }: Ma
       position: formData.position,
       processId: formData.processId,
       currentPhaseId: firstPhase.id,
+      summary: formData.summary,
       profileData: {
         experience: experiences,
         education: education,
         skills: skills,
-        summary: formData.summary
       },
       status: 'active'
     };
@@ -181,20 +181,6 @@ export default function ManualCandidateForm({ processes, onCandidateSubmit }: Ma
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="+52 xxx xxx xxxx"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Posición Deseada *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.position}
-                  onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Ej: Vendedor, Gerente, etc."
                 />
               </div>
 

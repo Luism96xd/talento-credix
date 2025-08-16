@@ -3,6 +3,9 @@ import { Plus, Edit, Trash2, Circle, GripVertical } from 'lucide-react';
 import { Phase } from '../../types';
 import { handlePhaseDragStart, handlePhaseDragOver, handlePhaseDrop } from '@/utils/dragAndDrop';
 import PhaseForm from '@/components/phases/PhasesForm';
+import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
+import { Card, CardContent } from '../ui/card';
 
 interface PhaseManagerProps {
   phases: Phase[];
@@ -31,8 +34,8 @@ export default function PhasesManagement({ phases, onPhasesChange }: PhaseManage
 
   const handleFormSubmit = (phaseData: Omit<Phase, 'id' | 'createdAt'>) => {
     if (editingPhase) {
-      onPhasesChange(phases.map(p => 
-        p.id === editingPhase.id 
+      onPhasesChange(phases.map(p =>
+        p.id === editingPhase.id
           ? { ...p, ...phaseData }
           : p
       ));
@@ -59,22 +62,22 @@ export default function PhasesManagement({ phases, onPhasesChange }: PhaseManage
   const sortedPhases = [...phases].sort((a, b) => a.order - b.order);
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Gestión de Fases</h2>
-          <p className="text-gray-600 mt-1">Configure las fases del proceso de selección</p>
+          <h1 className="text-2xl font-bold text-foreground">Gestión de Fases</h1>
+          <p className="text-muted-foreground">Configura las fases del proceso de selección</p>
         </div>
-        <button
+        <Button
           onClick={handleAddPhase}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center transition-colors"
+          className="flex items-center gap-2"
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="w-4 h-4" />
           Nueva Fase
-        </button>
+        </Button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+      <div>
         {phases.length === 0 ? (
           <div className="p-8 text-center">
             <Circle className="mx-auto h-12 w-12 text-gray-400 mb-4" />
@@ -82,62 +85,67 @@ export default function PhasesManagement({ phases, onPhasesChange }: PhaseManage
             <p className="text-gray-600 mb-4">Comience creando su primera fase del proceso de selección</p>
             <button
               onClick={handleAddPhase}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium inline-flex items-center"
+              className="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium inline-flex items-center"
             >
               <Plus className="h-4 w-4 mr-2" />
               Crear Primera Fase
             </button>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
-            <div className="p-4 bg-gray-50 border-b border-gray-200">
-              <p className="text-sm text-gray-600 flex items-center">
-                <GripVertical className="h-4 w-4 mr-2" />
-                Arrastra las fases para cambiar el orden en el tablero
-              </p>
+          <div className="form-section">
+            <h2 className="text-lg font-semibold mb-4">Fases Configuradas</h2>
+            <div className="grid gap-4">
+
+              {sortedPhases.map((phase) => (
+                <Card
+                  draggable
+                  onDragStart={(e) => handlePhaseDragStart(e, phase.id)}
+                  onDragOver={handlePhaseDragOver}
+                  onDrop={(e) => handlePhaseDrop(e, phase.id, phases, onPhasesChange)}
+                >
+                  <CardContent key={phase.id} className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/30 transition-colors">
+                    <div className="flex items-center space-x-4">
+                      <GripVertical className="h-5 w-5 text-gray-400" />
+                      <div
+                        className="w-6 h-6 rounded-full"
+                        style={{ backgroundColor: phase.color }}
+                      />
+                      <div>
+                        <h4 className="font-medium text-foreground">{phase.name}</h4>
+                        {phase.description && (
+                          <p className="text-sm text-muted-foreground">{phase.description}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline">
+                        {phase.color}
+                      </Badge>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditPhase(phase)}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeletePhase(phase.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+              ))}
             </div>
-            {sortedPhases.map((phase) => (
-              <div 
-                key={phase.id} 
-                className="p-6 my-8 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-move"
-                draggable
-                onDragStart={(e) => handlePhaseDragStart(e, phase.id)}
-                onDragOver={handlePhaseDragOver}
-                onDrop={(e) => handlePhaseDrop(e, phase.id, phases, onPhasesChange)}
-              >
-                <div className="flex items-center space-x-4">
-                  <GripVertical className="h-5 w-5 text-gray-400" />
-                  <div
-                    className="w-4 h-4 rounded-full border-2"
-                    style={{ backgroundColor: phase.color, borderColor: phase.color }}
-                  />
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900">{phase.name}</h3>
-                    {phase.description && (
-                      <p className="text-gray-600 text-sm mt-1">{phase.description}</p>
-                    )}
-                    <p className="text-xs text-gray-400 mt-1">Orden: {phase.order + 1}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => handleEditPhase(phase)}
-                    className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDeletePhase(phase.id)}
-                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
           </div>
         )}
+
       </div>
 
       {showForm && (

@@ -1,6 +1,6 @@
 
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, Menu, Users, ClipboardCheck, Speech, FileText, Briefcase, SettingsIcon, StarIcon, Grid2X2Icon, FolderSearch } from 'lucide-react';
+import { Home, Search, Menu, Users, ClipboardCheck, Speech, FileText, Briefcase, SettingsIcon, StarIcon, Grid2X2Icon, FolderSearch, FileBoxIcon, Map } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Navbar = () => {
@@ -8,10 +8,12 @@ const Navbar = () => {
   
   const navItems = [
     { icon: Home, label: 'Inicio', path: '/' },
-    //{ icon: FileText, label: 'Fases', path: '/fases' },
-    //{ icon: Grid2X2Icon, label: 'Procesos', path: '/procesos' },
+    { icon: FileText, label: 'Fases', path: '/fases' },
+    { icon: Grid2X2Icon, label: 'Procesos', path: '/procesos' },
     { icon: Search, label: 'Buscador', path: '/search' },
-    //{ icon: Briefcase, label: 'Requisición', path: '/requisicion' },
+    { icon: Briefcase, label: 'Requisición', path: '/requisicion' },
+    { icon: FileBoxIcon, label: 'Repositorio', path: '/repositorio' },
+    { icon: Map, label: 'Candidatos', path: '/candidates' },
     { icon: FolderSearch, label: 'Búsquedas', path: '/searches' },
     { icon: Users, label: 'Comparativos', path: '/candidate-analysis' },
     { icon: Speech, label: 'Guiones de entrevista', path: '/interview-scripts' },
