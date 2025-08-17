@@ -21,15 +21,23 @@ export const ClosingForm = ({ requisition, isModalOpen, setIsModalOpen }: Closin
 
     const closeRequisition = async (id: string) => {
         try {
+
+            if(!formData.candidate_name || !formData.admission_date) throw new Error('Por favor, complete todos los campos');
+
             const now = new Date();
             const created_at = new Date(requisition?.created_at);
+            const [year, month, day] = formData.admission_date.split('-').map(Number);
+            const admissionDate = new Date(year, month - 1, day);
+            admissionDate.setHours(23, 59, 0, 0)
+            if(admissionDate < now) throw new Error('La fecha de ingreso no puede ser menor a la fecha actual');
+
             const days = (now.getTime() - created_at.getTime()) / (1000 * 3600 * 24)
 
             const { error} = await supabase
             .from('requisitions')
             .update({
-                closed_date: now.toDateString(),
-                new_candidate_name: formData.candidate_name, 
+                closed_date: now.toISOString(),
+                candidate_name: formData.candidate_name, 
                 admission_date: formData.admission_date,
                 days_open: parseInt(days.toFixed(2)),
                 status: 'closed'
@@ -55,7 +63,7 @@ export const ClosingForm = ({ requisition, isModalOpen, setIsModalOpen }: Closin
     }
     return (
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogContent>
+            <DialogContent className="max-w-md">
                 <DialogHeader>
                     <DialogTitle>Cerrar requisición #{requisition?.id}</DialogTitle>
                 </DialogHeader>
@@ -63,6 +71,7 @@ export const ClosingForm = ({ requisition, isModalOpen, setIsModalOpen }: Closin
                     <div className='space-y-2'>
                         <label className="text-sm font-medium text-gray-700">Nombre del nuevo ingreso</label>
                         <Input
+                            placeholder="Ingrese el nombre del nuevo ingreso"
                             value={formData.candidate_name}
                             onChange={(e) => setFormData(prev => ({ ...prev, candidate_name: e.target.value }))}
                         />
@@ -70,6 +79,7 @@ export const ClosingForm = ({ requisition, isModalOpen, setIsModalOpen }: Closin
                     <div className='space-y-2'>
                         <label className="text-sm font-medium text-gray-700">Fecha de ingreso</label>
                         <Input
+                            placeholder="Ingrese la fecha de ingreso"
                             value={formData.admission_date}
                             type="date"
                             onChange={(e) => setFormData(prev => ({ ...prev, admission_date: e.target.value }))}
