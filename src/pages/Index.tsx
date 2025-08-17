@@ -1,36 +1,55 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { Search, Scale, FileText, BarChart2, User, Menu, Users } from 'lucide-react'; // Importamos íconos de Lucide React
+import { Search, FileText, BarChart2, Users, Briefcase } from 'lucide-react'; // Importamos íconos de Lucide React
 import UserMenu from '@/components/UserMenu';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const Index = () => {
-  // Datos para los accesos directos a las funciones principales
-  const mainFunctions = [
-    {
-      name: 'Buscador de Candidatos',
-      description: 'Encuentre candidatos que se ajusten a sus requisitos específicos utilizando filtros avanzados.',
-      icon: Search,
-      path: '/search', // Ruta a la pantalla de búsqueda
-    },
-    {
-      name: 'Comparador de Candidatos',
-      description: 'Compare perfiles de candidatos para tomar decisiones de contratación informadas.',
-      icon: Users,
-      path: '/candidate-analysis', // Ruta a la pantalla del comparador
-    },
-    {
-      name: 'Guiones de Entrevistas',
-      description: 'Cree guiones estructurados y personalizados para sus procesos de entrevista.',
-      icon: FileText,
-      path: '/interview-scripts', // Ruta a la gestión de guiones
-    },
-    {
-      name: 'Análisis de Entrevistas',
-      description: 'Analice el rendimiento de las entrevistas, identifique patrones y obtenga insights valiosos.',
-      icon: BarChart2,
-      path: '/interview-analysis', // Ruta a la pantalla de análisis
-    },
-  ];
+  const { hasRole, hasPermission } = useAuth()
+
+  // Define navigation items based on roles
+  const getMainFunctions = () => {
+    const items = [];
+
+    if (hasRole("personal")) {
+      items.push({
+        name: 'Buscador de Candidatos',
+        description: 'Encuentre candidatos que se ajusten a sus requisitos específicos utilizando filtros avanzados.',
+        icon: Search,
+        path: '/search', // Ruta a la pantalla de búsqueda
+      });
+      items.push({
+        name: 'Comparador de Candidatos',
+        description: 'Compare perfiles de candidatos para tomar decisiones de contratación informadas.',
+        icon: Users,
+        path: '/candidate-analysis', // Ruta a la pantalla del comparador
+      });
+    }
+    if (hasRole("personal") || hasRole('cliente')) {
+      items.push({
+        name: 'Guiones de Entrevistas',
+        description: 'Cree guiones estructurados y personalizados para sus procesos de entrevista.',
+        icon: FileText,
+        path: '/interview-scripts', // Ruta a la gestión de guiones
+      });
+      items.push({
+        name: 'Requisición',
+        description: 'Cree una nueva solcitiud de personal con las competencias requeridas',
+        icon: Briefcase,
+        path: '/requisicion', // Ruta a la gestión de guiones
+      });
+    }
+    if (hasRole('personal')) {
+      items.push({
+        name: 'Análisis de Entrevistas',
+        description: 'Analice el rendimiento de las entrevistas, identifique patrones y obtenga insights valiosos.',
+        icon: BarChart2,
+        path: '/interview-analysis', // Ruta a la pantalla de análisis
+      });
+    }
+    return items;
+
+  }
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-slate-100 min-h-screen">
@@ -50,7 +69,7 @@ export const Index = () => {
         <main className="flex-1 p-4 md:p-8">
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Mapeamos sobre las funciones principales para crear los accesos directos */}
-            {mainFunctions.map((func, index) => (
+            {getMainFunctions().map((func, index) => (
               <Link
                 key={index}
                 to={func.path}

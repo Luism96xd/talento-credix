@@ -31,6 +31,17 @@ export interface Process {
   created_at: string;
 }
 
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  full_name: string;
+  gender: string;
+  roles: string[];
+  department: string;
+  permissions: { [module: string]: string[] };
+}
+
 export interface Candidate {
   id: string;
   name: string;

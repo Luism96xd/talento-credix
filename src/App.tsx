@@ -4,16 +4,15 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/hooks/useAuth";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/ui/ProtectedRoute";
 import Navbar from "./components/Navbar";
 import NotFound from "./pages/NotFound";
 import SearchPage from "./pages/SearchDetailsPage";
 import Auth from "./pages/Auth";
 import CVAnalysisPage from "./pages/cv-analysis";
-import { Interviews } from "./pages/Interviews";
+import Interviews from "./pages/Interviews";
 import { InterviewScripts } from "./pages/Scripts";
-import { Settings } from "./components/Settings";
 import { Phases } from "./pages/Phases";
 import { Processes } from "./pages/Processes";
 import Searches from "./pages/Searches";
@@ -24,6 +23,7 @@ import { RequisitionsPage } from "./pages/RequisitionsPage";
 import { PublicRegistration } from "./pages/PublicRegistration";
 import { ManualRegistration } from "./pages/ManualRegistration";
 import { CandidatesPage } from "./pages/Candidates";
+import SettingsPage from "./pages/SettingsPage";
 
 const queryClient = new QueryClient();
 
@@ -44,20 +44,69 @@ const App = () => (
                     <Routes>
                       <Route path="/" element={<Index />} />
                       <Route path="/apply" element={<PublicRegistration />} />
-                      <Route path="/fases" element={<Phases />} />
-                      <Route path="/procesos" element={<Processes />} />
-                      <Route path="/search" element={<Search />} />
-                      <Route path="/requisicion" element={<Requisition />} />
-                      <Route path="/repositorio" element={<RequisitionsPage />} />
-                      <Route path="/candidates" element={<CandidatesPage />} />
-                      <Route path="/register" element={<ManualRegistration />} />
-                      <Route path="/searches" element={<Searches />} />
-                      <Route path="/searches/:searchId" element={<SearchPage />} />
-                      <Route path="/candidates" element={<RequisitionsPage />} />
-                      <Route path="/candidate-analysis" element={<CVAnalysisPage />} />
-                      <Route path="/interview-analysis" element={<Interviews />} />
-                      <Route path="/interview-scripts" element={<InterviewScripts />} />
-                      <Route path="/settings" element={<Settings />} />
+                      <Route path="/phases" element={
+                        <ProtectedRoute requiredRole="admin">
+                          <Phases />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/processes" element={
+                        <ProtectedRoute requiredRole="admin">
+                          <Processes />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/search" element={
+                        <ProtectedRoute requiredModule="buscador" requiredPermission="write">
+                          <Search />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/requisicion" element={
+                        <ProtectedRoute requiredModule="requisicion" requiredPermission="write">
+                          <Requisition />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/repositorio" element={
+                        <ProtectedRoute requiredRole="reclutador">
+                          <RequisitionsPage />
+                        </ProtectedRoute>
+                      }
+                      />
+                      <Route path="/register" element={
+                        <ProtectedRoute requiredRole="personal">
+                          <ManualRegistration />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/searches" element={
+                        <ProtectedRoute requiredModule="busquedas" requiredPermission="write" >
+                          <Searches />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/searches/:searchId" element={
+                        <ProtectedRoute requiredRole="personal">
+                          <SearchPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/candidates" element={
+                        <ProtectedRoute requiredRole="reclutador">
+                          <CandidatesPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/candidate-analysis" element={
+                        <ProtectedRoute requiredModule="comparativos" requiredPermission="write">
+                          <CVAnalysisPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/interview-scripts" element={
+                        <ProtectedRoute requiredModule="guiones" requiredPermission="write">
+                          <InterviewScripts />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/interview-analysis" element={
+                        <ProtectedRoute  requiredModule="entrevistas" requiredPermission="write">
+                          <Interviews />
+                        </ProtectedRoute>
+                      } />
+
+                      <Route path="/settings" element={<SettingsPage />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </div>

@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Settings } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useRequisitionData } from '@/hooks/useRequisitionData';
+import { useAuth } from '@/contexts/AuthContext';
 
 const RequisitionForm = () => {
   const { toast } = useToast();
@@ -38,6 +39,7 @@ const RequisitionForm = () => {
   const [selectedLevelMax, setSelectedLevelMax] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('');
 
+  const { hasRole } = useAuth()
   const [formData, setFormData] = useState({
     isConfidential: false,
     // Basic Information
@@ -340,11 +342,11 @@ const RequisitionForm = () => {
 
       <Card className="w-full max-w-6xl mx-auto bg-background border-2 border-foreground rounded-none">
         <CardHeader className="text-center border-b-2 border-foreground">
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center">
             <div className="flex-1"></div>
-            <img src='/Logo Mayoreo.png' alt="Infinity Logo" className="h-16 w-auto" />
+            <img src='https://tubjjcfakjifgdeloaqu.supabase.co/storage/v1/object/public/documents/marca/Logo%20Mayoreo.png' alt="Logo Mayoreo" className="h-24 w-auto" />
             <div className="flex-1 flex justify-end">
-              <Button
+              {hasRole('admin') && (<Button
                 type="button"
                 onClick={() => setShowAdmin(true)}
                 variant="outline"
@@ -353,7 +355,7 @@ const RequisitionForm = () => {
               >
                 <Settings className="w-4 h-4 mr-2" />
                 Admin
-              </Button>
+              </Button>)}
             </div>
           </div>
           <CardTitle className="text-2xl font-bold uppercase tracking-wide">
