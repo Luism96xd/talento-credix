@@ -15,6 +15,10 @@ const Navbar = () => {
     if (hasPermission('home', 'read')) {
       items.push({ label: "Inicio", href: "/", icon: Home, module: "home" });
     }
+    // Indicadores - solo para directores y admins
+    if (hasRole('gerente_desarrollo_humano') || hasRole('reclutador')) {
+      items.push({ label: "Indicadores", href: "/dashboard", icon: LayoutDashboard, module: "dashboard" });
+    }
     if (hasRole("admin")) {
       items.push({ label: "Fases", href: "/phases", icon: Grid2X2Icon, module: "phases" });
     }
@@ -44,10 +48,6 @@ const Navbar = () => {
     }
     if (hasPermission("entrevistas", "read") || hasPermission("entrevistas", "write")) {
       items.push({ label: "Análisis de entrevista", href: "/interview-analysis", icon: ClipboardCheck, module: "entrevistas" });
-    }
-    // Indicadores - solo para directores y admins
-    if (hasRole('gerente_desarrollo_humano')) {
-      items.push({ label: "Indicadores", href: "/dashboard", icon: LayoutDashboard, module: "dashboard" });
     }
     // Indicadores - solo para directores y admins
     if (hasRole('admin')) {

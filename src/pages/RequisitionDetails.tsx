@@ -1,6 +1,11 @@
+import { ClosingForm } from "@/components/ClosingForm";
+import { Button } from "@/components/ui/button";
 import { Requisition } from "@/types";
+import { useState } from "react";
 
 const RequisitionDetails = ({ requisition  }: {requisition: Requisition}) => {
+    const [isModalOpen, setIsModalOpen] = useState(false)
+
     const formatNullableDate = (dateString) => {
         if (!dateString) return 'N/A';
         try {
@@ -46,10 +51,16 @@ const RequisitionDetails = ({ requisition  }: {requisition: Requisition}) => {
                         <p><span className="font-medium text-gray-600">¿Confidencial?:</span> {requisition.is_confidential ? 'Sí' : 'No'}</p>
                     </div>
 
+                    <div className="flex flex-row justify-between items-center">
                     <div className="mt-6 border-t border-gray-100 pt-4 text-sm text-gray-600">
                         <p><span className="font-medium text-gray-600">Solicitado Por:</span> {requisition.requested_by_name || 'N/A'} ({requisition.requested_by_position || 'N/A'}) el {formatNullableDate(requisition.requested_by_date)}</p>
                         <p><span className="font-medium text-gray-600">Aprobado Por:</span> {requisition.approved_by_name || 'N/A'} ({requisition.approved_by_position || 'N/A'}) el {formatNullableDate(requisition.approved_by_date)}</p>
                         <p className="mt-2"><span className="font-medium text-gray-600">Creada el:</span> {formatNullableDate(requisition.created_at)}</p>
+                    </div>
+                    <Button
+                     onClick={() => setIsModalOpen(true)}
+                    >Cerrar requisición</Button>
+                    <ClosingForm requisition={requisition} isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen}></ClosingForm>
                     </div>
 
                     {/* Displaying JSONB fields as formatted JSON for simplicity */}

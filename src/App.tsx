@@ -24,6 +24,7 @@ import { PublicRegistration } from "./pages/PublicRegistration";
 import { ManualRegistration } from "./pages/ManualRegistration";
 import { CandidatesPage } from "./pages/Candidates";
 import SettingsPage from "./pages/SettingsPage";
+import Indicators from "./pages/Indicators";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,11 @@ const App = () => (
                   <div className="flex-1 ml-16">
                     <Routes>
                       <Route path="/" element={<Index />} />
+                      <Route path="/dashboard" element={
+                        <ProtectedRoute requiredRole="reclutador">
+                          <Indicators />
+                        </ProtectedRoute>
+                      } />
                       <Route path="/apply" element={<PublicRegistration />} />
                       <Route path="/phases" element={
                         <ProtectedRoute requiredRole="admin">

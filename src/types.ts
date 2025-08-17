@@ -98,6 +98,10 @@ export interface Requisition {
   department_name: string
   position_name: string
   is_confidential: boolean
+  candidate_name: string
+  closed_date: string
+  admission_date: string
+  open_days: number
 }
 export interface WorkExperience {
   id: string;
