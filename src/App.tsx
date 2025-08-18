@@ -37,6 +37,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/apply" element={<PublicRegistration />} />
             <Route path="/*" element={
               <ProtectedRoute>
                 <div className="flex">
@@ -49,7 +50,6 @@ const App = () => (
                           <Indicators />
                         </ProtectedRoute>
                       } />
-                      <Route path="/apply" element={<PublicRegistration />} />
                       <Route path="/phases" element={
                         <ProtectedRoute requiredRole="admin">
                           <Phases />

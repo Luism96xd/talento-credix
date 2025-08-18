@@ -20,7 +20,7 @@ export default function PublicApplicationForm({ processes, onCandidateSubmit }: 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  const activeProcesses = processes.filter(p => p.is_active);
+  const activeProcesses = processes.filter(p => p.status === 'open');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -197,7 +197,7 @@ export default function PublicApplicationForm({ processes, onCandidateSubmit }: 
               />
             </div>
 
-            <div>
+            {/*<div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Posición Deseada *
               </label>
@@ -209,9 +209,9 @@ export default function PublicApplicationForm({ processes, onCandidateSubmit }: 
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Ej: Vendedor, Gerente, etc."
               />
-            </div>
+            </div>*/}
 
-            <div className="md:col-span-2">
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Proceso de Selección *
               </label>
@@ -222,9 +222,9 @@ export default function PublicApplicationForm({ processes, onCandidateSubmit }: 
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Seleccione un proceso</option>
-                {activeProcesses.map((process) => (
+                {activeProcesses.map((process, index) => (
                   <option key={process.id} value={process.id}>
-                    {process.name}
+                    {index + 1}. {process.positions.name} - ({process.companies.name})
                   </option>
                 ))}
               </select>

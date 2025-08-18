@@ -19,13 +19,38 @@ export const CandidatesPage = () => {
     processId: '',
     recruiter: ''
   });
-  const candidates = []
+  const [candidates, setCandidates] = useState([])
   const activeCandidates = candidates.filter(c => c.status === 'active');
 
   useEffect(() => {
     fetchProcesses();
     fetchPhases();
   }, []);
+
+  useEffect(() => {
+    if(filters.processId){
+      fetchCandidates(filters.processId);
+    }
+  }, [filters]);
+
+  const fetchCandidates = async (processId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('candidates')
+        .select('*')
+
+        if(error) throw error
+        
+        setCandidates(data)
+    } catch (error) {
+      console.error('Error fetching candidates:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch candidates",
+        variant: "destructive"
+      });
+    }
+  };
 
   const fetchPhases = async () => {
     try {

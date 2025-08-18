@@ -23,7 +23,7 @@ const Navbar = () => {
       items.push({ label: "Fases", href: "/phases", icon: Grid2X2Icon, module: "phases" });
     }
     if (hasRole("admin")) {
-      items.push({ label: "Procesos", href: "/processes", icon: FileText, module: "processes" });
+      items.push({ label: "Vacantes", href: "/processes", icon: FileText, module: "processes" });
     }
     if (hasPermission("requisicion", "read") || hasPermission("requisicion", "write")) {
       items.push({ label: "Requisición", href: "/requisicion", icon: Briefcase, module: "requisicion" });
@@ -32,7 +32,7 @@ const Navbar = () => {
       items.push({ label: "Repositorio", href: "/repositorio", icon: FolderSearch, module: "repositorio" });
     }
     if (hasRole('reclutador') && (hasPermission("candidates", "read") && hasPermission("candidates", "write"))) {
-      items.push({ label: "Candidatos", href: "/candidatos", icon: Map, module: "candidates" });
+      items.push({ label: "Candidatos", href: "/candidates", icon: Map, module: "candidates" });
     }
     if (hasPermission("buscador", "read") || hasPermission("buscador", "write")) {
       items.push({ label: "Buscador", href: "/search", icon: Search, module: "buscador" });

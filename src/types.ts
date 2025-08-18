@@ -24,8 +24,14 @@ export interface Process {
   country_id: string;
   position_id: string;
   description?: string;
-  status: 'active' | 'paused' | 'completed';
+  status: 'open' | 'paused' | 'closed';
   is_active: boolean;
+  companies?: {
+    name: string;
+  }
+  positions?: {
+    name: string;
+  }
   candidates?: Candidate[];
   phases?: Phase[];
   created_at: string;
@@ -120,6 +126,33 @@ export interface Education {
   field: string;
   graduationDate?: string;
   current: boolean;
+}
+
+
+export interface RecruiterAssignment {
+  id: string;
+  recruiterId: string;
+  recruiterName: string;
+  recruiterEmail: string;
+  country: string;
+  company: string;
+  department: string;
+  organizationalLevel: 'operativo' | 'coordinacion' | 'gerencial';
+  isActive: boolean;
+  maxCandidates?: number;
+  specializations: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Recruiter {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  specializations: string[];
+  isActive: boolean;
+  createdAt: Date;
 }
 
 export interface NotificationConfig {

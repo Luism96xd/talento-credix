@@ -46,16 +46,18 @@ export default function ProcessManagement() {
   const fetchProcesses = async () => {
     try {
       const { data, error } = await supabase
-        .from('processes')
-        .select('*')
+        .from('requisitions')
+        .select('*, positions(name)')
+        .eq('status', 'open')
+
         .order('created_at', { ascending: false });
       if (error) throw error;
       setProcesses(data || []);
     } catch (error) {
-      console.error('Error fetching processes:', error);
+      console.error('Error fetching requisitions:', error);
       toast({
         title: "Error",
-        description: 'Error al cargar los procesos',
+        description: 'Error al cargar las vacantes',
         variant: "destructive"
       });
     }
@@ -189,7 +191,7 @@ export default function ProcessManagement() {
       <div className="p-6">
         <div className="flex items-center justify-center h-64">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-          <span className="ml-2 text-gray-600">Cargando procesos...</span>
+          <span className="ml-2 text-gray-600">Cargando vacantes...</span>
         </div>
       </div>
     );
@@ -199,8 +201,8 @@ export default function ProcessManagement() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Gestión de Procesos</h2>
-          <p className="text-gray-600 mt-1">Configure los procesos de selección de la empresa</p>
+          <h2 className="text-2xl font-bold text-gray-900">Vacates abiertas</h2>
+          <p className="text-gray-600 mt-1">Visualice las vacantes abiertas</p>
         </div>
         <Button
           onClick={handleAddProcess}
@@ -211,11 +213,11 @@ export default function ProcessManagement() {
         </Button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+      <div>
         {processes.length === 0 ? (
           <div className="p-8 text-center">
             <Briefcase className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No hay procesos configurados</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No hay vacantes abiertas</h3>
             <p className="text-gray-600 mb-4">Comience creando su primer proceso de selección</p>
             <button
               onClick={handleAddProcess}
@@ -226,16 +228,16 @@ export default function ProcessManagement() {
             </button>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-gray-200 flex flex-col gap-4">
             {processes && processes.map((process) => (
               <Card key={process.id} className="border border-border rounded-lg p-6 transition-colors">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <Briefcase className="w-5 h-5 text-primary-accent" />
-                      <h4 className="font-semibold text-foreground">{process.name}</h4>
-                      <Badge variant={process.is_active ? "default" : "secondary"}>
-                        {process.is_active ? 'Activo' : 'Inactivo'}
+                      <h4 className="font-semibold text-foreground">{process.positions.name}</h4>
+                      <Badge variant={process.status === 'open' ? "default" : "secondary"}>
+                        {process.status === 'open' ? 'Abierto' : 'Cerrado'}
                       </Badge>
                     </div>
 
