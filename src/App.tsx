@@ -46,7 +46,7 @@ const App = () => (
                     <Routes>
                       <Route path="/" element={<Index />} />
                       <Route path="/dashboard" element={
-                        <ProtectedRoute requiredRole="reclutador">
+                        <ProtectedRoute requiredModule="dashboard" requiredPermission="read">
                           <Indicators />
                         </ProtectedRoute>
                       } />

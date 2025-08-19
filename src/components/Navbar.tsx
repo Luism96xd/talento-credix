@@ -16,7 +16,7 @@ const Navbar = () => {
       items.push({ label: "Inicio", href: "/", icon: Home, module: "home" });
     }
     // Indicadores - solo para directores y admins
-    if (hasRole('gerente_desarrollo_humano') || hasRole('reclutador')) {
+    if (hasPermission('dashboard','read') || hasRole('reclutador')) {
       items.push({ label: "Indicadores", href: "/dashboard", icon: LayoutDashboard, module: "dashboard" });
     }
     if (hasRole("admin")) {

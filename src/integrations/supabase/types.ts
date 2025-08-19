@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -90,31 +90,72 @@ export type Database = {
       }
       companies: {
         Row: {
+          country_id: string | null
           created_at: string
           description: string | null
           id: string
+          is_active: boolean
           location: string | null
           mission: string | null
           name: string
           vision: string | null
         }
         Insert: {
+          country_id?: string | null
           created_at?: string
           description?: string | null
           id?: string
+          is_active?: boolean
           location?: string | null
           mission?: string | null
           name: string
           vision?: string | null
         }
         Update: {
+          country_id?: string | null
           created_at?: string
           description?: string | null
           id?: string
+          is_active?: boolean
           location?: string | null
           mission?: string | null
           name?: string
           vision?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "companies_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      countries: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -261,35 +302,30 @@ export type Database = {
       }
       group_analysis: {
         Row: {
-          content: string | null
+          content: Json | null
           created_at: string
+          end_date: string | null
           file_url: string | null
           id: number
-          period_id: string | null
+          start_date: string | null
         }
         Insert: {
-          content?: string | null
+          content?: Json | null
           created_at?: string
+          end_date?: string | null
           file_url?: string | null
           id?: number
-          period_id?: string | null
+          start_date?: string | null
         }
         Update: {
-          content?: string | null
+          content?: Json | null
           created_at?: string
+          end_date?: string | null
           file_url?: string | null
           id?: number
-          period_id?: string | null
+          start_date?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "grupal_analysis_period_id_fkey"
-            columns: ["period_id"]
-            isOneToOne: false
-            referencedRelation: "reporting_periods"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       managers: {
         Row: {
@@ -336,41 +372,20 @@ export type Database = {
         Row: {
           id: string
           module: string
-          permission: "read" | "write" | "admin"
-          role:
-            | "director"
-            | "compras"
-            | "gerente"
-            | "supervisor"
-            | "admin"
-            | "responsable_comercial"
-            | "usuario"
+          permission: Database["mayoreo"]["Enums"]["permission_type"] | null
+          role: Database["mayoreo"]["Enums"]["user_role"] | null
         }
         Insert: {
           id?: string
           module: string
-          permission: "read" | "write" | "admin"
-          role:
-            | "director"
-            | "compras"
-            | "gerente"
-            | "supervisor"
-            | "admin"
-            | "responsable_comercial"
-            | "usuario"
+          permission?: Database["mayoreo"]["Enums"]["permission_type"] | null
+          role?: Database["mayoreo"]["Enums"]["user_role"] | null
         }
         Update: {
           id?: string
           module?: string
-          permission?: "read" | "write" | "admin"
-          role?:
-            | "director"
-            | "compras"
-            | "gerente"
-            | "supervisor"
-            | "admin"
-            | "responsable_comercial"
-            | "usuario"
+          permission?: Database["mayoreo"]["Enums"]["permission_type"] | null
+          role?: Database["mayoreo"]["Enums"]["user_role"] | null
         }
         Relationships: []
       }
@@ -379,6 +394,7 @@ export type Database = {
           created_at: string | null
           department: string
           due_date: string | null
+          file_path: string | null
           file_url: string | null
           id: string
           individual_analysis: string | null
@@ -393,6 +409,7 @@ export type Database = {
           created_at?: string | null
           department: string
           due_date?: string | null
+          file_path?: string | null
           file_url?: string | null
           id?: string
           individual_analysis?: string | null
@@ -407,6 +424,7 @@ export type Database = {
           created_at?: string | null
           department?: string
           due_date?: string | null
+          file_path?: string | null
           file_url?: string | null
           id?: string
           individual_analysis?: string | null
@@ -491,6 +509,106 @@ export type Database = {
         }
         Relationships: []
       }
+      phases: {
+        Row: {
+          color: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          order: number
+        }
+        Insert: {
+          color: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          order: number
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          order?: number
+        }
+        Relationships: []
+      }
+      position_levels: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          level: number
+          position_id: string
+          step: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          level: number
+          position_id: string
+          step: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          level?: number
+          position_id?: string
+          step?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "position_levels_position_id_fkey"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "positions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      positions: {
+        Row: {
+          created_at: string
+          department_id: string
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          department_id: string
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          department_id?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "positions_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       process_cv_files: {
         Row: {
           file_name: string
@@ -529,13 +647,51 @@ export type Database = {
           },
         ]
       }
+      processes: {
+        Row: {
+          company_id: string
+          country_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          position_id: string
+          status: string
+        }
+        Insert: {
+          company_id: string
+          country_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          position_id: string
+          status?: string
+        }
+        Update: {
+          company_id?: string
+          country_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          position_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
           department: string | null
           email: string
           full_name: string | null
+          gender: string | null
           id: string
+          phone: string | null
           updated_at: string | null
         }
         Insert: {
@@ -543,7 +699,9 @@ export type Database = {
           department?: string | null
           email: string
           full_name?: string | null
+          gender?: string | null
           id: string
+          phone?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -551,7 +709,9 @@ export type Database = {
           department?: string | null
           email?: string
           full_name?: string | null
+          gender?: string | null
           id?: string
+          phone?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -693,6 +853,186 @@ export type Database = {
         }
         Relationships: []
       }
+      requisitions: {
+        Row: {
+          academic_level: string | null
+          admission_date: string | null
+          approved_by_date: string | null
+          approved_by_name: string | null
+          approved_by_position: string | null
+          assigned_to: string | null
+          candidate_name: string | null
+          cargo_type: string | null
+          closed_date: string | null
+          communication_resource: string | null
+          company_id: string | null
+          company_impact: string | null
+          contract_type: string | null
+          country_id: string | null
+          created_at: string
+          created_by: string | null
+          days_open: number | null
+          department_id: string | null
+          department_impact: string | null
+          driving_license: string | null
+          education: string | null
+          expected_results_first_semester: string | null
+          expected_results_second_semester: string | null
+          experience: string | null
+          foreign_documents: string | null
+          form_data: Json
+          id: string
+          is_confidential: boolean | null
+          key_competencies: Json | null
+          manipula_carga: boolean | null
+          position_id: string | null
+          position_level_max_id: string | null
+          position_level_min_id: string | null
+          position_objectives: string[] | null
+          request_date: string | null
+          requested_by_date: string | null
+          requested_by_name: string | null
+          requested_by_position: string | null
+          requiere_computador: boolean | null
+          requiere_vehiculo: boolean | null
+          requisition_type: string | null
+          status: string
+          technical_competencies: Json | null
+          updated_at: string
+          work_location: string | null
+        }
+        Insert: {
+          academic_level?: string | null
+          admission_date?: string | null
+          approved_by_date?: string | null
+          approved_by_name?: string | null
+          approved_by_position?: string | null
+          assigned_to?: string | null
+          candidate_name?: string | null
+          cargo_type?: string | null
+          closed_date?: string | null
+          communication_resource?: string | null
+          company_id?: string | null
+          company_impact?: string | null
+          contract_type?: string | null
+          country_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          days_open?: number | null
+          department_id?: string | null
+          department_impact?: string | null
+          driving_license?: string | null
+          education?: string | null
+          expected_results_first_semester?: string | null
+          expected_results_second_semester?: string | null
+          experience?: string | null
+          foreign_documents?: string | null
+          form_data: Json
+          id?: string
+          is_confidential?: boolean | null
+          key_competencies?: Json | null
+          manipula_carga?: boolean | null
+          position_id?: string | null
+          position_level_max_id?: string | null
+          position_level_min_id?: string | null
+          position_objectives?: string[] | null
+          request_date?: string | null
+          requested_by_date?: string | null
+          requested_by_name?: string | null
+          requested_by_position?: string | null
+          requiere_computador?: boolean | null
+          requiere_vehiculo?: boolean | null
+          requisition_type?: string | null
+          status?: string
+          technical_competencies?: Json | null
+          updated_at?: string
+          work_location?: string | null
+        }
+        Update: {
+          academic_level?: string | null
+          admission_date?: string | null
+          approved_by_date?: string | null
+          approved_by_name?: string | null
+          approved_by_position?: string | null
+          assigned_to?: string | null
+          candidate_name?: string | null
+          cargo_type?: string | null
+          closed_date?: string | null
+          communication_resource?: string | null
+          company_id?: string | null
+          company_impact?: string | null
+          contract_type?: string | null
+          country_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          days_open?: number | null
+          department_id?: string | null
+          department_impact?: string | null
+          driving_license?: string | null
+          education?: string | null
+          expected_results_first_semester?: string | null
+          expected_results_second_semester?: string | null
+          experience?: string | null
+          foreign_documents?: string | null
+          form_data?: Json
+          id?: string
+          is_confidential?: boolean | null
+          key_competencies?: Json | null
+          manipula_carga?: boolean | null
+          position_id?: string | null
+          position_level_max_id?: string | null
+          position_level_min_id?: string | null
+          position_objectives?: string[] | null
+          request_date?: string | null
+          requested_by_date?: string | null
+          requested_by_name?: string | null
+          requested_by_position?: string | null
+          requiere_computador?: boolean | null
+          requiere_vehiculo?: boolean | null
+          requisition_type?: string | null
+          status?: string
+          technical_competencies?: Json | null
+          updated_at?: string
+          work_location?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personnel_requisitions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personnel_requisitions_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personnel_requisitions_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personnel_requisitions_position_id_fkey"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "positions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "requisitions_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       roles: {
         Row: {
           created_at: string
@@ -803,7 +1143,7 @@ export type Database = {
           id: string
           status: string | null
           step: number
-          task_id: string
+          task_id: string | null
           url: string | null
         }
         Insert: {
@@ -812,7 +1152,7 @@ export type Database = {
           id?: string
           status?: string | null
           step: number
-          task_id: string
+          task_id?: string | null
           url?: string | null
         }
         Update: {
@@ -821,7 +1161,7 @@ export type Database = {
           id?: string
           status?: string | null
           step?: number
-          task_id?: string
+          task_id?: string | null
           url?: string | null
         }
         Relationships: []
@@ -857,40 +1197,19 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
-          role:
-            | "director"
-            | "compras"
-            | "gerente"
-            | "supervisor"
-            | "admin"
-            | "responsable_comercial"
-            | "usuario"
+          role: Database["mayoreo"]["Enums"]["user_role"] | null
           user_id: string
         }
         Insert: {
           created_at?: string | null
           id?: string
-          role:
-            | "director"
-            | "compras"
-            | "gerente"
-            | "supervisor"
-            | "admin"
-            | "responsable_comercial"
-            | "usuario"
+          role?: Database["mayoreo"]["Enums"]["user_role"] | null
           user_id: string
         }
         Update: {
           created_at?: string | null
           id?: string
-          role?:
-            | "director"
-            | "compras"
-            | "gerente"
-            | "supervisor"
-            | "admin"
-            | "responsable_comercial"
-            | "usuario"
+          role?: Database["mayoreo"]["Enums"]["user_role"] | null
           user_id?: string
         }
         Relationships: [
@@ -944,41 +1263,46 @@ export type Database = {
       get_reports_with_answers: {
         Args: { _period_id?: string; _user_id?: string }
         Returns: {
+          answers: Json
+          created_at: string
+          department: string
+          period_month: number
+          period_name: string
+          period_year: number
           report_id: string
+          status: string
           user_id: string
           user_name: string
-          period_name: string
-          period_month: number
-          period_year: number
-          department: string
-          status: string
-          created_at: string
-          answers: Json
         }[]
       }
       get_user_permissions: {
-        Args: { _user_id: string; _module: string }
+        Args: { _module: string; _user_id: string }
         Returns: {
-          permission: "read" | "write" | "admin"
+          permission: Database["mayoreo"]["Enums"]["permission_type"]
         }[]
       }
       has_role: {
         Args: {
+          _role: Database["mayoreo"]["Enums"]["user_role"]
           _user_id: string
-          _role:
-            | "director"
-            | "compras"
-            | "gerente"
-            | "supervisor"
-            | "admin"
-            | "responsable_comercial"
-            | "usuario"
         }
         Returns: boolean
       }
     }
     Enums: {
-      [_ in never]: never
+      permission_type: "read" | "write" | "admin"
+      user_role:
+        | "director"
+        | "compras"
+        | "gerente"
+        | "supervisor"
+        | "admin"
+        | "responsable_comercial"
+        | "usuario"
+        | "gerente_desarrollo_humano"
+        | "reclutador"
+        | "personal"
+        | "cliente"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1105,6 +1429,21 @@ export type CompositeTypes<
 
 export const Constants = {
   mayoreo: {
-    Enums: {},
+    Enums: {
+      permission_type: ["read", "write", "admin"],
+      user_role: [
+        "director",
+        "compras",
+        "gerente",
+        "supervisor",
+        "admin",
+        "responsable_comercial",
+        "usuario",
+        "gerente_desarrollo_humano",
+        "reclutador",
+        "personal",
+        "cliente",
+      ],
+    },
   },
 } as const

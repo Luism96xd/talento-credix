@@ -37,7 +37,50 @@ export interface Process {
   created_at: string;
 }
 
+export interface CompanyIndicators {
+  company_name: string
+  vacantes_cerradas: number
+  vacantes_abiertas: number
+  operativo: number
+  coordinacion: number
+  jefatura: number
+  gerencia: number
+  avgClosingTime: number | null
+  minClosingTime: number | null
+  maxClosingTime: number | null
+}
 
+export interface RecruiterIndicators {
+  recruiter_name: string
+  vacantes_cerradas: number
+  vacantes_abiertas: number
+  operativo: number
+  coordinacion: number
+  jefatura: number
+  gerencia: number
+  avgClosingTime: number | null
+  minClosingTime: number | null
+  maxClosingTime: number | null
+}
+
+export interface InternIndicators {
+  recruiter_name: string
+  vacantes_abiertas: number
+  vacantes_cerradas: number
+  avgClosingTime: number | null
+  minClosingTime: number | null
+  maxClosingTime: number | null
+}
+
+export interface TimeIndicators {
+  avgClosingTime: number | null
+  minClosingTime: number | null
+  maxClosingTime: number | null
+}
+
+export interface ProcessingStats {
+  closingTimes: number[]
+}
 export interface UserProfile {
   id: string;
   email: string;
