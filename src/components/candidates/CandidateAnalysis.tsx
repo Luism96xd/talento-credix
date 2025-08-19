@@ -4,10 +4,9 @@ import { FileUpload } from './FileUpload';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import Markdown from 'react-markdown'
 import { Loader } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const WEBHOOK_URL = 'https://n8n.mayoreo.biz/webhook/477cd5ca-aa5e-41d9-bf96-4dcd554a9833';
 

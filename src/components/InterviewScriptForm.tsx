@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader } from 'lucide-react';
 import { FileUpload } from './candidates/FileUpload';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import { useAuth } from '@/contexts/AuthContext';
 
 const WEBHOOK_URL = 'https://n8n.mayoreo.biz/webhook/34db09fd-2cdc-48e8-a275-e3b8ceea407b';
 

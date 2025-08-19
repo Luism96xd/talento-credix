@@ -8,8 +8,8 @@ import { Loader } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
 import UserMenu from '@/components/UserMenu';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Candidate {
   id: number;
