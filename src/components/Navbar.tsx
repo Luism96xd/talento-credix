@@ -31,7 +31,7 @@ const Navbar = () => {
     if (hasRole('reclutador') && (hasPermission("repositorio", "read") || hasPermission("repositorio", "write"))) {
       items.push({ label: "Repositorio", href: "/repositorio", icon: FolderSearch, module: "repositorio" });
     }
-    if (hasRole('reclutador') && (hasPermission("candidates", "read") && hasPermission("candidates", "write"))) {
+    if (hasRole('reclutador') && (hasPermission("candidates", "read") || hasPermission("candidates", "write"))) {
       items.push({ label: "Candidatos", href: "/candidates", icon: Map, module: "candidates" });
     }
     if (hasPermission("buscador", "read") || hasPermission("buscador", "write")) {

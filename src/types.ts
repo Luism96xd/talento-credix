@@ -174,18 +174,14 @@ export interface Education {
 
 export interface RecruiterAssignment {
   id: string;
-  recruiterId: string;
-  recruiterName: string;
-  recruiterEmail: string;
-  country: string;
-  company: string;
-  department: string;
-  organizationalLevel: 'operativo' | 'coordinacion' | 'gerencial';
-  isActive: boolean;
-  maxCandidates?: number;
-  specializations: string[];
-  createdAt: Date;
-  updatedAt: Date;
+  recruiter_id: string;
+  country_id: string;
+  company_id: string;
+  department_id: string;
+  organizational_level: 'operativo' | 'coordinación' | 'jefatura' | 'gerencia';
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
 }
 
 export interface Recruiter {
@@ -221,7 +217,67 @@ export interface NotificationConfig {
     toPhaseId?: string;
     allPhases?: boolean;
   };
-  createdAt: Date;
+  created_at: Date;
 }
 
 export type ViewMode = 'kanban' | 'table';
+
+export interface RecruiterAssignment {
+  id: string;
+  recruiter_id: string;
+  country_id: string;
+  company_id: string;
+  department_id: string;
+  position_id: string;
+  location: string;
+  organizational_level: 'operativo' | 'coordinación' | 'jefatura' | 'gerencia';
+  is_active: boolean;
+  recruiter?: {
+    full_name: string;
+  }
+  country?: {
+    name: string;
+  }
+  company?: {
+    name: string;
+  }
+  department?: {
+    name: string;
+  }
+  position?: {
+    name: string;
+  }
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface Recruiter {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  specializations: string[];
+  isActive: boolean;
+  createdAt: Date;
+}
+
+export interface CandidateDocument {
+  id: string;
+  candidate_id: string;
+  document_type: 'cv' | 'psychometric_test' | 'disc_test' | 'contract' | 'medical_exam' | 'other';
+  document_name: string;
+  document_url: string;
+  uploaded_by?: string;
+  uploaded_at: Date;
+}
+
+export interface RecruiterMetrics {
+  recruiter_id: string;
+  recruiter_name: string;
+  total_candidates: number;
+  hired_candidates: number;
+  average_closing_time: number; // in days
+  min_closing_time: number; // in days
+  max_closing_time: number; // in days
+  active_processes: number;
+}

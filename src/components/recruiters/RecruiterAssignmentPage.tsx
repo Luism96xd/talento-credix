@@ -1,54 +1,74 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Plus, Edit, Trash2, Users, Search, Filter, X, ToggleLeft, ToggleRight } from 'lucide-react';
 import { RecruiterAssignment } from '@/types';
 import RecruiterAssignmentForm from './RecruiterAssignmentForm';
+import { useProfiles } from '@/hooks/useProfiles';
+import { useRequisitionData } from '@/hooks/useRequisitionData';
 
 interface RecruiterAssignmentManagerProps {
   assignments: RecruiterAssignment[];
   onAssignmentsChange: (assignments: RecruiterAssignment[]) => void;
 }
 
-export default function RecruiterAssignmentPage({ 
-  assignments, 
-  onAssignmentsChange 
+export default function RecruiterAssignmentPage({
+  assignments,
+  onAssignmentsChange
 }: RecruiterAssignmentManagerProps) {
   const [showForm, setShowForm] = useState(false);
   const [editingAssignment, setEditingAssignment] = useState<RecruiterAssignment | null>(null);
   const [filters, setFilters] = useState({
-    search: '',
-    country: '',
-    company: '',
-    department: '',
-    organizationalLevel: '',
-    isActive: ''
+    recruiter_id: '',
+    country_id: '',
+    company_id: '',
+    department_id: '',
+    organizational_level: '',
+    is_active: ''
   });
 
+  const { recruiters, loading } = useProfiles()
   // Get unique values for filters
-  const countries = Array.from(new Set(assignments.map(a => a.country))).filter(Boolean);
-  const companies = Array.from(new Set(assignments.map(a => a.company))).filter(Boolean);
-  const departments = Array.from(new Set(assignments.map(a => a.department))).filter(Boolean);
+  //const countries = Array.from(new Set(assignments.map(a => a.country_id))).filter(Boolean);
+  //const companies = Array.from(new Set(assignments.map(a => a.company_id))).filter(Boolean);
+  //const departments = Array.from(new Set(assignments.map(a => a.department_id))).filter(Boolean);
+
+  const {
+    countries,
+    companies,
+    departments,
+    positions,
+    fetchDepartmentsByCompany
+  } = useRequisitionData();
 
   const organizationalLevels = [
     { value: 'operativo', label: 'Operativo' },
-    { value: 'coordinacion', label: 'Coordinación' },
-    { value: 'gerencial', label: 'Gerencial' }
+    { value: 'coordinación', label: 'Coordinación' },
+    { value: 'jefatura', label: 'Jefatura' },
+    { value: 'gerencia', label: 'Gerencial' }
   ];
+
+  useEffect(() => {
+    if (filters.company_id) {
+      fetchDepartmentsByCompany(filters.company_id);
+    }
+    setFilters({
+      ...filters,
+      department_id: ''
+    })
+  }, [filters.company_id]);
 
   // Apply filters
   const filteredAssignments = assignments.filter(assignment => {
-    const matchesSearch = !filters.search || 
-      assignment.recruiterName.toLowerCase().includes(filters.search.toLowerCase()) ||
-      assignment.recruiterEmail.toLowerCase().includes(filters.search.toLowerCase());
-    const matchesCountry = !filters.country || assignment.country === filters.country;
-    const matchesCompany = !filters.company || assignment.company === filters.company;
-    const matchesDepartment = !filters.department || assignment.department === filters.department;
-    const matchesLevel = !filters.organizationalLevel || assignment.organizationalLevel === filters.organizationalLevel;
-    const matchesActive = !filters.isActive || 
-      (filters.isActive === 'active' && assignment.isActive) ||
-      (filters.isActive === 'inactive' && !assignment.isActive);
-    
-    return matchesSearch && matchesCountry && matchesCompany && 
-           matchesDepartment && matchesLevel && matchesActive;
+    const matchesSearch = !filters.recruiter_id || assignment.recruiter_id === filters.recruiter_id;
+    const matchesCountry = !filters.country_id || assignment.country_id === filters.country_id;
+    const matchesCompany = !filters.company_id || assignment.company_id === filters.company_id;
+    const matchesDepartment = !filters.department_id || assignment.department_id === filters.department_id;
+    const matchesLevel = !filters.organizational_level || assignment.organizational_level === filters.organizational_level;
+    const matchesActive = !filters.is_active ||
+      (filters.is_active === 'active' && assignment.is_active) ||
+      (filters.is_active === 'inactive' && !assignment.is_active);
+
+    return matchesSearch && matchesCountry && matchesCompany &&
+      matchesDepartment && matchesLevel && matchesActive;
   });
 
   const handleAddAssignment = () => {
@@ -68,15 +88,15 @@ export default function RecruiterAssignmentPage({
   };
 
   const handleToggleActive = (assignmentId: string) => {
-    onAssignmentsChange(assignments.map(a => 
-      a.id === assignmentId ? { ...a, isActive: !a.isActive, updatedAt: new Date() } : a
+    onAssignmentsChange(assignments.map(a =>
+      a.id === assignmentId ? { ...a, is_active: !a.is_active, updatedAt: new Date() } : a
     ));
   };
 
-  const handleFormSubmit = (assignmentData: Omit<RecruiterAssignment, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const handleFormSubmit = (assignmentData: Omit<RecruiterAssignment, 'id' | 'created_at' | 'updated_at'>) => {
     if (editingAssignment) {
-      onAssignmentsChange(assignments.map(a => 
-        a.id === editingAssignment.id 
+      onAssignmentsChange(assignments.map(a =>
+        a.id === editingAssignment.id
           ? { ...a, ...assignmentData, updatedAt: new Date() }
           : a
       ));
@@ -84,8 +104,8 @@ export default function RecruiterAssignmentPage({
       const newAssignment: RecruiterAssignment = {
         ...assignmentData,
         id: Date.now().toString(),
-        createdAt: new Date(),
-        updatedAt: new Date()
+        created_at: new Date(),
+        updated_at: new Date()
       };
       onAssignmentsChange([...assignments, newAssignment]);
     }
@@ -100,12 +120,12 @@ export default function RecruiterAssignmentPage({
 
   const clearFilters = () => {
     setFilters({
-      search: '',
-      country: '',
-      company: '',
-      department: '',
-      organizationalLevel: '',
-      isActive: ''
+      recruiter_id: '',
+      country_id: '',
+      company_id: '',
+      department_id: '',
+      organizational_level: '',
+      is_active: ''
     });
   };
 
@@ -119,14 +139,21 @@ export default function RecruiterAssignmentPage({
   const getOrganizationalLevelColor = (level: string) => {
     switch (level) {
       case 'operativo': return 'bg-blue-100 text-blue-800';
-      case 'coordinacion': return 'bg-yellow-100 text-yellow-800';
-      case 'gerencial': return 'bg-purple-100 text-purple-800';
+      case 'coordinación': return 'bg-yellow-100 text-yellow-800';
+      case 'jefatura': return 'bg-orange-100 text-purple-800';
+      case 'gerencia': return 'bg-purple-100 text-purple-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
+  if (loading) {
+    return <div>Cargando...</div>
+  }
+  console.log(companies)
+  console.log(departments)
+
   return (
-    <div className="p-6">
+    <div className="p-4">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Asignación de Reclutadores</h2>
@@ -136,7 +163,7 @@ export default function RecruiterAssignmentPage({
         </div>
         <button
           onClick={handleAddAssignment}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center transition-colors"
+          className="text-white text-center text-linkedin bg-linkedin hover:bg-linkedin/90  px-4 py-2 rounded-md font-medium inline-flex items-center"
         >
           <Plus className="h-4 w-4 mr-2" />
           Nueva Asignación
@@ -167,14 +194,19 @@ export default function RecruiterAssignmentPage({
               Buscar reclutador
             </label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                value={filters.search}
-                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Nombre o email..."
-              />
+              <select
+                required
+                value={filters.recruiter_id}
+                onChange={(e) => setFilters({ ...filters, recruiter_id: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Seleccione un reclutador</option>
+                {recruiters.map((recruiter) => (
+                  <option key={recruiter.id} value={recruiter.id}>
+                    {recruiter.full_name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -183,14 +215,14 @@ export default function RecruiterAssignmentPage({
               País
             </label>
             <select
-              value={filters.country}
-              onChange={(e) => setFilters({ ...filters, country: e.target.value })}
+              value={filters.country_id}
+              onChange={(e) => setFilters({ ...filters, country_id: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Todos los países</option>
               {countries.map((country) => (
-                <option key={country} value={country}>
-                  {country}
+                <option key={country.id} value={country.id}>
+                  {country.name}
                 </option>
               ))}
             </select>
@@ -201,14 +233,14 @@ export default function RecruiterAssignmentPage({
               Compañía
             </label>
             <select
-              value={filters.company}
-              onChange={(e) => setFilters({ ...filters, company: e.target.value })}
+              value={filters.company_id}
+              onChange={(e) => setFilters({ ...filters, company_id: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Todas las compañías</option>
               {companies.map((company) => (
-                <option key={company} value={company}>
-                  {company}
+                <option key={company.id} value={company.id}>
+                  {company.name}
                 </option>
               ))}
             </select>
@@ -216,17 +248,17 @@ export default function RecruiterAssignmentPage({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Departamento
+              Área
             </label>
             <select
-              value={filters.department}
-              onChange={(e) => setFilters({ ...filters, department: e.target.value })}
+              value={filters.department_id}
+              onChange={(e) => setFilters({ ...filters, department_id: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="">Todos los departamentos</option>
+              <option value="">Todos las áreas</option>
               {departments.map((department) => (
-                <option key={department} value={department}>
-                  {department}
+                <option key={department.id} value={department.id}>
+                  {department.name}
                 </option>
               ))}
             </select>
@@ -237,8 +269,8 @@ export default function RecruiterAssignmentPage({
               Nivel Organizacional
             </label>
             <select
-              value={filters.organizationalLevel}
-              onChange={(e) => setFilters({ ...filters, organizationalLevel: e.target.value })}
+              value={filters.organizational_level}
+              onChange={(e) => setFilters({ ...filters, organizational_level: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Todos los niveles</option>
@@ -255,8 +287,8 @@ export default function RecruiterAssignmentPage({
               Estado
             </label>
             <select
-              value={filters.isActive}
-              onChange={(e) => setFilters({ ...filters, isActive: e.target.value })}
+              value={filters.is_active}
+              onChange={(e) => setFilters({ ...filters, is_active: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Todos los estados</option>
@@ -280,7 +312,7 @@ export default function RecruiterAssignmentPage({
               {assignments.length === 0 ? 'No hay asignaciones configuradas' : 'No se encontraron asignaciones'}
             </h3>
             <p className="text-gray-600 mb-4">
-              {assignments.length === 0 
+              {assignments.length === 0
                 ? 'Comience creando su primera asignación de reclutador'
                 : 'Intente ajustar los filtros de búsqueda'
               }
@@ -288,7 +320,7 @@ export default function RecruiterAssignmentPage({
             {assignments.length === 0 && (
               <button
                 onClick={handleAddAssignment}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium inline-flex items-center"
+                className="text-white text-center text-linkedin bg-linkedin hover:bg-linkedin/90 px-4 py-2 rounded-md font-medium inline-flex items-center"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Crear Primera Asignación
@@ -303,9 +335,10 @@ export default function RecruiterAssignmentPage({
                   <th className="text-left py-3 px-4 font-medium text-gray-900">Reclutador</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-900">País</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-900">Compañía</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-900">Departamento</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900">Área</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-900">Nivel</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-900">Especializaciones</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900">Cargo</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900">Ubicación</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-900">Estado</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-900">Acciones</th>
                 </tr>
@@ -315,53 +348,35 @@ export default function RecruiterAssignmentPage({
                   <tr key={assignment.id} className="hover:bg-gray-50">
                     <td className="py-4 px-4">
                       <div>
-                        <p className="font-medium text-gray-900">{assignment.recruiterName}</p>
-                        <p className="text-sm text-gray-600">{assignment.recruiterEmail}</p>
-                        {assignment.maxCandidates && (
-                          <p className="text-xs text-gray-500">
-                            Máx. {assignment.maxCandidates} candidatos
-                          </p>
-                        )}
+                        <p className="font-medium text-gray-900">{assignment.recruiter.full_name}</p>
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <p className="text-gray-900">{assignment.country}</p>
+                      <p className="text-gray-900">{assignment.country?.name ?? 'Todos'}</p>
                     </td>
                     <td className="py-4 px-4">
-                      <p className="text-gray-900">{assignment.company}</p>
+                      <p className="text-gray-900">{assignment.company?.name ?? 'Todas'}</p>
                     </td>
                     <td className="py-4 px-4">
-                      <p className="text-gray-900">{assignment.department}</p>
+                      <p className="text-gray-900">{assignment.department?.name ?? 'Todas'}</p>
                     </td>
                     <td className="py-4 px-4">
-                      <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getOrganizationalLevelColor(assignment.organizationalLevel)}`}>
-                        {getOrganizationalLevelLabel(assignment.organizationalLevel)}
+                      <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getOrganizationalLevelColor(assignment.organizational_level)}`}>
+                        {getOrganizationalLevelLabel(assignment?.organizational_level ?? 'Todos')}
                       </span>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="flex flex-wrap gap-1">
-                        {assignment.specializations.slice(0, 2).map((spec, index) => (
-                          <span
-                            key={index}
-                            className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full"
-                          >
-                            {spec}
-                          </span>
-                        ))}
-                        {assignment.specializations.length > 2 && (
-                          <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                            +{assignment.specializations.length - 2}
-                          </span>
-                        )}
-                      </div>
+                      <p className="text-gray-900">{assignment.position?.name ?? 'Todas'}</p>
                     </td>
                     <td className="py-4 px-4">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        assignment.isActive 
-                          ? 'bg-green-100 text-green-800' 
+                      <p className="text-gray-900">{assignment?.location ?? 'Todas'}</p>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${assignment.is_active
+                          ? 'bg-green-100 text-green-800'
                           : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {assignment.isActive ? 'Activo' : 'Inactivo'}
+                        }`}>
+                        {assignment.is_active ? 'Activo' : 'Inactivo'}
                       </span>
                     </td>
                     <td className="py-4 px-4">
@@ -370,7 +385,7 @@ export default function RecruiterAssignmentPage({
                           onClick={() => handleToggleActive(assignment.id)}
                           className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                         >
-                          {assignment.isActive ? (
+                          {assignment.is_active ? (
                             <ToggleRight className="h-4 w-4 text-green-600" />
                           ) : (
                             <ToggleLeft className="h-4 w-4" />

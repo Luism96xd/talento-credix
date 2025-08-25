@@ -25,6 +25,7 @@ import { ManualRegistration } from "./pages/ManualRegistration";
 import { CandidatesPage } from "./pages/Candidates";
 import SettingsPage from "./pages/SettingsPage";
 import Indicators from "./pages/Indicators";
+import AdminPanel from "./pages/AdminPanel";
 
 const queryClient = new QueryClient();
 
@@ -112,7 +113,7 @@ const App = () => (
                         </ProtectedRoute>
                       } />
 
-                      <Route path="/settings" element={<SettingsPage />} />
+                      <Route path="/settings" element={<AdminPanel />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </div>

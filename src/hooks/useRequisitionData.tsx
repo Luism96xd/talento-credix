@@ -42,6 +42,7 @@ export function useRequisitionData() {
 
   useEffect(() => {
     fetchCountries()
+    fetchCompanies()
   }, [])
 
   const fetchCountries = async () => {
@@ -54,6 +55,40 @@ export function useRequisitionData() {
 
       if (error) throw error
       setCountries(data || [])
+    } catch (error) {
+      console.error('Error fetching countries:', error)
+    } finally{
+      setLoading(false)
+    }
+  }
+
+  
+  const fetchDepartments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('departments')
+        .select('*')
+        .order('name')
+
+      if (error) throw error
+      setDepartments(data || [])
+    } catch (error) {
+      console.error('Error fetching countries:', error)
+    } finally{
+      setLoading(false)
+    }
+  }
+
+  
+  const fetchCompanies = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('companies')
+        .select('*')
+        .order('name')
+
+      if (error) throw error
+      setCompanies(data || [])
     } catch (error) {
       console.error('Error fetching countries:', error)
     } finally{

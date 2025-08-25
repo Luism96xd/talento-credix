@@ -1,21 +1,39 @@
 import React, { useState } from 'react';
 import { Plus, Edit, Trash2, Bell, BellOff, Webhook, MessageCircle, Mail } from 'lucide-react';
-import { NotificationConfig, Phase } from '../../types';
+import { useSupabaseQuery, useSupabaseMutation } from '../../hooks/useSupabase';
 import NotificationForm from './NotificationForm';
 
-interface NotificationManagerProps {
-  notifications: NotificationConfig[];
-  phases: Phase[];
-  onNotificationsChange: (notifications: NotificationConfig[]) => void;
+interface NotificationConfig {
+  id: string;
+  name: string;
+  type: 'webhook' | 'whatsapp' | 'email';
+  enabled: boolean;
+  config: any;
+  triggers: any;
+  created_at: string;
 }
 
-export default function NotificationManagement({ 
-  notifications, 
-  phases, 
-  onNotificationsChange 
-}: NotificationManagerProps) {
+interface Phase {
+  id: string;
+  name: string;
+  color: string;
+  description?: string;
+  order: number;
+  created_at: string;
+}
+
+export default function NotificationManager() {
   const [showForm, setShowForm] = useState(false);
-  const [editingNotification, setEditingNotification] = useState<NotificationConfig | null>(null);
+  const [editingNotification, setEditingNotification] = useState<any>(null);
+
+  const { data: notifications, loading: notificationsLoading, refetch: refetchNotifications } = 
+    useSupabaseQuery<NotificationConfig>('notifications', '*', { column: 'created_at', ascending: false });
+  
+  const { data: phases, loading: phasesLoading } = 
+    useSupabaseQuery<Phase>('phases', '*', { column: 'order', ascending: true });
+  
+  const { insert, update, remove, loading: mutationLoading } = 
+    useSupabaseMutation<NotificationConfig>('notifications');
 
   const handleAddNotification = () => {
     setEditingNotification(null);
@@ -27,35 +45,45 @@ export default function NotificationManagement({
     setShowForm(true);
   };
 
-  const handleDeleteNotification = (notificationId: string) => {
+  const handleDeleteNotification = async (notificationId: string) => {
     if (confirm('¿Está seguro de que desea eliminar esta notificación?')) {
-      onNotificationsChange(notifications.filter(n => n.id !== notificationId));
+      try {
+        await remove(notificationId);
+        refetchNotifications();
+      } catch (error) {
+        console.error('Error deleting notification:', error);
+        alert('Error al eliminar la notificación');
+      }
     }
   };
 
-  const handleToggleEnabled = (notificationId: string) => {
-    onNotificationsChange(notifications.map(n => 
-      n.id === notificationId ? { ...n, enabled: !n.enabled } : n
-    ));
+  const handleToggleEnabled = async (notificationId: string) => {
+    try {
+      const notification = notifications.find(n => n.id === notificationId);
+      if (notification) {
+        await update(notificationId, { enabled: !notification.enabled });
+        refetchNotifications();
+      }
+    } catch (error) {
+      console.error('Error toggling notification:', error);
+      alert('Error al cambiar el estado de la notificación');
+    }
   };
 
-  const handleFormSubmit = (notificationData: Omit<NotificationConfig, 'id' | 'createdAt'>) => {
-    if (editingNotification) {
-      onNotificationsChange(notifications.map(n => 
-        n.id === editingNotification.id 
-          ? { ...n, ...notificationData }
-          : n
-      ));
-    } else {
-      const newNotification: NotificationConfig = {
-        ...notificationData,
-        id: Date.now().toString(),
-        createdAt: new Date()
-      };
-      onNotificationsChange([...notifications, newNotification]);
+  const handleFormSubmit = async (notificationData: any) => {
+    try {
+      if (editingNotification) {
+        await update(editingNotification.id, notificationData);
+      } else {
+        await insert(notificationData);
+      }
+      refetchNotifications();
+      setShowForm(false);
+      setEditingNotification(null);
+    } catch (error) {
+      console.error('Error saving notification:', error);
+      alert('Error al guardar la notificación');
     }
-    setShowForm(false);
-    setEditingNotification(null);
   };
 
   const handleFormClose = () => {
@@ -100,6 +128,16 @@ export default function NotificationManagement({
     return 'Sin configurar';
   };
 
+  if (notificationsLoading || phasesLoading) {
+    return (
+      <div className="p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -109,8 +147,8 @@ export default function NotificationManagement({
         </div>
         <button
           onClick={handleAddNotification}
-          className="text-white text-center text-linkedin bg-linkedin hover:bg-linkedin/90  px-4 py-2 rounded-md font-medium inline-flex items-center"
-          >
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center transition-colors"
+        >
           <Plus className="h-4 w-4 mr-2" />
           Nueva Notificación
         </button>
@@ -124,7 +162,7 @@ export default function NotificationManagement({
             <p className="text-gray-600 mb-4">Configure notificaciones para recibir alertas automáticas</p>
             <button
               onClick={handleAddNotification}
-              className="text-center text-linkedin bg-linkedin hover:bg-linkedin/90  text-white px-4 py-2 rounded-md font-medium inline-flex items-center"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium inline-flex items-center"
             >
               <Plus className="h-4 w-4 mr-2" />
               Crear Primera Notificación
@@ -171,6 +209,7 @@ export default function NotificationManagement({
                   <div className="flex items-center space-x-2 ml-4">
                     <button
                       onClick={() => handleToggleEnabled(notification.id)}
+                      disabled={mutationLoading}
                       className={`p-2 rounded-lg transition-colors ${
                         notification.enabled
                           ? 'text-green-600 hover:bg-green-50'
@@ -186,12 +225,14 @@ export default function NotificationManagement({
                     <button
                       onClick={() => handleEditNotification(notification)}
                       className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      disabled={mutationLoading}
                     >
                       <Edit className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => handleDeleteNotification(notification.id)}
                       className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      disabled={mutationLoading}
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>

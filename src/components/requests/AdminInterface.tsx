@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { Plus } from 'lucide-react'
+import { useRequisitionData } from '@/hooks/useRequisitionData'
 
 interface AdminInterfaceProps {
   onClose: () => void
@@ -27,7 +28,7 @@ export function AdminInterface({ onClose }: AdminInterfaceProps) {
   const [newDepartment, setNewDepartment] = useState({ name: '', company_id: '' })
   const [newPosition, setNewPosition] = useState({ name: '', department_id: '' })
   const [newLevel, setNewLevel] = useState({ position_id: '', level: '', step: '' })
-
+  const [selectedCompany, setSelectedCompany] = useState('')
   useEffect(() => {
     fetchData()
   }, [])
@@ -50,6 +51,17 @@ export function AdminInterface({ onClose }: AdminInterfaceProps) {
     }
   }
 
+  const {
+    departments: filteredDepartments,
+    fetchDepartmentsByCompany,
+  } = useRequisitionData();
+
+  useEffect(() => {
+    if (selectedCompany) {
+      fetchDepartmentsByCompany(selectedCompany);
+    }
+  }, [selectedCompany]);
+
   const addCountry = async () => {
     if (!newCountry.name || !newCountry.code) return
 
@@ -59,7 +71,7 @@ export function AdminInterface({ onClose }: AdminInterfaceProps) {
         .insert([newCountry])
 
       if (error) throw error
-      
+
       toast({ title: 'País agregado exitosamente' })
       setNewCountry({ name: '', code: '' })
       fetchData()
@@ -77,7 +89,7 @@ export function AdminInterface({ onClose }: AdminInterfaceProps) {
         .insert([newCompany])
 
       if (error) throw error
-      
+
       toast({ title: 'Compañía agregada exitosamente' })
       setNewCompany({ name: '', country_id: '' })
       fetchData()
@@ -95,7 +107,7 @@ export function AdminInterface({ onClose }: AdminInterfaceProps) {
         .insert([newDepartment])
 
       if (error) throw error
-      
+
       toast({ title: 'Departamento agregado exitosamente' })
       setNewDepartment({ name: '', company_id: '' })
       fetchData()
@@ -113,7 +125,7 @@ export function AdminInterface({ onClose }: AdminInterfaceProps) {
         .insert([newPosition])
 
       if (error) throw error
-      
+
       toast({ title: 'Posición agregada exitosamente' })
       setNewPosition({ name: '', department_id: '' })
       fetchData()
@@ -131,7 +143,7 @@ export function AdminInterface({ onClose }: AdminInterfaceProps) {
         .insert([newLevel])
 
       if (error) throw error
-      
+
       toast({ title: 'Nivel agregado exitosamente' })
       setNewLevel({ position_id: '', level: '', step: '' })
     } catch (error) {
@@ -170,7 +182,7 @@ export function AdminInterface({ onClose }: AdminInterfaceProps) {
                       <Label>Nombre</Label>
                       <Input
                         value={newCountry.name}
-                        onChange={(e) => setNewCountry({...newCountry, name: e.target.value})}
+                        onChange={(e) => setNewCountry({ ...newCountry, name: e.target.value })}
                         className="border-2 border-foreground rounded-none"
                       />
                     </div>
@@ -178,7 +190,7 @@ export function AdminInterface({ onClose }: AdminInterfaceProps) {
                       <Label>Código</Label>
                       <Input
                         value={newCountry.code}
-                        onChange={(e) => setNewCountry({...newCountry, code: e.target.value})}
+                        onChange={(e) => setNewCountry({ ...newCountry, code: e.target.value })}
                         className="border-2 border-foreground rounded-none"
                       />
                     </div>
@@ -211,13 +223,13 @@ export function AdminInterface({ onClose }: AdminInterfaceProps) {
                       <Label>Nombre</Label>
                       <Input
                         value={newCompany.name}
-                        onChange={(e) => setNewCompany({...newCompany, name: e.target.value})}
+                        onChange={(e) => setNewCompany({ ...newCompany, name: e.target.value })}
                         className="border-2 border-foreground rounded-none"
                       />
                     </div>
                     <div>
                       <Label>País</Label>
-                      <Select value={newCompany.country_id} onValueChange={(value) => setNewCompany({...newCompany, country_id: value})}>
+                      <Select value={newCompany.country_id} onValueChange={(value) => setNewCompany({ ...newCompany, country_id: value })}>
                         <SelectTrigger className="border-2 border-foreground rounded-none">
                           <SelectValue placeholder="Seleccionar país" />
                         </SelectTrigger>
@@ -257,13 +269,13 @@ export function AdminInterface({ onClose }: AdminInterfaceProps) {
                       <Label>Nombre</Label>
                       <Input
                         value={newDepartment.name}
-                        onChange={(e) => setNewDepartment({...newDepartment, name: e.target.value})}
+                        onChange={(e) => setNewDepartment({ ...newDepartment, name: e.target.value })}
                         className="border-2 border-foreground rounded-none"
                       />
                     </div>
                     <div>
                       <Label>Compañía</Label>
-                      <Select value={newDepartment.company_id} onValueChange={(value) => setNewDepartment({...newDepartment, company_id: value})}>
+                      <Select value={newDepartment.company_id} onValueChange={(value) => setNewDepartment({ ...newDepartment, company_id: value })}>
                         <SelectTrigger className="border-2 border-foreground rounded-none">
                           <SelectValue placeholder="Seleccionar compañía" />
                         </SelectTrigger>
@@ -303,18 +315,31 @@ export function AdminInterface({ onClose }: AdminInterfaceProps) {
                       <Label>Nombre</Label>
                       <Input
                         value={newPosition.name}
-                        onChange={(e) => setNewPosition({...newPosition, name: e.target.value})}
+                        onChange={(e) => setNewPosition({ ...newPosition, name: e.target.value })}
                         className="border-2 border-foreground rounded-none"
                       />
                     </div>
                     <div>
+                      <Label>Compañía *</Label>
+                      <Select value={selectedCompany} onValueChange={(value) => setSelectedCompany(value)}>
+                        <SelectTrigger className="border-2 border-foreground rounded-none">
+                          <SelectValue placeholder="Seleccionar compañía..." />
+                        </SelectTrigger>
+                        <SelectContent className="border-2 border-foreground rounded-none">
+                          {companies.map((company) => (
+                            <SelectItem key={company.id} value={company.id}>{company.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
                       <Label>Departamento</Label>
-                      <Select value={newPosition.department_id} onValueChange={(value) => setNewPosition({...newPosition, department_id: value})}>
+                      <Select value={newPosition.department_id} onValueChange={(value) => setNewPosition({ ...newPosition, department_id: value })}>
                         <SelectTrigger className="border-2 border-foreground rounded-none">
                           <SelectValue placeholder="Seleccionar departamento" />
                         </SelectTrigger>
                         <SelectContent className="border-2 border-foreground rounded-none">
-                          {departments.map((department) => (
+                          {filteredDepartments.map((department) => (
                             <SelectItem key={department.id} value={department.id}>{department.name}</SelectItem>
                           ))}
                         </SelectContent>
@@ -336,7 +361,7 @@ export function AdminInterface({ onClose }: AdminInterfaceProps) {
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <Label>Posición</Label>
-                      <Select value={newLevel.position_id} onValueChange={(value) => setNewLevel({...newLevel, position_id: value})}>
+                      <Select value={newLevel.position_id} onValueChange={(value) => setNewLevel({ ...newLevel, position_id: value })}>
                         <SelectTrigger className="border-2 border-foreground rounded-none">
                           <SelectValue placeholder="Seleccionar posición" />
                         </SelectTrigger>
@@ -351,7 +376,7 @@ export function AdminInterface({ onClose }: AdminInterfaceProps) {
                       <Label>Nivel</Label>
                       <Input
                         value={newLevel.level}
-                        onChange={(e) => setNewLevel({...newLevel, level: e.target.value})}
+                        onChange={(e) => setNewLevel({ ...newLevel, level: e.target.value })}
                         placeholder="ej: Gerencial 1"
                         className="border-2 border-foreground rounded-none"
                       />
@@ -360,7 +385,7 @@ export function AdminInterface({ onClose }: AdminInterfaceProps) {
                       <Label>Paso</Label>
                       <Input
                         value={newLevel.step}
-                        onChange={(e) => setNewLevel({...newLevel, step: e.target.value})}
+                        onChange={(e) => setNewLevel({ ...newLevel, step: e.target.value })}
                         placeholder="ej: 1.5"
                         className="border-2 border-foreground rounded-none"
                       />
