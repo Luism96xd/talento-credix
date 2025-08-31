@@ -13,6 +13,7 @@ import { Settings } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useRequisitionData } from '@/hooks/useRequisitionData';
 import { useAuth } from '@/contexts/AuthContext';
+import { countryStates } from '@/lib/utils';
 
 const RequisitionForm = () => {
   const { toast } = useToast();
@@ -38,6 +39,7 @@ const RequisitionForm = () => {
   const [selectedLevelMin, setSelectedLevelMin] = useState('');
   const [selectedLevelMax, setSelectedLevelMax] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('');
+  const [locations, setLocations] = useState([])
 
   const { hasRole, profile } = useAuth()
   const [formData, setFormData] = useState({
@@ -128,6 +130,17 @@ const RequisitionForm = () => {
       setSelectedLevel('');
       setSelectedLevelMin('');
       setSelectedLevelMax('');
+
+      const position = positions.find(p => p.id === selectedPosition);
+      console.log(position)
+      if (position.name.toLowerCase() === "asesor de ventas") {
+        const country = countries.find(p => p.id === selectedCountry);
+        console.log(country)
+        console.log(countryStates)
+        setLocations(countryStates[country.name])
+      } else {
+        setLocations([])
+      }
     }
   }, [selectedPosition]);
 
@@ -358,7 +371,7 @@ const RequisitionForm = () => {
     <>
       {showAdmin && <AdminInterface onClose={() => setShowAdmin(false)} />}
 
-      <Card className="w-full max-w-6xl mx-auto bg-background border-foreground">
+      <Card className="w-full max-w-6xl mx-auto bg-background">
         <CardHeader className="text-center border-b-2 border-foreground">
           <div className="flex justify-between items-center">
             <div className="flex-1"></div>
@@ -395,7 +408,7 @@ const RequisitionForm = () => {
               </Label>
             </div>
 
-            <Card className="border-foreground">
+            <Card>
               <CardHeader className="border-b-2 border-foreground">
                 <CardTitle className="text-lg font-bold">1. INFORMACIÓN BÁSICA</CardTitle>
               </CardHeader>
@@ -465,15 +478,31 @@ const RequisitionForm = () => {
                     <Label htmlFor="workLocation" className="text-sm font-medium">
                       Ubicación o Zona de Trabajo *
                     </Label>
-                    
-                    <Input
-                      id="workLocation"
-                      value={formData.workLocation}
-                      onChange={(e) => setFormData(prev => ({ ...prev, workLocation: e.target.value }))}
-                      className="border-foreground bg-background"
-                      placeholder="Ingrese la ubicación"
-                      required
-                    />
+
+                    {locations.length > 1 ?
+                      <Select
+                        value={formData.workLocation}
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, workLocation: value }))}
+                        disabled={!selectedPosition}
+                      >
+                        <SelectTrigger className="border-foreground bg-background">
+                          <SelectValue placeholder="Seleccionar ubicación o zona de trabajo" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border-foreground">
+                          {locations.map((location) => (
+                            <SelectItem key={location.value} value={location.value}>{location.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+
+                      : <Input
+                        id="workLocation"
+                        value={formData.workLocation}
+                        onChange={(e) => setFormData(prev => ({ ...prev, workLocation: e.target.value }))}
+                        className="border-foreground bg-background"
+                        placeholder="Ingrese la ubicación"
+                        required
+                      />}
                   </div>
                 </div>
 
@@ -530,7 +559,7 @@ const RequisitionForm = () => {
             </Card>
 
             {/* Requisition Type and Contract Details */}
-            <Card className="border-foreground">
+            <Card>
               <CardHeader className="border-b-2 border-foreground">
                 <CardTitle className="text-lg font-bold">2. DETALLES DE LA REQUISICIÓN</CardTitle>
               </CardHeader>
@@ -608,7 +637,7 @@ const RequisitionForm = () => {
             </Card>
 
             {/* Impact Section */}
-            <Card className="border-foreground">
+            <Card>
               <CardHeader className="border-b-2 border-foreground">
                 <CardTitle className="text-lg font-bold">3. IMPACTO GENERADO</CardTitle>
               </CardHeader>
@@ -639,7 +668,7 @@ const RequisitionForm = () => {
             </Card>
 
             {/* Requirements Section */}
-            <Card className="border-foreground">
+            <Card>
               <CardHeader className="border-b-2 border-foreground">
                 <CardTitle className="text-lg font-bold">4. REQUERIMIENTOS DE LA POSICIÓN</CardTitle>
               </CardHeader>
@@ -678,7 +707,7 @@ const RequisitionForm = () => {
             </Card>
 
             {/* Competencies Section */}
-            <Card className="border-foreground">
+            <Card>
               <CardHeader className="border-b-2 border-foreground">
                 <CardTitle className="text-lg font-bold">5. COMPETENCIAS</CardTitle>
               </CardHeader>
@@ -722,7 +751,7 @@ const RequisitionForm = () => {
             </Card>
 
             {/* Proyección del Cargo */}
-            <Card className="border-foreground">
+            <Card>
               <CardHeader className="border-b-2 border-foreground">
                 <CardTitle className="text-lg font-bold">6. PROYECCIÓN DEL CARGO</CardTitle>
               </CardHeader>
@@ -751,94 +780,89 @@ const RequisitionForm = () => {
             </Card>
 
             {/* Información Adicional */}
-            <Card className="border-foreground">
+            <Card>
               <CardHeader className="border-b-2 border-foreground">
                 <CardTitle className="text-lg font-bold">7. INFORMACIÓN ADICIONAL</CardTitle>
               </CardHeader>
               <CardContent className="p-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Izquierda: Checkbox en dos columnas (etiqueta | check) */}
-                  <div className="border-foreground">
-                    <div className="grid grid-cols-[1fr_auto] divide-y-2">
-                      {leftAdditionalCheckboxes.map((label) => (
-                        <React.Fragment key={label}>
-                          <div className="p-3 border-r-2 border-foreground text-sm flex items-center">
-                            {label}
-                          </div>
-                          <div className="p-3 flex items-center justify-center">
-                            <Checkbox
-                              checked={formData.additionalInfo.includes(label)}
-                              onCheckedChange={() => handleCheckboxChange('additionalInfo', label)}
-                              className="border-foreground"
-                            />
-                          </div>
-                        </React.Fragment>
-                      ))}
-                    </div>
+                  <div className="grid grid-cols-[1fr_auto] divide-y-2">
+                    {leftAdditionalCheckboxes.map((label) => (
+                      <React.Fragment key={label}>
+                        <div className="p-3 border-r-2 text-sm flex items-center">
+                          {label}
+                        </div>
+                        <div className="p-3 flex items-center justify-center">
+                          <Checkbox
+                            checked={formData.additionalInfo.includes(label)}
+                            onCheckedChange={() => handleCheckboxChange('additionalInfo', label)}
+                          />
+                        </div>
+                      </React.Fragment>
+                    ))}
                   </div>
 
                   {/* Derecha: Selects con opciones específicas */}
-                  <div className="border-foreground">
-                    <div className="grid grid-cols-[auto_1fr] divide-y-2">
-                      {/* Licencia de conducir */}
-                      <div className="p-3 border-r-2 border-foreground text-sm flex items-center">
-                        El cargo requiere poseer licencia de conducir de:
-                      </div>
-                      <div className="p-3">
-                        <Select
-                          value={formData.drivingLicense}
-                          onValueChange={(v) => setFormData((prev) => ({ ...prev, drivingLicense: v }))}
-                        >
-                          <SelectTrigger className="border-foreground bg-background">
-                            <SelectValue placeholder="Seleccione" />
-                          </SelectTrigger>
-                          <SelectContent className="z-50">
-                            {drivingLicenseOptions.map((opt) => (
-                              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                  <div className="grid grid-cols-[auto_1fr] divide-y-2">
+                    {/* Licencia de conducir */}
+                    <div className="p-3 text-sm flex items-center">
+                      El cargo requiere poseer licencia de conducir de:
+                    </div>
+                    <div className="p-3">
+                      <Select
+                        value={formData.drivingLicense}
+                        onValueChange={(v) => setFormData((prev) => ({ ...prev, drivingLicense: v }))}
+                      >
+                        <SelectTrigger className="border-foreground bg-background">
+                          <SelectValue placeholder="Seleccione" />
+                        </SelectTrigger>
+                        <SelectContent className="z-50">
+                          {drivingLicenseOptions.map((opt) => (
+                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                      {/* Documento de Extranjería */}
-                      <div className="p-3 border-r-2 border-foreground text-sm flex items-center">
-                        El cargo requiere documento de extranjería:
-                      </div>
-                      <div className="p-3">
-                        <Select
-                          value={formData.foreignDocuments}
-                          onValueChange={(v) => setFormData((prev) => ({ ...prev, foreignDocuments: v }))}
-                        >
-                          <SelectTrigger className="border-foreground bg-background">
-                            <SelectValue placeholder="Seleccione" />
-                          </SelectTrigger>
-                          <SelectContent className="z-50">
-                            {foreignDocumentOptions.map((opt) => (
-                              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    {/* Documento de Extranjería */}
+                    <div className="p-3 text-sm flex items-center">
+                      El cargo requiere documento de extranjería:
+                    </div>
+                    <div className="p-3">
+                      <Select
+                        value={formData.foreignDocuments}
+                        onValueChange={(v) => setFormData((prev) => ({ ...prev, foreignDocuments: v }))}
+                      >
+                        <SelectTrigger className="bg-background border-foreground">
+                          <SelectValue placeholder="Seleccione" />
+                        </SelectTrigger>
+                        <SelectContent className="z-50">
+                          {foreignDocumentOptions.map((opt) => (
+                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                      {/* Recurso de comunicación */}
-                      <div className="p-3 border-r-2 border-foreground text-sm flex items-center">
-                        El cargo requiere asignación de recurso de comunicación:
-                      </div>
-                      <div className="p-3">
-                        <Select
-                          value={formData.communicationResource}
-                          onValueChange={(v) => setFormData((prev) => ({ ...prev, communicationResource: v }))}
-                        >
-                          <SelectTrigger className="border-foreground bg-background">
-                            <SelectValue placeholder="Seleccione" />
-                          </SelectTrigger>
-                          <SelectContent className="z-50">
-                            {communicationResourceOptions.map((opt) => (
-                              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    {/* Recurso de comunicación */}
+                    <div className="p-3 text-sm flex items-center">
+                      El cargo requiere asignación de recurso de comunicación:
+                    </div>
+                    <div className="p-3">
+                      <Select
+                        value={formData.communicationResource}
+                        onValueChange={(v) => setFormData((prev) => ({ ...prev, communicationResource: v }))}
+                      >
+                        <SelectTrigger className="border-foreground bg-background">
+                          <SelectValue placeholder="Seleccione" />
+                        </SelectTrigger>
+                        <SelectContent className="z-50">
+                          {communicationResourceOptions.map((opt) => (
+                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 </div>
@@ -846,7 +870,7 @@ const RequisitionForm = () => {
             </Card>
 
             {/* Autorizaciones */}
-            <Card className="border-foreground">
+            <Card>
               <CardHeader className="border-b-2 border-foreground">
                 <CardTitle className="text-lg font-bold">8. AUTORIZACIONES DE LA REQUISICIÓN</CardTitle>
               </CardHeader>
