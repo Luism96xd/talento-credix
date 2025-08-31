@@ -24,7 +24,7 @@ const RequisitionDetails = ({ requisition }: { requisition: Requisition }) => {
                 <div className="p-6 flex-grow">
                     <div className="flex justify-between items-start mb-4">
                         <h2 className="text-xl font-semibold text-gray-800 break-words max-w-[90%]">
-                            Solicitud: {requisition.position_name || 'Puesto no especificado'}
+                            Solicitud: {requisition.positions_name || 'Puesto no especificado'}
                         </h2>
                         <span
                             className={`px-3 py-1 rounded-full text-xs font-medium ${requisition.status === 'open'

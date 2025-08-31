@@ -5,7 +5,6 @@ export const executeNotification = async (
   candidate: Candidate,
   fromPhase: Phase | null,
   toPhase: Phase,
-  phases: Phase[]
 ) => {
   if (!config.enabled) return;
 
@@ -15,8 +14,10 @@ export const executeNotification = async (
     (config.triggers.toPhaseId === toPhase.id);
 
   if (!shouldTrigger) return;
+  console.log(shouldTrigger)
 
   const notificationData = {
+    event: 'candidate_phase_change',
     candidate: {
       id: candidate.id,
       name: candidate.name,
@@ -24,15 +25,20 @@ export const executeNotification = async (
       phone: candidate.phone,
       position: candidate.position
     },
+    requisition: {
+      id: candidate.requisition_id,
+    },
     fromPhase: fromPhase ? {
       id: fromPhase.id,
       name: fromPhase.name,
-      color: fromPhase.color
+      color: fromPhase.color,
+      order: fromPhase.order,
     } : null,
     toPhase: {
       id: toPhase.id,
       name: toPhase.name,
-      color: toPhase.color
+      color: toPhase.color,
+      order: toPhase.order
     },
     timestamp: new Date().toISOString()
   };
@@ -57,6 +63,8 @@ export const executeNotification = async (
 
 const executeWebhook = async (config: NotificationConfig, data: any) => {
   if (!config.config.url) throw new Error('Webhook URL not configured');
+
+  console.log(config.config.url)
 
   const response = await fetch(config.config.url, {
     method: config.config.method || 'POST',

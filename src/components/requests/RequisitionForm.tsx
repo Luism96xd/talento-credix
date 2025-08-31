@@ -39,7 +39,7 @@ const RequisitionForm = () => {
   const [selectedLevelMax, setSelectedLevelMax] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('');
 
-  const { hasRole } = useAuth()
+  const { hasRole, profile } = useAuth()
   const [formData, setFormData] = useState({
     isConfidential: false,
     // Basic Information
@@ -195,6 +195,22 @@ const RequisitionForm = () => {
 
       await submitRequisition(payload);
 
+      //Send payload to webhook
+      const response = await fetch('https://n8n.mayoreo.biz/webhook/f2643890-5a9f-4345-89ce-d73a9561310d', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: profile.id, email: profile.email, ...payload })
+      })
+
+      if (!response.ok) {
+        toast({
+          title: 'Error',
+          description: 'Error enviando la información al webhook'
+        })
+      }
+
+      const data = await response.json()
+      console.log(data)
+
       toast({
         title: "Requisición enviada exitosamente",
         description: "El formulario ha sido enviado y guardado en la base de datos.",
@@ -320,12 +336,14 @@ const RequisitionForm = () => {
     "Pasaporte",
     "Visa",
     "Pasaporte y visa",
+    "No requiere"
   ];
 
   const communicationResourceOptions = [
     "Línea telefónica corporativa",
     "Teléfono y línea corporativa",
-    "Tablet y no requiere",
+    "Tablet",
+    "No requier"
   ];
 
   if (loading) {
@@ -340,7 +358,7 @@ const RequisitionForm = () => {
     <>
       {showAdmin && <AdminInterface onClose={() => setShowAdmin(false)} />}
 
-      <Card className="w-full max-w-6xl mx-auto bg-background border-2 border-foreground rounded-none">
+      <Card className="w-full max-w-6xl mx-auto bg-background border-foreground">
         <CardHeader className="text-center border-b-2 border-foreground">
           <div className="flex justify-between items-center">
             <div className="flex-1"></div>
@@ -351,15 +369,15 @@ const RequisitionForm = () => {
                 onClick={() => setShowAdmin(true)}
                 variant="outline"
                 size="sm"
-                className="border-2 border-foreground rounded-none"
+                className="border-foreground"
               >
                 <Settings className="w-4 h-4 mr-2" />
                 Admin
               </Button>)}
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold uppercase tracking-wide">
-            FORMATO DE REQUISICIÓN DE PERSONAL
+          <CardTitle className="text-2xl font-bold">
+            Requisición de Personal
           </CardTitle>
         </CardHeader>
 
@@ -377,7 +395,7 @@ const RequisitionForm = () => {
               </Label>
             </div>
 
-            <Card className="border-2 border-foreground rounded-none">
+            <Card className="border-foreground">
               <CardHeader className="border-b-2 border-foreground">
                 <CardTitle className="text-lg font-bold">1. INFORMACIÓN BÁSICA</CardTitle>
               </CardHeader>
@@ -425,7 +443,7 @@ const RequisitionForm = () => {
                       type="date"
                       value={formData.requestDate}
                       onChange={(e) => setFormData(prev => ({ ...prev, requestDate: e.target.value }))}
-                      className="border-2 border-foreground bg-background rounded-none"
+                      className="border-foreground bg-background"
                       required
                     />
                   </div>
@@ -447,11 +465,12 @@ const RequisitionForm = () => {
                     <Label htmlFor="workLocation" className="text-sm font-medium">
                       Ubicación o Zona de Trabajo *
                     </Label>
+                    
                     <Input
                       id="workLocation"
                       value={formData.workLocation}
                       onChange={(e) => setFormData(prev => ({ ...prev, workLocation: e.target.value }))}
-                      className="border-2 border-foreground bg-background rounded-none"
+                      className="border-foreground bg-background"
                       placeholder="Ingrese la ubicación"
                       required
                     />
@@ -467,10 +486,10 @@ const RequisitionForm = () => {
                       onValueChange={setSelectedLevelMin}
                       disabled={!selectedPosition}
                     >
-                      <SelectTrigger className="border-2 border-foreground bg-background rounded-none">
+                      <SelectTrigger className="border-foreground bg-background">
                         <SelectValue placeholder="Seleccionar nivel mínimo" />
                       </SelectTrigger>
-                      <SelectContent className="bg-background border-2 border-foreground rounded-none">
+                      <SelectContent className="bg-background border-foreground">
                         {positionLevels.map((l) => (
                           <SelectItem key={l.id} value={l.id}>{`${l.step}`}</SelectItem>
                         ))}
@@ -483,7 +502,7 @@ const RequisitionForm = () => {
                 <Input
                   id="possitionLevel"
                   value={positionLevels.find(l => l.id === selectedLevel)?.level || ''}
-                  className="border-2 border-foreground bg-background rounded-none"
+                  className="border-foreground bg-background"
                   placeholder="Se actualiza automáticamente"
                   disabled
                 />*/}
@@ -496,10 +515,10 @@ const RequisitionForm = () => {
                       onValueChange={setSelectedLevelMax}
                       disabled={!selectedPosition}
                     >
-                      <SelectTrigger className="border-2 border-foreground bg-background rounded-none">
+                      <SelectTrigger className="border-foreground bg-background">
                         <SelectValue placeholder="Seleccionar nivel máximo" />
                       </SelectTrigger>
-                      <SelectContent className="bg-background border-2 border-foreground rounded-none">
+                      <SelectContent className="bg-background border-foreground">
                         {positionLevels.map((l) => (
                           <SelectItem key={l.id} value={l.id}>{`${l.step}`}</SelectItem>
                         ))}
@@ -511,14 +530,14 @@ const RequisitionForm = () => {
             </Card>
 
             {/* Requisition Type and Contract Details */}
-            <Card className="border-2 border-foreground rounded-none">
+            <Card className="border-foreground">
               <CardHeader className="border-b-2 border-foreground">
                 <CardTitle className="text-lg font-bold">2. DETALLES DE LA REQUISICIÓN</CardTitle>
               </CardHeader>
               <CardContent className="p-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Tipo de Requisición */}
-                  <div className="border border-foreground p-4 rounded-none">
+                  <div className="border border-foreground p-4">
                     <h3 className="font-bold mb-3 text-sm">TIPO DE REQUISICIÓN</h3>
                     <RadioGroup
                       value={formData.requisitionType}
@@ -535,7 +554,7 @@ const RequisitionForm = () => {
                   </div>
 
                   {/* Tipo de Contrato */}
-                  <div className="border border-foreground p-4 rounded-none">
+                  <div className="border border-foreground p-4">
                     <h3 className="font-bold mb-3 text-sm">TIPO DE CONTRATO</h3>
                     <RadioGroup
                       value={formData.contractType}
@@ -552,7 +571,7 @@ const RequisitionForm = () => {
                   </div>
 
                   {/* Tipo de Cargo */}
-                  <div className="border border-foreground p-4 rounded-none">
+                  <div className="border border-foreground p-4">
                     <h3 className="font-bold mb-3 text-sm">TIPO DE CARGO</h3>
                     <RadioGroup
                       value={formData.cargoType}
@@ -569,7 +588,7 @@ const RequisitionForm = () => {
                   </div>
 
                   {/* Objetivo de la Posición */}
-                  <div className="border border-foreground p-4 rounded-none">
+                  <div className="border border-foreground p-4">
                     <h3 className="font-bold mb-3 text-sm">OBJETIVO DE LA POSICIÓN</h3>
                     <div className="space-y-2">
                       {positionObjectives.map(objective => (
@@ -577,7 +596,7 @@ const RequisitionForm = () => {
                           <Checkbox
                             checked={formData.positionObjective.includes(objective)}
                             onCheckedChange={() => handleCheckboxChange('positionObjective', objective)}
-                            className="border-2 border-foreground rounded-none"
+                            className="border-foreground"
                           />
                           <Label className="text-sm">{objective}</Label>
                         </div>
@@ -589,7 +608,7 @@ const RequisitionForm = () => {
             </Card>
 
             {/* Impact Section */}
-            <Card className="border-2 border-foreground rounded-none">
+            <Card className="border-foreground">
               <CardHeader className="border-b-2 border-foreground">
                 <CardTitle className="text-lg font-bold">3. IMPACTO GENERADO</CardTitle>
               </CardHeader>
@@ -600,7 +619,7 @@ const RequisitionForm = () => {
                     <Textarea
                       value={formData.departmentImpact}
                       onChange={(e) => setFormData(prev => ({ ...prev, departmentImpact: e.target.value }))}
-                      className="border-2 border-foreground rounded-none min-h-[120px]"
+                      className="border-foreground min-h-[120px]"
                       placeholder="Describa el impacto en el departamento"
                       required
                     />
@@ -610,7 +629,7 @@ const RequisitionForm = () => {
                     <Textarea
                       value={formData.companyImpact}
                       onChange={(e) => setFormData(prev => ({ ...prev, companyImpact: e.target.value }))}
-                      className="border-2 border-foreground rounded-none min-h-[120px]"
+                      className="border-foreground min-h-[120px]"
                       placeholder="Describa el impacto en la compañía"
                       required
                     />
@@ -620,7 +639,7 @@ const RequisitionForm = () => {
             </Card>
 
             {/* Requirements Section */}
-            <Card className="border-2 border-foreground rounded-none">
+            <Card className="border-foreground">
               <CardHeader className="border-b-2 border-foreground">
                 <CardTitle className="text-lg font-bold">4. REQUERIMIENTOS DE LA POSICIÓN</CardTitle>
               </CardHeader>
@@ -630,7 +649,7 @@ const RequisitionForm = () => {
                   <Textarea
                     value={formData.academicLevel}
                     onChange={(e) => setFormData(prev => ({ ...prev, academicLevel: e.target.value }))}
-                    className="border-2 border-foreground rounded-none"
+                    className="border-foreground"
                     placeholder="Especifique el nivel académico requerido"
                     required
                   />
@@ -640,7 +659,7 @@ const RequisitionForm = () => {
                   <Textarea
                     value={formData.professionalCareer}
                     onChange={(e) => setFormData(prev => ({ ...prev, professionalCareer: e.target.value }))}
-                    className="border-2 border-foreground rounded-none"
+                    className="border-foreground"
                     placeholder="Especifique la carrera profesional requerida"
                     required
                   />
@@ -650,7 +669,7 @@ const RequisitionForm = () => {
                   <Textarea
                     value={formData.experience}
                     onChange={(e) => setFormData(prev => ({ ...prev, experience: e.target.value }))}
-                    className="border-2 border-foreground rounded-none"
+                    className="border-foreground"
                     placeholder="Especifique la experiencia requerida"
                     required
                   />
@@ -659,14 +678,14 @@ const RequisitionForm = () => {
             </Card>
 
             {/* Competencies Section */}
-            <Card className="border-2 border-foreground rounded-none">
+            <Card className="border-foreground">
               <CardHeader className="border-b-2 border-foreground">
                 <CardTitle className="text-lg font-bold">5. COMPETENCIAS</CardTitle>
               </CardHeader>
               <CardContent className="p-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Competencias Clave */}
-                  <div className="border border-foreground p-4 rounded-none">
+                  <div className="border border-foreground p-4">
                     <h3 className="font-bold mb-3 text-sm">COMPETENCIAS CLAVE REQUERIDAS</h3>
                     <div className="space-y-2 max-h-64 overflow-y-auto">
                       {keyCompetencies.map(competency => (
@@ -674,7 +693,7 @@ const RequisitionForm = () => {
                           <Checkbox
                             checked={formData.keyCompetencies.includes(competency)}
                             onCheckedChange={() => handleCheckboxChange('keyCompetencies', competency)}
-                            className="border-2 border-foreground rounded-none"
+                            className="border-foreground"
                           />
                           <Label className="text-sm">{competency}</Label>
                         </div>
@@ -683,7 +702,7 @@ const RequisitionForm = () => {
                   </div>
 
                   {/* Competencias Técnicas */}
-                  <div className="border border-foreground p-4 rounded-none">
+                  <div className="border border-foreground p-4">
                     <h3 className="font-bold mb-3 text-sm">COMPETENCIAS TÉCNICAS DESEABLES</h3>
                     <div className="space-y-2 max-h-64 overflow-y-auto">
                       {technicalCompetencies.map(competency => (
@@ -691,7 +710,7 @@ const RequisitionForm = () => {
                           <Checkbox
                             checked={formData.technicalCompetencies.includes(competency)}
                             onCheckedChange={() => handleCheckboxChange('technicalCompetencies', competency)}
-                            className="border-2 border-foreground rounded-none"
+                            className="border-foreground"
                           />
                           <Label className="text-sm">{competency}</Label>
                         </div>
@@ -703,7 +722,7 @@ const RequisitionForm = () => {
             </Card>
 
             {/* Proyección del Cargo */}
-            <Card className="border-2 border-foreground rounded-none">
+            <Card className="border-foreground">
               <CardHeader className="border-b-2 border-foreground">
                 <CardTitle className="text-lg font-bold">6. PROYECCIÓN DEL CARGO</CardTitle>
               </CardHeader>
@@ -714,7 +733,7 @@ const RequisitionForm = () => {
                     <Textarea
                       value={formData.expectedResultsFirstSemester}
                       onChange={(e) => setFormData(prev => ({ ...prev, expectedResultsFirstSemester: e.target.value }))}
-                      className="border-2 border-foreground rounded-none min-h-[120px]"
+                      className="border-foreground min-h-[120px]"
                       placeholder="Escriba los resultados esperados"
                     />
                   </div>
@@ -723,7 +742,7 @@ const RequisitionForm = () => {
                     <Textarea
                       value={formData.expectedResultsSecondSemester}
                       onChange={(e) => setFormData(prev => ({ ...prev, expectedResultsSecondSemester: e.target.value }))}
-                      className="border-2 border-foreground rounded-none min-h-[120px]"
+                      className="border-foreground min-h-[120px]"
                       placeholder="Escriba los resultados esperados"
                     />
                   </div>
@@ -732,14 +751,14 @@ const RequisitionForm = () => {
             </Card>
 
             {/* Información Adicional */}
-            <Card className="border-2 border-foreground rounded-none">
+            <Card className="border-foreground">
               <CardHeader className="border-b-2 border-foreground">
                 <CardTitle className="text-lg font-bold">7. INFORMACIÓN ADICIONAL</CardTitle>
               </CardHeader>
               <CardContent className="p-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Izquierda: Checkbox en dos columnas (etiqueta | check) */}
-                  <div className="border-2 border-foreground">
+                  <div className="border-foreground">
                     <div className="grid grid-cols-[1fr_auto] divide-y-2">
                       {leftAdditionalCheckboxes.map((label) => (
                         <React.Fragment key={label}>
@@ -750,7 +769,7 @@ const RequisitionForm = () => {
                             <Checkbox
                               checked={formData.additionalInfo.includes(label)}
                               onCheckedChange={() => handleCheckboxChange('additionalInfo', label)}
-                              className="border-2 border-foreground rounded-none"
+                              className="border-foreground"
                             />
                           </div>
                         </React.Fragment>
@@ -759,7 +778,7 @@ const RequisitionForm = () => {
                   </div>
 
                   {/* Derecha: Selects con opciones específicas */}
-                  <div className="border-2 border-foreground">
+                  <div className="border-foreground">
                     <div className="grid grid-cols-[auto_1fr] divide-y-2">
                       {/* Licencia de conducir */}
                       <div className="p-3 border-r-2 border-foreground text-sm flex items-center">
@@ -770,7 +789,7 @@ const RequisitionForm = () => {
                           value={formData.drivingLicense}
                           onValueChange={(v) => setFormData((prev) => ({ ...prev, drivingLicense: v }))}
                         >
-                          <SelectTrigger className="border-2 border-foreground rounded-none bg-background">
+                          <SelectTrigger className="border-foreground bg-background">
                             <SelectValue placeholder="Seleccione" />
                           </SelectTrigger>
                           <SelectContent className="z-50">
@@ -790,7 +809,7 @@ const RequisitionForm = () => {
                           value={formData.foreignDocuments}
                           onValueChange={(v) => setFormData((prev) => ({ ...prev, foreignDocuments: v }))}
                         >
-                          <SelectTrigger className="border-2 border-foreground rounded-none bg-background">
+                          <SelectTrigger className="border-foreground bg-background">
                             <SelectValue placeholder="Seleccione" />
                           </SelectTrigger>
                           <SelectContent className="z-50">
@@ -810,7 +829,7 @@ const RequisitionForm = () => {
                           value={formData.communicationResource}
                           onValueChange={(v) => setFormData((prev) => ({ ...prev, communicationResource: v }))}
                         >
-                          <SelectTrigger className="border-2 border-foreground rounded-none bg-background">
+                          <SelectTrigger className="border-foreground bg-background">
                             <SelectValue placeholder="Seleccione" />
                           </SelectTrigger>
                           <SelectContent className="z-50">
@@ -827,12 +846,12 @@ const RequisitionForm = () => {
             </Card>
 
             {/* Autorizaciones */}
-            <Card className="border-2 border-foreground rounded-none">
+            <Card className="border-foreground">
               <CardHeader className="border-b-2 border-foreground">
                 <CardTitle className="text-lg font-bold">8. AUTORIZACIONES DE LA REQUISICIÓN</CardTitle>
               </CardHeader>
               <CardContent className="p-4 space-y-4">
-                <div className="border-2 border-foreground">
+                <div className="border-foreground">
                   <div className="grid grid-cols-[auto_1fr_1fr_1fr_1fr] divide-y-2">
                     <div className="contents">
                       <div className="p-3 border-r-2 font-semibold">&nbsp;</div>
@@ -849,7 +868,7 @@ const RequisitionForm = () => {
                         <Input
                           value={formData.requestedBy}
                           onChange={(e) => setFormData(prev => ({ ...prev, requestedBy: e.target.value }))}
-                          className="border-2 border-foreground rounded-none"
+                          className="border-foreground"
                           placeholder="Nombre completo"
                           required
                         />
@@ -858,7 +877,7 @@ const RequisitionForm = () => {
                         <Input
                           value={formData.requestedByPosition}
                           onChange={(e) => setFormData(prev => ({ ...prev, requestedByPosition: e.target.value }))}
-                          className="border-2 border-foreground rounded-none"
+                          className="border-foreground"
                           placeholder="Cargo"
                           required
                         />
@@ -867,7 +886,7 @@ const RequisitionForm = () => {
                         <Input
                           value={formData.requestedBySignature}
                           onChange={(e) => setFormData(prev => ({ ...prev, requestedBySignature: e.target.value }))}
-                          className="border-2 border-foreground rounded-none"
+                          className="border-foreground"
                           placeholder="Firma"
                         />
                       </div>
@@ -876,7 +895,7 @@ const RequisitionForm = () => {
                           type="date"
                           value={formData.requestedByDate}
                           onChange={(e) => setFormData(prev => ({ ...prev, requestedByDate: e.target.value }))}
-                          className="border-2 border-foreground rounded-none"
+                          className="border-foreground"
                         />
                       </div>
                     </div>
@@ -888,7 +907,7 @@ const RequisitionForm = () => {
                         <Input
                           value={formData.approvedBy}
                           onChange={(e) => setFormData(prev => ({ ...prev, approvedBy: e.target.value }))}
-                          className="border-2 border-foreground rounded-none"
+                          className="border-foreground"
                           placeholder="Nombre completo"
                           required
                         />
@@ -897,7 +916,7 @@ const RequisitionForm = () => {
                         <Input
                           value={formData.approvedByPosition}
                           onChange={(e) => setFormData(prev => ({ ...prev, approvedByPosition: e.target.value }))}
-                          className="border-2 border-foreground rounded-none"
+                          className="border-foreground"
                           placeholder="Cargo"
                           required
                         />
@@ -906,7 +925,7 @@ const RequisitionForm = () => {
                         <Input
                           value={formData.approvedBySignature}
                           onChange={(e) => setFormData(prev => ({ ...prev, approvedBySignature: e.target.value }))}
-                          className="border-2 border-foreground rounded-none"
+                          className="border-foreground"
                           placeholder="Firma"
                         />
                       </div>
@@ -915,7 +934,7 @@ const RequisitionForm = () => {
                           type="date"
                           value={formData.approvedByDate}
                           onChange={(e) => setFormData(prev => ({ ...prev, approvedByDate: e.target.value }))}
-                          className="border-2 border-foreground rounded-none"
+                          className="border-foreground"
                         />
                       </div>
                     </div>
@@ -928,7 +947,7 @@ const RequisitionForm = () => {
                     <Textarea
                       value={formData.hrValidation}
                       onChange={(e) => setFormData(prev => ({ ...prev, hrValidation: e.target.value }))}
-                      className="border-2 border-foreground rounded-none"
+                      className="border-foreground"
                       placeholder="Comentarios de Recursos Humanos"
                     />
                   </div>
@@ -941,7 +960,7 @@ const RequisitionForm = () => {
             <div className="flex justify-center pt-6">
               <Button
                 type="submit"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 border-2 border-foreground rounded-none px-8 py-3"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 border-foreground px-8 py-3"
               >
                 ENVIAR REQUISICIÓN
               </Button>

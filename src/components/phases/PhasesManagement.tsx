@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { Plus, Edit, Trash2, Circle, GripVertical } from 'lucide-react';
 import { Phase } from '../../types';
 import { handlePhaseDragStart, handlePhaseDragOver, handlePhaseDrop } from '@/utils/dragAndDrop';
@@ -6,6 +6,8 @@ import PhaseForm from '@/components/phases/PhasesForm';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Card, CardContent } from '../ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PhaseManagerProps {
   phases: Phase[];
@@ -15,7 +17,7 @@ interface PhaseManagerProps {
 export default function PhasesManagement({ phases, onPhasesChange }: PhaseManagerProps) {
   const [showForm, setShowForm] = useState(false);
   const [editingPhase, setEditingPhase] = useState<Phase | null>(null);
-
+  const { toast } = useToast()
   const handleAddPhase = () => {
     setEditingPhase(null);
     setShowForm(true);
@@ -26,28 +28,54 @@ export default function PhasesManagement({ phases, onPhasesChange }: PhaseManage
     setShowForm(true);
   };
 
-  const handleDeletePhase = (phaseId: string) => {
+  const handleDeletePhase = async (phaseId: string) => {
     if (confirm('¿Está seguro de que desea eliminar esta fase?')) {
+      try {
+        await supabase.from('phases').delete().eq('id', phaseId)
+      } catch (error) {
+        console.error(error)
+      }
       onPhasesChange(phases.filter(p => p.id !== phaseId));
     }
   };
 
-  const handleFormSubmit = (phaseData: Omit<Phase, 'id' | 'createdAt'>) => {
+  const handleFormSubmit = async (phaseData: Omit<Phase, 'id' | 'created_at'>) => {
     if (editingPhase) {
-      onPhasesChange(phases.map(p =>
-        p.id === editingPhase.id
-          ? { ...p, ...phaseData }
-          : p
-      ));
+      try {
+        const { error } = await supabase.from('phases').update(phaseData).eq('id', editingPhase.id);
+        if (error) throw error;
+        onPhasesChange(phases.map(p =>
+          p.id === editingPhase.id
+            ? { ...p, ...phaseData }
+            : p
+        ));
+        toast({ title: "Éxito", description: "Fase actualizada correctamente.", variant: "default" });
+      } catch (error) {
+        console.error("Error al actualizar la fase:", error.message);
+        toast({
+          title: "Error",
+          description: `Hubo un error al actualizar la fase: ${error.message || 'Inténtelo de nuevo.'}`,
+          variant: "destructive"
+        });
+      }
     } else {
-      const maxOrder = phases.length > 0 ? Math.max(...phases.map(p => p.order)) : -1;
-      const newPhase: Phase = {
-        ...phaseData,
-        id: Date.now().toString(),
-        order: maxOrder + 1,
-        createdAt: new Date()
-      };
-      onPhasesChange([...phases, newPhase]);
+      try {
+        const maxOrder = phases.length > 0 ? Math.max(...phases.map(p => p.order)) : -1;
+        const newPhase: Phase = {
+          ...phaseData,
+          order: maxOrder + 1,
+          created_at: new Date()
+        };
+        const { error } = await supabase.from('phases').insert(newPhase)
+        if (error) throw error;
+        onPhasesChange([...phases, newPhase]);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Hubo un error al crear la fase",
+          variant: "destructive"
+        });
+      }
     }
     setShowForm(false);
     setEditingPhase(null);

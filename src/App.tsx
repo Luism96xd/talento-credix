@@ -22,10 +22,11 @@ import { Index } from "./pages/Index";
 import { RequisitionsPage } from "./pages/RequisitionsPage";
 import { PublicRegistration } from "./pages/PublicRegistration";
 import { ManualRegistration } from "./pages/ManualRegistration";
-import { CandidatesPage } from "./pages/Candidates";
+import { KanbanPage } from "./pages/KanbanPage";
 import SettingsPage from "./pages/SettingsPage";
 import Indicators from "./pages/Indicators";
 import AdminPanel from "./pages/AdminPanel";
+import CandidatePortal from "./components/candidates/CandidatePortal";
 
 const queryClient = new QueryClient();
 
@@ -56,7 +57,12 @@ const App = () => (
                           <Phases />
                         </ProtectedRoute>
                       } />
-                      <Route path="/processes" element={
+                       <Route path="/portal" element={
+                        <ProtectedRoute>
+                          <CandidatePortal />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/vacantes" element={
                         <ProtectedRoute requiredRole="admin">
                           <Processes />
                         </ProtectedRoute>
@@ -92,9 +98,9 @@ const App = () => (
                           <SearchPage />
                         </ProtectedRoute>
                       } />
-                      <Route path="/candidates" element={
+                      <Route path="/candidates/:processId" element={
                         <ProtectedRoute requiredRole="reclutador">
-                          <CandidatesPage />
+                          <KanbanPage />
                         </ProtectedRoute>
                       } />
                       <Route path="/candidate-analysis" element={
@@ -108,7 +114,7 @@ const App = () => (
                         </ProtectedRoute>
                       } />
                       <Route path="/interview-analysis" element={
-                        <ProtectedRoute  requiredModule="entrevistas" requiredPermission="write">
+                        <ProtectedRoute requiredModule="entrevistas" requiredPermission="write">
                           <Interviews />
                         </ProtectedRoute>
                       } />

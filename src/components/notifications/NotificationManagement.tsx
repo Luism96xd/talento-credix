@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Edit, Trash2, Bell, BellOff, Webhook, MessageCircle, Mail } from 'lucide-react';
 import { NotificationConfig, Phase } from '../../types';
 import NotificationForm from './NotificationForm';
+import { supabase } from '@/integrations/supabase/client';
 
 interface NotificationManagerProps {
   notifications: NotificationConfig[];
@@ -9,10 +10,10 @@ interface NotificationManagerProps {
   onNotificationsChange: (notifications: NotificationConfig[]) => void;
 }
 
-export default function NotificationManagement({ 
-  notifications, 
-  phases, 
-  onNotificationsChange 
+export default function NotificationManagement({
+  notifications,
+  phases,
+  onNotificationsChange
 }: NotificationManagerProps) {
   const [showForm, setShowForm] = useState(false);
   const [editingNotification, setEditingNotification] = useState<NotificationConfig | null>(null);
@@ -22,36 +23,53 @@ export default function NotificationManagement({
     setShowForm(true);
   };
 
-  const handleEditNotification = (notification: NotificationConfig) => {
+  const handleEditNotification = async (notification: NotificationConfig) => {
     setEditingNotification(notification);
     setShowForm(true);
   };
 
-  const handleDeleteNotification = (notificationId: string) => {
+  const handleDeleteNotification = async (notificationId: string) => {
     if (confirm('¿Está seguro de que desea eliminar esta notificación?')) {
+      try {
+        const { error } = await supabase.from('notifications').delete().eq('id', notificationId);
+        if (error) throw error
+      } catch (error) {
+        console.log(error)
+      }
       onNotificationsChange(notifications.filter(n => n.id !== notificationId));
     }
   };
 
   const handleToggleEnabled = (notificationId: string) => {
-    onNotificationsChange(notifications.map(n => 
+    onNotificationsChange(notifications.map(n =>
       n.id === notificationId ? { ...n, enabled: !n.enabled } : n
     ));
   };
 
-  const handleFormSubmit = (notificationData: Omit<NotificationConfig, 'id' | 'createdAt'>) => {
+  const handleFormSubmit = async (notificationData: Omit<NotificationConfig, 'id' | 'created_at'>) => {
     if (editingNotification) {
-      onNotificationsChange(notifications.map(n => 
-        n.id === editingNotification.id 
-          ? { ...n, ...notificationData }
-          : n
-      ));
+      try {
+        const { error } = await supabase.from('notifications')
+          .update({ id: editingNotification.id, ...notificationData })
+          .eq('id',editingNotification.id)
+        if (error) throw error
+        onNotificationsChange(notifications.map(n =>
+          n.id === editingNotification.id
+            ? { ...n, ...notificationData }
+            : n
+        ));
+      } catch (error) {
+        console.log(error)
+      }
     } else {
       const newNotification: NotificationConfig = {
         ...notificationData,
         id: Date.now().toString(),
-        createdAt: new Date()
+        created_at: new Date()
       };
+      const { data, error } = await supabase.from('notifications')
+        .insert(notificationData)
+      if (error) throw error
       onNotificationsChange([...notifications, newNotification]);
     }
     setShowForm(false);
@@ -85,10 +103,10 @@ export default function NotificationManagement({
     if (notification.triggers.allPhases) {
       return 'Todos los cambios de fase';
     }
-    
+
     const fromPhase = phases.find(p => p.id === notification.triggers.fromPhaseId);
     const toPhase = phases.find(p => p.id === notification.triggers.toPhaseId);
-    
+
     if (fromPhase && toPhase) {
       return `De "${fromPhase.name}" a "${toPhase.name}"`;
     } else if (fromPhase) {
@@ -96,7 +114,7 @@ export default function NotificationManagement({
     } else if (toPhase) {
       return `Hacia "${toPhase.name}"`;
     }
-    
+
     return 'Sin configurar';
   };
 
@@ -110,7 +128,7 @@ export default function NotificationManagement({
         <button
           onClick={handleAddNotification}
           className="text-white text-center text-linkedin bg-linkedin hover:bg-linkedin/90  px-4 py-2 rounded-md font-medium inline-flex items-center"
-          >
+        >
           <Plus className="h-4 w-4 mr-2" />
           Nueva Notificación
         </button>
@@ -142,40 +160,38 @@ export default function NotificationManagement({
                         {getTypeIcon(notification.type)}
                         <span className="ml-1 capitalize">{notification.type}</span>
                       </span>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        notification.enabled 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${notification.enabled
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-gray-100 text-gray-800'
+                        }`}>
                         {notification.enabled ? 'Activa' : 'Inactiva'}
                       </span>
                     </div>
-                    
+
                     <div className="space-y-2 text-sm text-gray-600">
                       <p><strong>Disparador:</strong> {getTriggerDescription(notification)}</p>
-                      
+
                       {notification.type === 'webhook' && notification.config.url && (
                         <p><strong>URL:</strong> {notification.config.url}</p>
                       )}
-                      
+
                       {notification.type === 'whatsapp' && notification.config.phoneNumber && (
                         <p><strong>WhatsApp:</strong> {notification.config.phoneNumber}</p>
                       )}
-                      
+
                       {notification.type === 'email' && notification.config.emailTo && (
                         <p><strong>Email:</strong> {notification.config.emailTo}</p>
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-2 ml-4">
                     <button
                       onClick={() => handleToggleEnabled(notification.id)}
-                      className={`p-2 rounded-lg transition-colors ${
-                        notification.enabled
-                          ? 'text-green-600 hover:bg-green-50'
-                          : 'text-gray-400 hover:bg-gray-50'
-                      }`}
+                      className={`p-2 rounded-lg transition-colors ${notification.enabled
+                        ? 'text-green-600 hover:bg-green-50'
+                        : 'text-gray-400 hover:bg-gray-50'
+                        }`}
                     >
                       {notification.enabled ? (
                         <Bell className="h-4 w-4" />

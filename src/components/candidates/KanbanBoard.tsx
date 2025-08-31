@@ -1,123 +1,126 @@
-import React from 'react';
-import { Users } from 'lucide-react';
-import { Phase, Candidate, NotificationConfig } from '../../types';
-import { handleDragOver, handleDrop } from '../../utils/dragAndDrop';
-import { executeNotification } from '../../utils/notifications';
-import CandidateCard from './CandidateCard';
+import { useState } from 'react';
+import { DndContext, DragOverlay, closestCorners, rectIntersection } from '@dnd-kit/core';
+import { KanbanColumn } from './KanbanColumn';
+import { CandidateCard } from './CandidateCard';
+import InvitationModal from './InvitationModal';
+import { Button } from '@/components/ui/button';
+import { Plus, Settings, Users, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Phase, Candidate, NotificationConfig, Recruiter, InvitationData, Requisition } from '@/types';
+import { toast } from 'sonner';
+import { executeNotification } from '@/utils/notifications';
+import { supabase } from '@/integrations/supabase/client';
 
 interface KanbanBoardProps {
   phases: Phase[];
   candidates: Candidate[];
   notifications: NotificationConfig[];
-  onCandidatesChange: (candidates: Candidate[]) => void;
+  requisition: Requisition;
   onCandidateClick: (candidate: Candidate) => void;
+  onCandidateMove: (candidateId: string, fromPhaseId: string, toPhaseId: string) => void;
 }
 
-export default function KanbanBoard({ 
-  phases, 
-  candidates, 
+export default function KanbanBoard({
+  phases,
+  candidates,
   notifications,
-  onCandidatesChange, 
-  onCandidateClick 
+  requisition,
+  onCandidateMove,
+  onCandidateClick,
 }: KanbanBoardProps) {
-  
-  const handleCandidateDrop = async (e: React.DragEvent, phaseId: string) => {
-    e.preventDefault();
-    const candidateId = e.dataTransfer.getData('text/plain');
-    
+  const navigate = useNavigate();
+  const [activeCandidate, setActiveCandidate] = useState<Candidate | null>(null);
+
+  const handleDragStart = (event: any) => {
+    const candidate = candidates.find(c => c.id === event.active.id);
+    setActiveCandidate(candidate || null);
+  };
+
+  const handleDragEnd = async (event: any) => {
+    const { active, over, collisions } = event;
+    setActiveCandidate(null);
+
+    if (!over) return;
+
+    const isOverPhase = over.data.current?.type === 'phase';
+    const newPhaseId = isOverPhase ? over.id : over.data.current?.candidate?.current_phase_id;
+
+    const candidateId = active.id;
     const candidate = candidates.find(c => c.id === candidateId);
-    if (!candidate || candidate.currentPhaseId === phaseId) return;
-    
-    const fromPhase = phases.find(p => p.id === candidate.currentPhaseId);
-    const toPhase = phases.find(p => p.id === phaseId);
-    
-    if (!toPhase) return;
-    
-    // Update candidate phase
-    const updatedCandidates = candidates.map(c => 
-      c.id === candidateId 
-        ? { ...c, currentPhaseId: phaseId, updatedAt: new Date() }
-        : c
-    );
-    
-    onCandidatesChange(updatedCandidates);
-    
-    // Execute notifications
-    for (const notification of notifications) {
+
+    if (!candidate || candidate.current_phase_id === newPhaseId) return;
+
+    const oldPhaseId = candidate.current_phase_id;
+    // Update candidate position
+    onCandidateMove(candidateId, oldPhaseId, newPhaseId);
+
+    // Send notifications
+    await sendNotifications(candidateId, oldPhaseId, newPhaseId);
+
+    toast.success('Candidato movido exitosamente');
+  };
+
+  const sendNotifications = async (candidateId: string, fromPhaseId: string, toPhaseId: string) => {
+    const candidate = candidates.find(c => c.id === candidateId);
+    if (!candidate) return;
+
+    const fromPhase = phases.find(p => p.id === fromPhaseId);
+    const toPhase = phases.find(p => p.id === toPhaseId);
+
+    if (toPhase.final_phase) {
+      const { error } = await supabase.from('requisitons')
+        .update({status: 'closed'})
+        .eq('id', candidate.requisition_id)
+    }
+
+    const relevantNotifications = notifications.filter(notification => {
+      if (!notification.enabled) return false;
+
+      const { triggers } = notification;
+      return triggers.allPhases ||
+        (triggers.fromPhaseId === fromPhaseId && triggers.toPhaseId === toPhaseId) ||
+        (triggers.toPhaseId === toPhaseId && triggers.fromPhaseId === "");
+    });
+    console.log(relevantNotifications)
+    for (const notification of relevantNotifications) {
       try {
-        await executeNotification(notification, candidate, fromPhase || null, toPhase, phases);
+        await executeNotification(notification, candidate, fromPhase, toPhase);
       } catch (error) {
-        console.error('Failed to execute notification:', error);
+        console.error('Error sending notification:', error);
+        toast.error(`Error enviando notificación: ${notification.name}`);
       }
     }
   };
 
-  const getCandidatesForPhase = (phaseId: string) => {
-    return candidates.filter(c => c.currentPhaseId === phaseId && c.status === 'active');
+  const getCandidatesByPhase = (phaseId: string) => {
+    return candidates.filter(candidate => candidate.current_phase_id === phaseId);
   };
 
-  // Sort phases by order
-  const sortedPhases = [...phases].sort((a, b) => a.order - b.order);
-
-  if (phases.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-64 bg-gray-50 rounded-xl">
-        <div className="text-center">
-          <Users className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No hay fases configuradas</h3>
-          <p className="text-gray-600">Configure las fases del proceso antes de ver el tablero</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex space-x-4 overflow-x-auto pb-4 min-h-[600px]">
-      {sortedPhases.map((phase) => {
-        const phaseCandidates = getCandidatesForPhase(phase.id);
-        
-        return (
-          <div 
-            key={phase.id} 
-            className="flex-shrink-0 w-80 bg-gray-50 rounded-xl"
-            onDragOver={handleDragOver}
-            onDrop={(e) => handleCandidateDrop(e, phase.id)}
-          >
-            <div className="p-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: phase.color }}
-                  />
-                  <h3 className="font-semibold text-gray-900">{phase.name}</h3>
-                </div>
-                <span className="bg-white text-gray-600 text-sm font-medium px-2 py-1 rounded-full">
-                  {phaseCandidates.length}
-                </span>
-              </div>
-            </div>
-            
-            <div className="p-4 space-y-3 max-h-[calc(100vh-200px)] overflow-y-auto">
-              {phaseCandidates.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-400 text-sm">
-                    No hay candidatos en esta fase
-                  </p>
-                </div>
-              ) : (
-                phaseCandidates.map((candidate) => (
-                  <CandidateCard
-                    key={candidate.id}
-                    candidate={candidate}
-                    onClick={() => onCandidateClick(candidate)}
-                  />
-                ))
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </div>
+    <DndContext
+      collisionDetection={closestCorners}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="flex space-x-4 overflow-x-auto pb-4 min-h-[600px]">
+        {phases.map((phase) => (
+          <KanbanColumn
+            key={phase.id}
+            phase={phase}
+            onCandidateClick={(candidate) => onCandidateClick(candidate)}
+            candidates={getCandidatesByPhase(phase.id)}
+          />
+        ))}
+      </div>
+
+      <DragOverlay>
+        {activeCandidate ? (
+          <CandidateCard
+            candidate={activeCandidate}
+            isDragging
+          />
+        ) : null}
+      </DragOverlay>
+    </DndContext>
   );
 }

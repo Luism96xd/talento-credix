@@ -22,17 +22,15 @@ const Navbar = () => {
     if (hasRole("admin")) {
       items.push({ label: "Fases", href: "/phases", icon: Grid2X2Icon, module: "phases" });
     }
-    if (hasRole("admin")) {
-      items.push({ label: "Vacantes", href: "/processes", icon: FileText, module: "processes" });
-    }
+
     if (hasPermission("requisicion", "read") || hasPermission("requisicion", "write")) {
-      items.push({ label: "Requisición", href: "/requisicion", icon: Briefcase, module: "requisicion" });
+      items.push({ label: "Requisición", href: "/requisicion", icon: FileText, module: "requisicion" });
     }
     if (hasRole('reclutador') && (hasPermission("repositorio", "read") || hasPermission("repositorio", "write"))) {
       items.push({ label: "Repositorio", href: "/repositorio", icon: FolderSearch, module: "repositorio" });
     }
-    if (hasRole('reclutador') && (hasPermission("candidates", "read") || hasPermission("candidates", "write"))) {
-      items.push({ label: "Candidatos", href: "/candidates", icon: Map, module: "candidates" });
+    if (hasRole("admin")) {
+      items.push({ label: "Vacantes", href: "/vacantes", icon: Briefcase, module: "processes" });
     }
     if (hasPermission("buscador", "read") || hasPermission("buscador", "write")) {
       items.push({ label: "Buscador", href: "/search", icon: Search, module: "buscador" });
@@ -58,21 +56,6 @@ const Navbar = () => {
 
   const navItems = getNavigationItems();
 
-  /*const navItems = [
-    { icon: Home, label: 'Inicio', path: '/' },
-    { icon: FileText, label: 'Fases', path: '/fases' },
-    { icon: Grid2X2Icon, label: 'Procesos', path: '/procesos' },
-    { icon: Search, label: 'Buscador', path: '/search' },
-    { icon: Briefcase, label: 'Requisición', path: '/requisicion' },
-    { icon: FileBoxIcon, label: 'Repositorio', path: '/repositorio' },
-    { icon: Map, label: 'Candidatos', path: '/candidates' },
-    { icon: FolderSearch, label: 'Búsquedas', path: '/searches' },
-    { icon: Users, label: 'Comparativos', path: '/candidate-analysis' },
-    { icon: Speech, label: 'Guiones de entrevista', path: '/interview-scripts' },
-    { icon: ClipboardCheck, label: 'Análisis de entrevista', path: '/interview-analysis' },
-    //{ icon: SettingsIcon, label: 'Configuraciones', path: '/settings' },
-  ];
-*/
   return (
     <nav className="fixed left-0 top-0 h-full w-16 hover:w-64 bg-white shadow-lg transition-all duration-300 z-50 group border-r">
       <div className="flex flex-col h-full">

@@ -5,7 +5,7 @@ import { NotificationConfig, Phase } from '../../types';
 interface NotificationFormProps {
   notification: NotificationConfig | null;
   phases: Phase[];
-  onSubmit: (notification: Omit<NotificationConfig, 'id' | 'createdAt'>) => void;
+  onSubmit: (notification: Omit<NotificationConfig, 'id' | 'created_at'>) => void;
   onClose: () => void;
 }
 

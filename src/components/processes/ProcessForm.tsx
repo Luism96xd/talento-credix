@@ -1,52 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { Process, Phase, Country, Company } from '@/types';
+import { Process, Phase, Country, Company, Requisition } from '@/types';
 import { Checkbox } from '../ui/checkbox';
 import { Label } from '../ui/label';
 import { useRequisitionData } from '@/hooks/useRequisitionData';
 
 interface ProcessFormSupabaseProps {
-  process: Process | null;
+  requisition: Requisition | null;
   phases: Phase[];
   countries?: Country[],
   companies?: Company[],
-  onSubmit: (process: Omit<Process, 'id' | 'created_at'>) => void;
+  onSubmit: (requisition: Omit<Process, 'id' | 'created_at'>) => void;
   onClose: () => void;
 }
 
-export default function ProcessForm({ process, phases, onSubmit, onClose }: ProcessFormSupabaseProps) {
+export default function ProcessForm({ requisition, phases, onSubmit, onClose }: ProcessFormSupabaseProps) {
   const [selectedPhases, setSelectedPhases] = useState<string[]>([]);
   const [formData, setFormData] = useState({
-    name: '',
     company_id: '',
     country_id: '',
+    department_id: '',
     position_id: '',
-    description: '',
-    status: 'active',
-    is_active: true
+    status: 'open',
   });
 
   const {
     companies,
     countries,
+    departments,
     positions,
     fetchCompaniesByCountry,
-    fetchPositionsByCompany,
+    fetchDepartmentsByCompany,
+    fetchPositionsByDepartment,
   } = useRequisitionData();
 
   useEffect(() => {
-    if (process) {
+    if (requisition) {
       setFormData({
-        name: process.name,
-        company_id: process.company_id,
-        country_id: process.country_id,
-        position_id: process.position_id,
-        description: process.description || '',
-        status: process.status,
-        is_active: process.is_active
+        company_id: requisition.company_id,
+        country_id: requisition.country_id,
+        department_id: requisition.department_id,
+        position_id: requisition.positions_id,
+        status: requisition.status,
       });
     }
-  }, [process]);
+  }, [requisition]);
 
   //Handle cascading selects
   useEffect(() => {
@@ -58,16 +56,26 @@ export default function ProcessForm({ process, phases, onSubmit, onClose }: Proc
       })
     }
   }, [formData.country_id]);
-  
+
   useEffect(() => {
     if (formData.company_id) {
-      fetchPositionsByCompany(formData.company_id);
+      fetchDepartmentsByCompany(formData.company_id);
+      setFormData({
+        ...formData,
+        department_id: ''
+      })
+    }
+  }, [formData.company_id]);
+
+  useEffect(() => {
+    if (formData.department_id) {
+      fetchPositionsByDepartment(formData.department_id);
       setFormData({
         ...formData,
         position_id: ''
       })
     }
-  }, [formData.company_id]);
+  }, [formData.department_id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,13 +89,13 @@ export default function ProcessForm({ process, phases, onSubmit, onClose }: Proc
         : [...prev, phaseId]
     );
   };
-  
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">
-            {process ? 'Editar Proceso' : 'Nuevo Proceso'}
+            {requisition ? 'Editar Vacante' : 'Nueva Vacante'}
           </h3>
           <button
             onClick={onClose}
@@ -99,39 +107,25 @@ export default function ProcessForm({ process, phases, onSubmit, onClose }: Proc
 
         <form onSubmit={handleSubmit} className="p-6">
           <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nombre del Proceso *
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Ej: Proceso de Selección - Vendedores"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                País *
-              </label>
-              <select
-                required
-                value={formData.country_id}
-                onChange={(e) => setFormData({ ...formData, country_id: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Seleccione un país</option>
-                {countries && countries.map((country) => (
-                  <option key={country.id} value={country.id}>
-                    {country.name}
-                  </option>
-                ))}
-              </select>
-            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  País *
+                </label>
+                <select
+                  required
+                  value={formData.country_id}
+                  onChange={(e) => setFormData({ ...formData, country_id: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Seleccione un país</option>
+                  {countries && countries.map((country) => (
+                    <option key={country.id} value={country.id}>
+                      {country.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Compañía *
@@ -150,8 +144,26 @@ export default function ProcessForm({ process, phases, onSubmit, onClose }: Proc
                   ))}
                 </select>
               </div>
-
-
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Área *
+                </label>
+                <select
+                  required
+                  value={formData.department_id}
+                  onChange={(e) => setFormData({ ...formData, department_id: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Seleccione un área</option>
+                  {departments && departments.map((department) => (
+                    <option key={department.id} value={department.id}>
+                      {department.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Posición *
@@ -170,7 +182,6 @@ export default function ProcessForm({ process, phases, onSubmit, onClose }: Proc
                   ))}
                 </select>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Estado
@@ -180,37 +191,12 @@ export default function ProcessForm({ process, phases, onSubmit, onClose }: Proc
                   onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="active">Activo</option>
-                  <option value="inactive">Inactivo</option>
-                  <option value="draft">Borrador</option>
+                  <option value="open">Abierta</option>
+                  <option value="closed">Cerrada</option>
+                  <option value="paused">Suspendida</option>
+
                 </select>
               </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Descripción (opcional)
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                placeholder="Descripción del proceso de selección..."
-              />
-            </div>
-
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="is_active"
-                checked={formData.is_active}
-                onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="is_active" className="ml-2 block text-sm text-gray-700">
-                Proceso activo (visible para candidatos)
-              </label>
             </div>
           </div>
 
@@ -250,7 +236,7 @@ export default function ProcessForm({ process, phases, onSubmit, onClose }: Proc
               type="submit"
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
             >
-              {process ? 'Actualizar' : 'Crear'} Proceso
+              {requisition ? 'Actualizar' : 'Crear'} Proceso
             </button>
           </div>
         </form>

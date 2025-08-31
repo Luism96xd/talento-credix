@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Phase } from '../../types';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-
 interface PhaseFormProps {
   phase: Phase | null;
-  onSubmit: (phase: Omit<Phase, 'id' | 'createdAt'>) => void;
+  onSubmit: (phase: Omit<Phase, 'id' | 'created_at'>) => void;
   onClose: () => void;
 }
 
@@ -21,7 +18,6 @@ export default function PhasesForm({ phase, onSubmit, onClose }: PhaseFormProps)
     description: '',
     color: '#3B82F6'
   });
-  const { toast } = useToast()
 
   useEffect(() => {
     if (phase) {
@@ -35,20 +31,6 @@ export default function PhasesForm({ phase, onSubmit, onClose }: PhaseFormProps)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const { data, error } = await supabase.from('phases').upsert({
-        name: formData.name,
-        description: formData.description,
-        color: formData.color,
-        order: phase?.order ?? 0
-      })
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Hubo un error al crear la fase",
-        variant: "destructive"
-      });
-    }
     onSubmit({
       ...formData,
       order: phase?.order ?? 0

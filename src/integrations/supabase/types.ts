@@ -511,6 +511,7 @@ export type Database = {
       }
       phases: {
         Row: {
+          final_phase: boolean
           color: string
           created_at: string
           description: string | null
@@ -519,6 +520,7 @@ export type Database = {
           order: number
         }
         Insert: {
+          final_phase?: boolean
           color: string
           created_at?: string
           description?: string | null
@@ -527,6 +529,7 @@ export type Database = {
           order: number
         }
         Update: {
+          final_phase?: boolean
           color?: string
           created_at?: string
           description?: string | null
@@ -855,6 +858,7 @@ export type Database = {
       }
       requisitions: {
         Row: {
+          number: number
           academic_level: string | null
           admission_date: string | null
           approved_by_date: string | null
@@ -902,6 +906,7 @@ export type Database = {
           work_location: string | null
         }
         Insert: {
+          number?: number | null
           academic_level?: string | null
           admission_date?: string | null
           approved_by_date?: string | null
@@ -949,6 +954,7 @@ export type Database = {
           work_location?: string | null
         }
         Update: {
+          number?: number | null
           academic_level?: string | null
           admission_date?: string | null
           approved_by_date?: string | null

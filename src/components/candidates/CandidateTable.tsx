@@ -35,39 +35,39 @@ export default function CandidateTable({ candidates, phases, onCandidateClick }:
               </tr>
             ) : (
               activeCandidates.map((candidate) => {
-                const currentPhase = getPhase(candidate.currentPhaseId);
-                
+                const currentPhase = getPhase(candidate.current_phase_id);
+          
                 return (
                   <tr key={candidate.id} className="hover:bg-gray-50">
                     <td className="py-4 px-4">
                       <div>
                         <p className="font-medium text-gray-900">{candidate.name}</p>
-                        {candidate.profileData.experience.length > 0 && (
+                        {candidate.profileData?.experience.length > 0 && (
                           <p className="text-sm text-gray-600">
-                            {candidate.profileData.experience[0].company}
+                            {candidate.profileData?.experience[0].company}
                           </p>
                         )}
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <p className="text-gray-900">{candidate.position}</p>
+                      <p className="text-gray-900">{candidate?.requisition?.positions?.name}</p>
                     </td>
                     <td className="py-4 px-4">
                       <div className="space-y-1">
                         <div className="flex items-center text-sm text-gray-600">
                           <Mail className="h-3 w-3 mr-1" />
-                          {candidate.email}
+                          {candidate?.email}
                         </div>
                         <div className="flex items-center text-sm text-gray-600">
                           <Phone className="h-3 w-3 mr-1" />
-                          {candidate.phone}
+                          {candidate?.phone}
                         </div>
                       </div>
                     </td>
                     <td className="py-4 px-4">
                       {currentPhase ? (
                         <span
-                          className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full text-white"
+                          className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full text-black"
                           style={{ backgroundColor: currentPhase.color }}
                         >
                           {currentPhase.name}
@@ -79,7 +79,7 @@ export default function CandidateTable({ candidates, phases, onCandidateClick }:
                     <td className="py-4 px-4">
                       <div className="flex items-center text-sm text-gray-600">
                         <Calendar className="h-3 w-3 mr-1" />
-                        {new Date(candidate.createdAt).toLocaleDateString()}
+                        {new Date(candidate.created_at).toLocaleDateString()}
                       </div>
                     </td>
                     <td className="py-4 px-4">

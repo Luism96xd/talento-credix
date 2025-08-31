@@ -42,10 +42,10 @@ export function CascadingSelect({
         {required && <span className="text-destructive ml-1">*</span>}
       </Label>
       <Select value={value} onValueChange={onValueChange} disabled={disabled}>
-        <SelectTrigger className="border-2 bg-background border-black rounded-none">
+        <SelectTrigger className="bg-background border-black">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
-        <SelectContent className="bg-background border-2 border-black rounded-none">
+        <SelectContent className="bg-background border-black">
           {options.map((option) => (
             <SelectItem key={option.id} value={option.id}>
               {option.name}

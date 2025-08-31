@@ -16,6 +16,7 @@ import { Company, Country } from "@/types"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import RequisitionDetails from "@/pages/RequisitionDetails"
+import { calculateDaysOpen } from "@/lib/utils"
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -114,14 +115,6 @@ export default function RequisitionsTable() {
   const handleOpenModal = (requisition: Requisition) => {
     setSelectedRequisition(requisition);
     setIsModalOpen(true);
-  }
-
-  const calculateDaysOpen = (createdAt: string) => {
-    const created = new Date(createdAt)
-    const now = new Date()
-    const diffTime = Math.abs(now.getTime() - created.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    return diffDays
   }
 
 
@@ -317,7 +310,7 @@ export default function RequisitionsTable() {
                     {requisition.department_name || '-'}
                   </TableCell>
                   <TableCell>
-                    {requisition.position_name || '-'}
+                    {requisition.positions_name || '-'}
                   </TableCell>
                   <TableCell>
                     {requisition.work_location || '-'}
@@ -342,7 +335,7 @@ export default function RequisitionsTable() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {calculateDaysOpen(requisition.created_at)} días
+                    {requisition.status === 'open' ? calculateDaysOpen(requisition.created_at) : requisition.days_open} días
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-row gap-2">
@@ -372,7 +365,7 @@ export default function RequisitionsTable() {
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Requisición #{selectedRequisition?.id}</DialogTitle>
+              <DialogTitle>Requisición #{selectedRequisition?.number}</DialogTitle>
             </DialogHeader>
             <RequisitionDetails requisition={selectedRequisition} />
           </DialogContent>

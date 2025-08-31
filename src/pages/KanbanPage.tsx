@@ -1,91 +1,38 @@
-import { LayoutGrid, List, ExternalLink } from 'lucide-react';
-import { ViewMode, Candidate } from '@/types';
+import { LayoutGrid, List, ExternalLink, ArrowLeft, Users } from 'lucide-react';
+import { ViewMode, Candidate, Requisition, InvitationData } from '@/types';
 import KanbanBoard from '@/components/candidates/KanbanBoard';
 import CandidateTable from '@/components/candidates/CandidateTable';
 import CandidateFilters from '@/components/candidates/CandidateFilters';
 import CandidateDetails from '@/components/candidates/CandidateDetails';
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
-import { Link } from 'react-router-dom';
+import {  useToast } from '@/hooks/use-toast';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { calculateDaysOpen } from '@/lib/utils';
+import InvitationModal from '@/components/candidates/InvitationModal';
+import { useKanbanState } from '@/hooks/useKanbanState';
+import { useAuth } from '@/contexts/AuthContext';
 
-export const CandidatesPage = () => {
+export const KanbanPage = () => {
+  const { toast } = useToast()
+  const { profile } = useAuth()
+  const { processId } = useParams();
+  const navigate = useNavigate()
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('kanban');
-  const [processes, setProcesses] = useState([])
-  const [phases, setPhases] = useState([])
+  const [requisition, setRequisition] = useState<Requisition | null>(null)
   const [filters, setFilters] = useState({
     search: '',
     processId: '',
     recruiter: ''
   });
-  const [candidates, setCandidates] = useState([])
+  const { phases, candidates, processes, notifications, addCandidates, fetchCandidates, sendInvitations, moveCandidateToPhase } = useKanbanState()
   const activeCandidates = candidates.filter(c => c.status === 'active');
 
   useEffect(() => {
-    fetchProcesses();
-    fetchPhases();
+    fetchCandidates(processId)
   }, []);
 
-  useEffect(() => {
-    if(filters.processId){
-      fetchCandidates(filters.processId);
-    }
-  }, [filters]);
-
-  const fetchCandidates = async (processId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('candidates')
-        .select('*')
-
-        if(error) throw error
-        
-        setCandidates(data)
-    } catch (error) {
-      console.error('Error fetching candidates:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch candidates",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const fetchPhases = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('phases')
-        .select('*')
-
-      if (error) throw error;
-      setPhases(data);
-    } catch (error) {
-      console.error('Error fetching phases:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch phases",
-        variant: "destructive"
-      });
-    }
-  };
-  const fetchProcesses = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('processes')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      setProcesses(data || []);
-    } catch (error) {
-      console.error('Error fetching processes:', error);
-      toast({
-        title: "Error",
-        description: 'Error al cargar los procesos',
-        variant: "destructive"
-      });
-    }
-  };
   // Get unique recruiters for filter
   const recruiters = Array.from(new Set(
     candidates
@@ -93,30 +40,87 @@ export const CandidatesPage = () => {
       .map(c => c.recruiter!)
   ));
 
+  const handleSendInvitations = async (invitations: InvitationData[]) => {
+    try {
+      const newCandidates = invitations.map(item => ({ 
+        ...item, 
+        requisition_id: processId, 
+        recruiter_id: profile.id,
+        status: 'active', 
+        current_phase_id: phases[0].id 
+      }))
+      await addCandidates(newCandidates)
+      await sendInvitations(invitations, processId)
+      fetchCandidates(processId)
+      toast({
+        title: "Éxito",
+        description: "Invitaciones enviadas con éxito",
+      });
+    } catch (error) {
+      console.log(error)
+      toast({
+        title: "Error",
+        description: "Error al enviar las invitaciones",
+      })
+    }
+  }
+
   // Apply filters
   const filteredCandidates = activeCandidates.filter(candidate => {
     const matchesSearch = !filters.search ||
       candidate.name.toLowerCase().includes(filters.search.toLowerCase());
     const matchesProcess = !filters.processId ||
-      candidate.processId === filters.processId;
+      candidate.requisition_id === filters.processId;
     const matchesRecruiter = !filters.recruiter ||
       candidate.recruiter === filters.recruiter;
 
     return matchesSearch && matchesProcess && matchesRecruiter;
   });
+
+  const handleCandidateChange = async (candidate: Candidate) => {
+    await fetchCandidates(candidate.requisition_id)
+    setSelectedCandidate(null);
+  };
+
+  if (phases.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64 bg-gray-50 rounded-xl">
+        <div className="text-center">
+          <Users className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No hay fases configuradas</h3>
+          <p className="text-gray-600">Configure las fases del proceso antes de ver el tablero</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100">
-      <div className="container mx-auto px-4 py-8">
-        <div className="p-6">
+      <div className="container mx-auto px-4 py-4">
+        <div className="p-4">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Tablero de Candidatos</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/vacantes')}
+                className="text-slate-600 hover:text-slate-900"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2 mt-1" />
+                Volver a Vacantes
+              </Button>
+              <h2 className="text-2xl font-bold text-gray-900">{requisition?.positions?.name ?? 'Tablero de Candidatos'}</h2>
               <p className="text-gray-600 mt-1">
                 {filteredCandidates.length} de {activeCandidates.length} candidatos activos
+              </p>
+              <p className="text-gray-600 mt-1">
+                Vacante abierta durante {requisition?.status === 'open' ? calculateDaysOpen(requisition?.created_at) : requisition?.days_open} días
+
               </p>
             </div>
 
             <div className="flex items-center space-x-4">
+              <InvitationModal onSendInvitations={handleSendInvitations}/>
               <Link
                 to="/apply"
                 target="_blank"
@@ -160,13 +164,13 @@ export const CandidatesPage = () => {
               recruiters={recruiters}
             />
           )}
-
           {viewMode === 'kanban' ? (
             <KanbanBoard
               phases={phases}
-              candidates={filteredCandidates}
-              notifications={[]}
-              onCandidatesChange={console.log}
+              candidates={candidates}
+              notifications={notifications}
+              requisition={requisition}
+              onCandidateMove={moveCandidateToPhase}
               onCandidateClick={setSelectedCandidate}
             />
           ) : (
@@ -181,6 +185,7 @@ export const CandidatesPage = () => {
             <CandidateDetails
               candidate={selectedCandidate}
               onClose={() => setSelectedCandidate(null)}
+              onCandidateUpdate={handleCandidateChange}
             />
           )}
         </div>

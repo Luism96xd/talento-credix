@@ -1,8 +1,8 @@
 import { Search, Filter, X } from 'lucide-react';
-import { Process } from '@/types';
+import { Requisition } from '@/types';
 
 interface CandidateFiltersProps {
-  processes: Process[];
+  processes: Requisition[];
   filters: {
     search: string;
     processId: string;
@@ -75,7 +75,7 @@ export default function CandidateFilters({
             <option value="">Todos los procesos</option>
             {processes.map((process) => (
               <option key={process.id} value={process.id}>
-                {process.name}
+                {process.positions?.name}
               </option>
             ))}
           </select>

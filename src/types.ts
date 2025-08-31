@@ -9,12 +9,13 @@ export interface Company {
 }
 
 export interface Phase {
-  id: string;
+  id?: string;
   name: string;
   color: string;
   description?: string;
   order: number;
-  createdAt: Date;
+  final_phase?: boolean;
+  created_at: Date;
 }
 
 export interface Process {
@@ -92,26 +93,40 @@ export interface UserProfile {
 }
 
 export interface Candidate {
-  id: string;
+  id?: string;
   name: string;
-  email: string;
-  phone: string;
-  position: string;
-  processId: string;
-  currentPhaseId: string;
-  resumeUrl?: string;
+  email?: string;
+  phone?: string;
+  position?: string;
+  location?: string;
+  requisition_id: string;
+  recruiter?: string;
+  current_phase_id: string;
+  photo_url?: string;
+  resume_url?: string;
   summary?: string;
-  profileData: {
-    experience: WorkExperience[];
-    education: Education[];
-    skills: string[];
+  profileData?: {
+    summary?: string;
+    experience?: WorkExperience[];
+    education?: Education[];
+    skills?: string[];
   };
-  status: 'active' | 'rejected' | 'hired';
-  createdAt: Date;
-  updatedAt: Date;
+  status: string;
+  created_at?: Date;
+  updated_at?: Date;
+  requisition?: Requisition;
 }
+
+
+export interface InvitationData {
+  name: string;
+  email?: string;
+  phone?: string;
+}
+
 export interface Requisition {
   id: string
+  number: number
   status: string
   created_at: string
   updated_at: string
@@ -150,7 +165,27 @@ export interface Requisition {
   candidate_name: string
   closed_date: string
   admission_date: string
-  open_days: number
+  days_open: number
+  
+  department?: {
+    name: string;
+  }
+  company?: {
+    name: string;
+  }
+  positions?: {
+    name: string;
+  }
+  country?: {
+    name: string;
+  }
+}
+export interface KanbanState {
+  phases: Phase[];
+  candidates: Candidate[];
+  processes: Requisition[];
+  notifications: NotificationConfig[];
+  process: Process;
 }
 export interface WorkExperience {
   id: string;
@@ -188,6 +223,7 @@ export interface Recruiter {
   id: string;
   name: string;
   email: string;
+  department: string;
   phone?: string;
   specializations: string[];
   isActive: boolean;
@@ -195,7 +231,7 @@ export interface Recruiter {
 }
 
 export interface NotificationConfig {
-  id: string;
+  id?: string;
   name: string;
   type: 'webhook' | 'whatsapp' | 'email';
   enabled: boolean;
@@ -217,7 +253,7 @@ export interface NotificationConfig {
     toPhaseId?: string;
     allPhases?: boolean;
   };
-  created_at: Date;
+  created_at?: Date;
 }
 
 export type ViewMode = 'kanban' | 'table';
@@ -267,7 +303,7 @@ export interface CandidateDocument {
   document_type: 'cv' | 'psychometric_test' | 'disc_test' | 'contract' | 'medical_exam' | 'other';
   document_name: string;
   document_url: string;
-  uploaded_by?: string;
+  created_by?: string;
   uploaded_at: Date;
 }
 

@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import { X, Upload, FileText, Download, Trash2, Plus, Eye } from 'lucide-react';
 import { Candidate, CandidateDocument } from '@/types';
 import { useSupabaseQuery, useSupabaseMutation } from '@/hooks/useSupabase';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface DocumentManagerProps {
   candidate: Candidate;
   onClose: () => void;
+  onUpdate:  (candidate: Candidate) => void;
 }
 
 const documentTypes = [
@@ -17,7 +20,8 @@ const documentTypes = [
   { value: 'other', label: 'Otro', color: 'bg-gray-100 text-gray-800' }
 ];
 
-export default function DocumentManager({ candidate, onClose }: DocumentManagerProps) {
+export default function DocumentManager({ candidate, onClose, onUpdate }: DocumentManagerProps) {
+  const { profile } = useAuth()
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [uploadData, setUploadData] = useState({
     documentType: 'cv' as CandidateDocument['document_type'],
@@ -37,24 +41,46 @@ export default function DocumentManager({ candidate, onClose }: DocumentManagerP
 
   const handleFileUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!uploadData.file || !uploadData.documentName.trim()) {
       alert('Por favor, complete todos los campos y seleccione un archivo.');
       return;
     }
 
     try {
-      // En una implementación real, subirías el archivo a un servidor
-      const documentUrl = URL.createObjectURL(uploadData.file);
-      
+      const fileExt = uploadData.file.name.split('.').pop();
+      const newFileName = `${Date.now()}.${fileExt}`;
+      const filePath = `curriculums/${candidate?.name.replace(/[^A-Za-z]/g, '')}_${candidate.id}/${newFileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('documentos')
+        .upload(filePath, uploadData.file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('documentos')
+        .getPublicUrl(filePath);
+
+
+      if (!data || !data.publicUrl) {
+        throw new Error("Failed to get public URL for job description.");
+      }
+      const documentUrl = data.publicUrl;
+
       await insert({
-          candidate_id: candidate.id,
-          document_type: uploadData.documentType,
-          document_name: uploadData.documentName.trim(),
-          document_url: documentUrl,
-          uploaded_by: 'Usuario Actual', // En una implementación real, obtener del contexto de usuario
-          uploaded_at: new Date()
+        candidate_id: candidate.id,
+        document_type: uploadData.documentType,
+        document_name: uploadData.documentName.trim(),
+        document_url: documentUrl,
+        created_by: profile.id,
+        uploaded_at: new Date()
       });
+
+      if(uploadData.documentType == 'cv'){
+        await supabase.from('selected_candidates').update({ resume_url: documentUrl }).eq('id', candidate.id)
+        onUpdate && onUpdate(candidate)
+      }
 
       setUploadData({
         documentType: 'cv',
@@ -151,12 +177,12 @@ export default function DocumentManager({ candidate, onClose }: DocumentManagerP
                         <p className="text-sm text-gray-600">
                           {new Date(document.uploaded_at).toLocaleDateString()}
                         </p>
-                        {document.uploaded_by && (
-                          <p className="text-xs text-gray-500">Por: {document.uploaded_by}</p>
+                        {document.created_by && (
+                          <p className="text-xs text-gray-500">Por: {document.created_by}</p>
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => window.open(document.document_url, '_blank')}
@@ -209,8 +235,8 @@ export default function DocumentManager({ candidate, onClose }: DocumentManagerP
                     </label>
                     <select
                       value={uploadData.documentType}
-                      onChange={(e) => setUploadData({ 
-                        ...uploadData, 
+                      onChange={(e) => setUploadData({
+                        ...uploadData,
                         documentType: e.target.value as CandidateDocument['document_type']
                       })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
