@@ -63,7 +63,7 @@ const App = () => (
                         </ProtectedRoute>
                       } />
                       <Route path="/vacantes" element={
-                        <ProtectedRoute requiredRole="admin">
+                        <ProtectedRoute requiredModule="processes" requiredPermission="read">
                           <Processes />
                         </ProtectedRoute>
                       } />

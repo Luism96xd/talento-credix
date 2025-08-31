@@ -29,7 +29,7 @@ const Navbar = () => {
     if (hasRole('reclutador') && (hasPermission("repositorio", "read") || hasPermission("repositorio", "write"))) {
       items.push({ label: "Repositorio", href: "/repositorio", icon: FolderSearch, module: "repositorio" });
     }
-    if (hasRole("admin")) {
+    if (hasPermission("processes", "read")) {
       items.push({ label: "Vacantes", href: "/vacantes", icon: Briefcase, module: "processes" });
     }
     if (hasPermission("buscador", "read") || hasPermission("buscador", "write")) {
