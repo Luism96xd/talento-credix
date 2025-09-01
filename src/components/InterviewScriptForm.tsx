@@ -8,7 +8,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 
-const WEBHOOK_URL = 'https://n8n.mayoreo.biz/webhook/34db09fd-2cdc-48e8-a275-e3b8ceea407b';
+const WEBHOOK_URL = 'https://n8n.mayoreo.biz/webhook/3259cbaf-ff13-410b-aa93-fd73b67e9383';
 
 export const InterviewScriptForm: React.FC = () => {
   const [taskId, setTaskId] = useState(null);
@@ -175,17 +175,6 @@ export const InterviewScriptForm: React.FC = () => {
         {!isLoading && <>
           {currentStep === 1 && (
             <div className='flex flex-col gap-2'>
-
-              <div className='space-y-2'>
-                <label className="text-sm font-medium text-gray-700">Nombre del cargo a entrevistar</label>
-                <p className="text-xs text-gray-500">Escriba el nombre del cargo </p>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                />
-              </div>
-
-
               <FileUpload
                 label="Descripción del Cargo"
                 description="Documento con requisitos y competencias del puesto en formato PDF"
