@@ -273,7 +273,7 @@ export const InterviewAnalysisForm: React.FC = () => {
           )}
           {currentStep === 2 && (
             <div className='flex flex-col gap-4 p-2'>
-              <a target="_blank" className="text-center text-linkedin bg-linkedin hover:bg-linkedin text-white py-2 px-6 rounded-xl transition-all duration-200 md:flex items-center justify-center" href={url ? url : "#"}>Haga clic aquí para ver el informe</a>
+              <a target="_blank" className="text-center text-linkedin bg-linkedin hover:bg-linkedin text-white py-2 px-6 rounded-xl transition-all duration-200 md:flex items-center justify-center" href={url ? url : "#"}>Haga clic aquí para descargar el informe</a>
               {/*<Markdown>{content}</Markdown>*/}
             </div>
           )}
