@@ -28,10 +28,6 @@ export const InterviewScriptForm: React.FC = () => {
   const { toast } = useToast(); // Inicializa el hook de toast
   const { user } = useAuth();
 
-  // Función para generar un ID de tarea único
-  const generateTaskId = () => {
-    return 'task-' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  };
 
   useEffect(() => {
     // Verificar si supabase está inicializado
@@ -58,7 +54,7 @@ export const InterviewScriptForm: React.FC = () => {
           event: 'UPDATE', // Escuchamos INSERTS ya que n8n insertará nuevos resultados por paso
           schema: 'mayoreo', // Usando tu esquema
           table: 'task_progress', // Usando tu tabla
-          filter: `task_id=eq.${taskId}`, // Filtrando por el ID de tarea actual
+          filter: `id=eq.${taskId}`, // Filtrando por el ID de tarea actual
         },
         (payload) => {
           console.log('Cambio en Supabase Realtime recibido:', payload);
@@ -103,19 +99,19 @@ export const InterviewScriptForm: React.FC = () => {
       return;
     }
 
-    const taskId = generateTaskId();
-    const { data: progressData, error } = await supabase.from('task_progress').insert({
-      task_id: taskId, 
-      step: 0, 
-      status: 'processing'
-    })
-console.log(progressData)
-    if (error) throw error;
+    const { data: taskData, error } = await supabase
+      .from('task_progress')
+      .insert({ step: 0, status: 'processing' })
+      .select('id')
+      .single()
+
+    if (error) throw error
+
     const data = new FormData();
-    setTaskId(taskId);
+    setTaskId(taskData.id);
 
     // Append all text fields
-    data.append('taskId', taskId);
+    data.append('taskId', taskData.id);
 
     // Append all file arrays
     formData.cvFiles.forEach((file) => {
@@ -210,7 +206,7 @@ console.log(progressData)
           )}
           {currentStep === 2 && (
             <div className='flex flex-col gap-4 p-2'>
-              <a target="_blank" className="text-center text-linkedin bg-linkedin hover:bg-linkedin/90 text-white py-2 px-6 rounded-xl transition-all duration-200 md:flex items-center justify-center" href={url ? url : "#"}>Haga clic aquí para ver el informe</a>
+              <a target="_blank" className="text-center text-linkedin bg-linkedin hover:bg-linkedin text-white py-2 px-6 rounded-xl transition-all duration-200 md:flex items-center justify-center" href={url ? url : "#"}>Haga clic aquí para ver el informe</a>
               {/*<Markdown>{content}</Markdown>*/}
             </div>
           )}

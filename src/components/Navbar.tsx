@@ -1,35 +1,34 @@
 
-import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, Menu, Users, ClipboardCheck, Speech, FileText, Briefcase, SettingsIcon, StarIcon, Grid2X2Icon, FolderSearch, FileBoxIcon, Map, LayoutDashboard } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import React from 'react';
+import { User, LogOut, Users, ClipboardCheck, Speech, FolderSearch, Search, Briefcase, Home } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { cn } from '@/lib/utils';
 
-const Navbar = () => {
-  const location = useLocation();
-  const { profile, signOut, hasPermission, hasRole } = useAuth();
 
-  // Define navigation items based on roles
-  const getNavigationItems = () => {
+export const Navbar = () => {
+  const { user, hasPermission } = useAuth()
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error('Error signing out');
+    } else {
+      toast.success('Signed out successfully');
+      navigate('/auth');
+    }
+  };
+
+   // Define navigation items based on roles
+   const getNavigationItems = () => {
     const items = [];
 
     if (hasPermission('home', 'read')) {
       items.push({ label: "Inicio", href: "/", icon: Home, module: "home" });
-    }
-    // Indicadores - solo para directores y admins
-    if (hasPermission('dashboard','read') || hasRole('reclutador')) {
-      items.push({ label: "Indicadores", href: "/dashboard", icon: LayoutDashboard, module: "dashboard" });
-    }
-    if (hasRole("admin")) {
-      items.push({ label: "Fases", href: "/phases", icon: Grid2X2Icon, module: "phases" });
-    }
-    if (hasPermission("requisicion", "read") || hasPermission("requisicion", "write")) {
-      items.push({ label: "Requisición", href: "/requisicion", icon: FileText, module: "requisicion" });
-    }
-    if (hasPermission("repositorio", "read") || hasPermission("repositorio", "write")) {
-      items.push({ label: "Repositorio", href: "/repositorio", icon: FolderSearch, module: "repositorio" });
-    }
-    if (hasPermission("processes", "read")) {
-      items.push({ label: "Vacantes", href: "/vacantes", icon: Briefcase, module: "processes" });
     }
     if (hasPermission("buscador", "read") || hasPermission("buscador", "write")) {
       items.push({ label: "Buscador", href: "/search", icon: Search, module: "buscador" });
@@ -46,50 +45,64 @@ const Navbar = () => {
     if (hasPermission("entrevistas", "read") || hasPermission("entrevistas", "write")) {
       items.push({ label: "Análisis de entrevista", href: "/interview-analysis", icon: ClipboardCheck, module: "entrevistas" });
     }
-    // Indicadores - solo para directores y admins
-    if (hasRole('admin')) {
-      items.push({ label: "Configuraciones", href: "/settings", icon: SettingsIcon, module: "settings" });
-    }
     return items;
   };
+  const navigation = getNavigationItems();
 
-  const navItems = getNavigationItems();
 
   return (
-    <nav className="fixed left-0 top-0 h-full w-64 bg-white shadow-lg transition-all duration-300 z-50 group border-r">
-      <div className="flex flex-col h-full">
-        <div className="p-4 border-b">
-          <div className="flex items-center">
-            <Menu className="h-6 w-6 text-gray-600" />
-            <span className="ml-3 font-semibold text-gray-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              Navegación
-            </span>
+    <nav className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Link to="/">
+            <img className='h-16' src="/Credix_Logo.png" alt="Credix" />
+          </Link>
+          {/*<h1 className="text-xl font-bold items-center text-gray-800">Automatizaciones de Personal</h1>*/}
+          <div className='flex-2 gap-8 items-start'>
+            {navigation.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.href;
+
+              return (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  className={cn(
+                    "inline-flex items-center px-1 pt-1 mx-2 border-b-2 text-sm font-medium transition-colors",
+                    isActive
+                      ? "border-primary text-primary"
+                      : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
+                  )}
+                >
+                  <Icon className="h-4 w-4 mr-2" />
+                  {item.label}
+                </Link>
+              );
+            })}
           </div>
         </div>
-
-        <div className="flex-1 py-4">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              to={item.href}
-              className={cn(
-                "flex items-center px-4 py-3 mx-2 rounded-lg transition-all duration-200",
-                "hover:bg-primary-700 group/item",
-                location.pathname === item.href
-                  ? "bg-primary text-white"
-                  : "text-gray-600 hover:text-gray-800"
-              )}
-            >
-              <item.icon className="h-5 w-5 flex-shrink-0" />
-              <span className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-                {item.label}
+        {user && (
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm font-medium text-gray-700">
+                {user.email}
               </span>
-            </Link>
-          ))}
-        </div>
+            </div>
+            <Button
+              onClick={handleSignOut}
+              variant="outline"
+              size="sm"
+              className="border-gray-200 hover:bg-gray-50"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Cerrar sesión
+            </Button>
+          </div>
+        )}
       </div>
     </nav>
   );
 };
-
-export default Navbar;

@@ -27,18 +27,12 @@ export const Index = () => {
         path: '/candidate-analysis', // Ruta a la pantalla del comparador
       });
     }
-    if (hasRole("personal") || hasRole('cliente')) {
+    if (hasPermission('guiones', 'read')) {
       items.push({
         name: 'Guiones de Entrevistas',
         description: 'Cree guiones estructurados y personalizados para sus procesos de entrevista.',
         icon: FileText,
         path: '/interview-scripts', // Ruta a la gestión de guiones
-      });
-      items.push({
-        name: 'Requisición',
-        description: 'Cree una nueva solcitiud de personal con las competencias requeridas',
-        icon: Briefcase,
-        path: '/requisicion', // Ruta a la gestión de guiones
       });
     }
     if (hasRole('personal')) {

@@ -10,7 +10,9 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import CVAnalysisPage from "./pages/cv-analysis";
 import { Index } from "./pages/Index";
-import { Navbar } from "./components/navbar/navbar1";
+import { Navbar } from "./components/Navbar";
+import { InterviewScripts } from "./pages/Scripts";
+import Interviews from "./pages/Interviews";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +35,16 @@ const App = () => (
                       <Route path="/candidate-analysis" element={
                         <ProtectedRoute requiredModule="comparativos" requiredPermission="read">
                           <CVAnalysisPage />
+                        </ProtectedRoute>
+                      } />
+                        <Route path="/interview-scripts" element={
+                        <ProtectedRoute requiredModule="guiones" requiredPermission="write">
+                          <InterviewScripts />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/interview-analysis" element={
+                        <ProtectedRoute requiredModule="entrevistas" requiredPermission="write">
+                          <Interviews />
                         </ProtectedRoute>
                       } />
                       {/*
@@ -92,17 +104,7 @@ const App = () => (
                           <KanbanPage />
                         </ProtectedRoute>
                       } />
-                      
-                      <Route path="/interview-scripts" element={
-                        <ProtectedRoute requiredModule="guiones" requiredPermission="write">
-                          <InterviewScripts />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/interview-analysis" element={
-                        <ProtectedRoute requiredModule="entrevistas" requiredPermission="write">
-                          <Interviews />
-                        </ProtectedRoute>
-                      } />
+                    
 
                       <Route path="/settings" element={<AdminPanel />} />
                       }*/}
