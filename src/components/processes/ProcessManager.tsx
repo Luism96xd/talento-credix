@@ -140,7 +140,7 @@ export default function ProcessManager({ processes, phases, onProcessesChange }:
                     </button>
                     <button
                       onClick={() => handleEditProcess(process)}
-                      className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      className="p-2 text-gray-400 hover:text-primary-600 hover:bg-blue-50 rounded-lg transition-colors"
                     >
                       <Edit className="h-4 w-4" />
                     </button>

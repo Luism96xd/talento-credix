@@ -18,6 +18,8 @@ export const Index = () => {
         icon: Search,
         path: '/search', // Ruta a la pantalla de búsqueda
       });
+    }
+    if(hasPermission('comparativos','read')){
       items.push({
         name: 'Comparador de Candidatos',
         description: 'Compare perfiles de candidatos para tomar decisiones de contratación informadas.',
@@ -52,20 +54,8 @@ export const Index = () => {
   }
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-slate-100 min-h-screen">
+    <div className="bg-gradient-to-br from-primary-50 to-slate-100 min-h-screen">
       <div className="min-h-screen flex flex-col">
-        <header className="py-6 px-4 md:px-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Automatizaciones de Personal</h1>
-                <p className="text-gray-600 text-lg">Optimice sus procesos de captación con herramientas inteligentes</p>
-              </div>
-              <UserMenu />
-            </div>
-          </div>
-        </header>
-
         <main className="flex-1 p-4 md:p-8">
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Mapeamos sobre las funciones principales para crear los accesos directos */}
@@ -73,13 +63,13 @@ export const Index = () => {
               <Link
                 key={index}
                 to={func.path}
-                className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 flex flex-col items-center text-center group cursor-pointer border border-gray-200 hover:border-blue-300 transform hover:-translate-y-1"
+                className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 flex flex-col items-center text-center group cursor-pointer border border-gray-200 hover:border-primary transform hover:-translate-y-1"
               >
-                <div className="p-4 bg-blue-100 text-blue-600 rounded-full mb-4 group-hover:bg-blue-200 group-hover:text-blue-700 transition-colors duration-300">
+                <div className="p-4 bg-primary-100 text-primary-600 rounded-full mb-4 group-hover:bg-primary-200 group-hover:text-primary-700 transition-colors duration-300">
                   {/* Renderiza el ícono dinámicamente */}
                   <func.icon size={36} />
                 </div>
-                <h2 className="text-xl font-semibold text-gray-800 mb-2 group-hover:text-blue-700 transition-colors duration-300">{func.name}</h2>
+                <h2 className="text-xl font-semibold text-gray-800 mb-2 group-hover:text-primary transition-colors duration-300">{func.name}</h2>
                 <p className="text-gray-600 text-sm leading-relaxed">{func.description}</p>
               </Link>
             ))}

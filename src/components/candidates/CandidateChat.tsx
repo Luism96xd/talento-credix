@@ -81,7 +81,7 @@ export default function CandidateChat({ candidate, onClose }: CandidateChatProps
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-blue-100 rounded-full">
-              <Headphones className="h-5 w-5 text-blue-600" />
+              <Headphones className="h-5 w-5 text-primary-600" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900">Chat de Soporte</h3>
@@ -110,7 +110,7 @@ export default function CandidateChat({ candidate, onClose }: CandidateChatProps
                   message.sender === 'candidate' ? 'bg-blue-100' : 'bg-gray-100'
                 }`}>
                   {message.sender === 'candidate' ? (
-                    <User className="h-4 w-4 text-blue-600" />
+                    <User className="h-4 w-4 text-primary-600" />
                   ) : (
                     <Headphones className="h-4 w-4 text-gray-600" />
                   )}

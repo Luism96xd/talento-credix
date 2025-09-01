@@ -169,13 +169,13 @@ export default function CandidateDetails({ candidate, onClose, onCandidateUpdate
                 <div className="space-y-2">
                   <div className="flex items-center text-sm text-gray-600">
                     <Mail className="h-4 w-4 mr-2" />
-                    <a href={`mailto:${candidate.email}`} className="hover:text-blue-600">
+                    <a href={`mailto:${candidate.email}`} className="hover:text-primary-600">
                       {candidate.email}
                     </a>
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <Phone className="h-4 w-4 mr-2" />
-                    <a href={`tel:${candidate.phone}`} className="hover:text-blue-600">
+                    <a href={`tel:${candidate.phone}`} className="hover:text-primary-600">
                       {candidate.phone}
                     </a>
                   </div>
@@ -271,7 +271,7 @@ export default function CandidateDetails({ candidate, onClose, onCandidateUpdate
                         <div className="flex justify-between items-start mb-2">
                           <div>
                             <h5 className="font-medium text-gray-900">{exp.position}</h5>
-                            <p className="text-blue-600 font-medium">{exp.company}</p>
+                            <p className="text-primary-600 font-medium">{exp.company}</p>
                           </div>
                           <div className="text-sm text-gray-500 text-right">
                             <p>{exp.startDate} - {exp.current ? 'Presente' : exp.endDate}</p>
@@ -306,7 +306,7 @@ export default function CandidateDetails({ candidate, onClose, onCandidateUpdate
                         <div className="flex justify-between items-start">
                           <div>
                             <h5 className="font-medium text-gray-900">{edu.degree}</h5>
-                            <p className="text-blue-600 font-medium">{edu.institution}</p>
+                            <p className="text-primary-600 font-medium">{edu.institution}</p>
                             <p className="text-gray-600 text-sm">{edu.field}</p>
                           </div>
                           <div className="text-sm text-gray-500 text-right">

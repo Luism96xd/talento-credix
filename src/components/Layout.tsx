@@ -44,7 +44,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center p-6 border-b">
-            <Building2 className="h-8 w-8 text-blue-600" />
+            <Building2 className="h-8 w-8 text-primary-600" />
             <span className="ml-3 text-xl font-bold text-gray-900">Mayoreo HR</span>
           </div>
 

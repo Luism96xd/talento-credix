@@ -150,7 +150,7 @@ const CandidateCard: React.FC<CandidateProps> = ({
             </DialogContent>
           </Dialog>
         </div>
-        <Link to={link} target='_blank' className="text-center text-linkedin bg-linkedin hover:bg-linkedin/90 text-white py-2 px-6 rounded-xl transition-all duration-200 md:flex items-center justify-center">
+        <Link to={link} target='_blank' className="text-center text-linkedin bg-primary hover:bg-primary/90 text-white py-2 px-6 rounded-xl transition-all duration-200 md:flex items-center justify-center">
           Ver perfil
         </Link>
       </div>

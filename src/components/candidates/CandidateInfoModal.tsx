@@ -58,7 +58,7 @@ export default function CandidateInfoModal({ candidate, missingData, onClose }: 
           <div className="mb-8">
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-lg font-semibold text-gray-900">Progreso de Completitud</h4>
-              <span className="text-2xl font-bold text-blue-600">{completionPercentage}%</span>
+              <span className="text-2xl font-bold text-primary-600">{completionPercentage}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
               <div
@@ -123,7 +123,7 @@ export default function CandidateInfoModal({ candidate, missingData, onClose }: 
           {missingData.length > 0 && (
             <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
               <div className="flex items-start space-x-3">
-                <AlertCircle className="h-6 w-6 text-blue-600 mt-0.5" />
+                <AlertCircle className="h-6 w-6 text-primary-600 mt-0.5" />
                 <div>
                   <h4 className="font-medium text-blue-900 mb-2">Instrucciones para Completar</h4>
                   <div className="space-y-2 text-sm text-blue-800">

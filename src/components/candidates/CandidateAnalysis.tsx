@@ -8,7 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
-const WEBHOOK_URL = 'https://n8n.mayoreo.biz/webhook/477cd5ca-aa5e-41d9-bf96-4dcd554a9833';
+const WEBHOOK_URL = 'https://n8n.mayoreo.biz/webhook/c703822e-68e5-4a96-9152-5c35e9ae77fd';
 
 export const CandidateAnalysisForm: React.FC = () => {
   const [taskId, setTaskId] = useState(null);

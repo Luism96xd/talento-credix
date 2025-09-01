@@ -6,27 +6,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ui/ProtectedRoute";
-import Navbar from "./components/Navbar";
 import NotFound from "./pages/NotFound";
-import SearchPage from "./pages/SearchDetailsPage";
 import Auth from "./pages/Auth";
 import CVAnalysisPage from "./pages/cv-analysis";
-import Interviews from "./pages/Interviews";
-import { InterviewScripts } from "./pages/Scripts";
-import { Phases } from "./pages/Phases";
-import { Processes } from "./pages/Processes";
-import Searches from "./pages/Searches";
-import { Search } from "./pages/SearchPage";
-import { Requisition } from "./pages/Requisition";
 import { Index } from "./pages/Index";
-import { RequisitionsPage } from "./pages/RequisitionsPage";
-import { PublicRegistration } from "./pages/PublicRegistration";
-import { ManualRegistration } from "./pages/ManualRegistration";
-import { KanbanPage } from "./pages/KanbanPage";
-import SettingsPage from "./pages/SettingsPage";
-import Indicators from "./pages/Indicators";
-import AdminPanel from "./pages/AdminPanel";
-import CandidatePortal from "./components/candidates/CandidatePortal";
+import { Navbar } from "./components/navbar/navbar1";
 
 const queryClient = new QueryClient();
 
@@ -39,14 +23,19 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<Auth />} />
-            <Route path="/apply" element={<PublicRegistration />} />
             <Route path="/*" element={
               <ProtectedRoute>
-                <div className="flex">
+                <div className="flex flex-col">
                   <Navbar />
                   <div className="flex-1 ml-16">
                     <Routes>
                       <Route path="/" element={<Index />} />
+                      <Route path="/candidate-analysis" element={
+                        <ProtectedRoute requiredModule="comparativos" requiredPermission="read">
+                          <CVAnalysisPage />
+                        </ProtectedRoute>
+                      } />
+                      {/*
                       <Route path="/dashboard" element={
                         <ProtectedRoute requiredModule="dashboard" requiredPermission="read">
                           <Indicators />
@@ -103,11 +92,7 @@ const App = () => (
                           <KanbanPage />
                         </ProtectedRoute>
                       } />
-                      <Route path="/candidate-analysis" element={
-                        <ProtectedRoute requiredModule="comparativos" requiredPermission="write">
-                          <CVAnalysisPage />
-                        </ProtectedRoute>
-                      } />
+                      
                       <Route path="/interview-scripts" element={
                         <ProtectedRoute requiredModule="guiones" requiredPermission="write">
                           <InterviewScripts />
@@ -120,6 +105,7 @@ const App = () => (
                       } />
 
                       <Route path="/settings" element={<AdminPanel />} />
+                      }*/}
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </div>

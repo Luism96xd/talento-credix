@@ -117,7 +117,7 @@ export default function RecruiterDashboard() {
               </p>
             </div>
             <div className="p-3 bg-blue-100 rounded-full">
-              <Users className="h-6 w-6 text-blue-600" />
+              <Users className="h-6 w-6 text-primary-600" />
             </div>
           </div>
         </div>

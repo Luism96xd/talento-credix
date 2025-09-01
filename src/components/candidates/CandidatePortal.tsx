@@ -163,7 +163,7 @@ export default function CandidatePortal() {
         <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <User className="h-8 w-8 text-blue-600" />
+              <User className="h-8 w-8 text-primary-600" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Portal del Candidato</h1>
             <p className="text-gray-600">Consulte el estado de su proceso de selección</p>
@@ -195,7 +195,7 @@ export default function CandidatePortal() {
 
           <div className="mt-6 p-4 bg-blue-50 rounded-lg">
             <div className="flex items-start space-x-3">
-              <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+              <Info className="h-5 w-5 text-primary-600 mt-0.5" />
               <div>
                 <p className="text-sm font-medium text-blue-900">¿Necesita ayuda?</p>
                 <p className="text-sm text-blue-700">
@@ -221,7 +221,7 @@ export default function CandidatePortal() {
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setSelectedCandidate(null)}
-                className="text-blue-600 hover:text-blue-800 font-medium"
+                className="text-primary-600 hover:text-blue-800 font-medium"
               >
                 ← Volver a búsqueda
               </button>
@@ -233,7 +233,7 @@ export default function CandidatePortal() {
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setShowInfoModal(true)}
-                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                className="p-2 text-primary-600 hover:bg-blue-50 rounded-lg transition-colors"
                 title="Información y documentos faltantes"
               >
                 <Info className="h-5 w-5" />

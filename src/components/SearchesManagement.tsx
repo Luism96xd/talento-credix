@@ -103,7 +103,7 @@ const SearchesManagement: React.FC = () => {
                       <h4 className="font-medium">{search.job_title}</h4>
                       <p className="text-sm text-gray-600">{search.location}</p>
                       {search.company_name && (
-                        <p className="text-sm text-blue-600">{search.company_name}</p>
+                        <p className="text-sm text-primary-600">{search.company_name}</p>
                       )}
                     </div>
                   </Link>
@@ -113,7 +113,7 @@ const SearchesManagement: React.FC = () => {
                       {new Date(search.created_at).toLocaleDateString()}
                     </div>
                     {search.sheet_url && (
-                      <a href={search.sheet_url} className='text-blue-600 text-sm' target="_blank" rel="noopener noreferrer">
+                      <a href={search.sheet_url} className='text-primary-600 text-sm' target="_blank" rel="noopener noreferrer">
                         Ver hoja de cálculo
                       </a>
                     )}

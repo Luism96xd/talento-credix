@@ -92,7 +92,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       <div
           className={cn(
             'mt-2 border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors',
-            isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400',
+            isDragging ? 'border-primary-500 bg-red-50' : 'border-gray-300 hover:border-gray-400',
           )}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -101,7 +101,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         >
           <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
           <p className="text-sm text-gray-600">
-            Arrastra los archivos aquí o <span className="font-semibold text-blue-600">haz clic para buscar</span>
+            Arrastra los archivos aquí o <span className="font-semibold text-primary-600">haz clic para buscar</span>
           </p>
           <p className="text-xs text-gray-500 mt-1">
             {accept ? `Soportados: ${accept.toUpperCase()}` : ''}
@@ -125,7 +125,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                 variant="ghost"
                 size="sm"
                 onClick={() => handleRemoveFile(index)}
-                className="text-red-500 hover:bg-red-50 hover:text-red-700 h-7 w-7 p-0"
+                className="text-red-500 hover:bg-primary-700 hover:text-red-700 h-7 w-7 p-0"
                 type="button" // Evita que envíe un formulario
               >
                 <X className="h-4 w-4" />

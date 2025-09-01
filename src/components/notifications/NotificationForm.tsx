@@ -362,7 +362,7 @@ export default function NotificationForm({
                         toPhaseId: e.target.checked ? '' : formData.triggers.toPhaseId
                       }
                     })}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-primary-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
                   <label htmlFor="allPhases" className="ml-2 text-sm text-gray-700">
                     Notificar en todos los cambios de fase
@@ -423,7 +423,7 @@ export default function NotificationForm({
                 id="enabled"
                 checked={formData.enabled}
                 onChange={(e) => setFormData({ ...formData, enabled: e.target.checked })}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-4 w-4 text-primary-600 focus:ring-blue-500 border-gray-300 rounded"
               />
               <label htmlFor="enabled" className="ml-2 block text-sm text-gray-700">
                 Notificación activa

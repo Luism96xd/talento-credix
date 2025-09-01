@@ -64,8 +64,9 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				linkedin: {
-					DEFAULT: '#0077B5',
-					light: '#E1F0FA'
+					DEFAULT: 'hsl(var(--primary))',
+					light: 'hsl(var(--primary))'
+					
 				},
 				success: {
 					DEFAULT: '#57BB71',

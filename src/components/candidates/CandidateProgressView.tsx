@@ -95,7 +95,7 @@ export default function CandidateProgressView({ candidate, phases, process }: Ca
             <p className="text-gray-600">{process?.name}</p>
           </div>
           <div className="text-right">
-            <p className="text-2xl font-bold text-blue-600">{progressPercentage}%</p>
+            <p className="text-2xl font-bold text-primary-600">{progressPercentage}%</p>
             <p className="text-sm text-gray-500">Completado</p>
           </div>
         </div>
@@ -117,7 +117,7 @@ export default function CandidateProgressView({ candidate, phases, process }: Ca
         {/* Fase Actual */}
         <div className="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500">
           <div className="flex items-center space-x-3">
-            <Clock className="h-6 w-6 text-blue-600" />
+            <Clock className="h-6 w-6 text-primary-600" />
             <div>
               <p className="font-medium text-blue-900">Usted se encuentra en esta fase:</p>
               <p className="text-lg font-bold text-blue-800">{currentPhase?.name}</p>

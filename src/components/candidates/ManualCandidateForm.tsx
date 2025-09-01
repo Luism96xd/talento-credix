@@ -231,7 +231,7 @@ export default function ManualCandidateForm({ processes, onCandidateSubmit }: Ma
                   <button
                     type="button"
                     onClick={() => removeSkill(skill)}
-                    className="ml-2 text-blue-600 hover:text-blue-800"
+                    className="ml-2 text-primary-600 hover:text-blue-800"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -336,7 +336,7 @@ export default function ManualCandidateForm({ processes, onCandidateSubmit }: Ma
                           id={`current-${exp.id}`}
                           checked={exp.current}
                           onChange={(e) => updateExperience(exp.id, 'current', e.target.checked)}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          className="h-4 w-4 text-primary-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
                         <label htmlFor={`current-${exp.id}`} className="ml-2 text-sm text-gray-700">
                           Trabajo actual
@@ -439,7 +439,7 @@ export default function ManualCandidateForm({ processes, onCandidateSubmit }: Ma
                           id={`edu-current-${edu.id}`}
                           checked={edu.current}
                           onChange={(e) => updateEducation(edu.id, 'current', e.target.checked)}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          className="h-4 w-4 text-primary-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
                         <label htmlFor={`edu-current-${edu.id}`} className="ml-2 text-sm text-gray-700">
                           En curso

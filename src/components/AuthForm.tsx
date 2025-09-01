@@ -71,6 +71,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
+        <img src="/Credix_Logo.png" alt="Credix" />
         <CardTitle className="text-center">
           {isSignUp ? 'Crear cuenta' : 'Iniciar sesión'}
         </CardTitle>
@@ -137,7 +138,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
             <button
               type="button"
               onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-blue-600 hover:underline"
+              className="text-sm text-primary hover:underline"
             >
               {isSignUp
                 ? '¿Ya tienes cuenta? Inicia sesión'
