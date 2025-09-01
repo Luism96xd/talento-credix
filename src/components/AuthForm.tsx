@@ -26,7 +26,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -39,9 +39,20 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
 
         if (error) throw error;
 
+        if (data.user.id) {
+          // Assign role
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .insert({
+              user_id: data.user.id,
+              role: 'personal_credix'
+            });
+            if(roleError) throw roleError
+        }
+
         toast({
           title: 'Registro exitoso',
-          description: 'Revisa tu email para confirmar tu cuenta.',
+          description: 'Inicie sesión para ingresar',
         });
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -95,7 +106,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
               </div>
             </div>
           )}
-          
+
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <div className="relative">
