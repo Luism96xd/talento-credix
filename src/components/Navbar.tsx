@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { User, LogOut, Users, ClipboardCheck, Speech, FolderSearch, Search, Briefcase, Home } from 'lucide-react';
+import { User, LogOut, Users, ClipboardCheck, Speech, FolderSearch, Search, Briefcase, Home, KeyRound } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
@@ -23,8 +23,8 @@ export const Navbar = () => {
     }
   };
 
-   // Define navigation items based on roles
-   const getNavigationItems = () => {
+  // Define navigation items based on roles
+  const getNavigationItems = () => {
     const items = [];
 
     if (hasPermission('home', 'read')) {
@@ -91,6 +91,15 @@ export const Navbar = () => {
                 {user.email}
               </span>
             </div>
+            <Button
+              onClick={() => navigate('/change-password')}
+              variant="outline"
+              size="sm"
+              className="border-gray-200 hover:bg-gray-50"
+            >
+              <KeyRound className="w-4 h-4 mr-2" />
+              Cambiar contraseña
+            </Button>
             <Button
               onClick={handleSignOut}
               variant="outline"

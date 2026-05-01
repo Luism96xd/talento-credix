@@ -8,6 +8,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ui/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
+import ForgotPassword from "./pages/ForgotPassword";
+import ChangePassword from "./pages/ChangePassword";
 import CVAnalysisPage from "./pages/cv-analysis";
 import { Index } from "./pages/Index";
 import { Navbar } from "./components/Navbar";
@@ -25,6 +27,8 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/change-password" element={<ChangePassword />} />
             <Route path="/*" element={
               <ProtectedRoute>
                 <div className="flex flex-col">

@@ -10,9 +10,13 @@ interface AuthContextType {
   profile: UserProfile | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
+  resetPassword: (email: string) => Promise<{ error: any }>;
+  changePassword: (newPassword: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   hasPermission: (module: string, permission: string) => boolean;
   hasRole: (role: string) => boolean;
+  isPasswordRecovery: boolean;
+  setIsPasswordRecovery: (val: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,6 +34,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
 
   const fetchUserProfile = async (userId: string) => {
     try {
@@ -122,6 +127,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         setUser(session?.user ?? null);
 
+        if (event === 'PASSWORD_RECOVERY') {
+          setIsPasswordRecovery(true);
+        }
+
         if (session?.user) {
           setTimeout(() => {
             fetchUserProfile(session.user.id);
@@ -155,6 +164,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { error };
   };
 
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/change-password`,
+    });
+    return { error };
+  };
+
+  const changePassword = async (newPassword: string) => {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    return { error };
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -180,9 +201,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     profile,
     loading,
     signIn,
+    resetPassword,
+    changePassword,
     signOut,
     hasPermission,
-    hasRole
+    hasRole,
+    isPasswordRecovery,
+    setIsPasswordRecovery
   };
 
   return (
