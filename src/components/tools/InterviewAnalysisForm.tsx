@@ -7,7 +7,7 @@ import { FileUpload } from '../candidates/FileUpload';
 import { Button } from '../ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 
-const WEBHOOK_URL = 'https://n8n.mayoreo.biz/webhook/c4407cf8-2c19-4b8c-997e-7294106a4eec';
+const WEBHOOK_URL = 'https://n8n.mayoreo.biz/webhook/0a1190c4-4a31-4a80-bc97-16463dced1f3';
 
 export const InterviewAnalysisForm: React.FC = () => {
   const [taskId, setTaskId] = useState(null);
@@ -29,6 +29,21 @@ export const InterviewAnalysisForm: React.FC = () => {
 
   const { toast } = useToast(); // Inicializa el hook de toast
   const { user } = useAuth();
+
+  const handleReset = () => {
+    setCurrentStep(1);
+    setTaskId(null);
+    setUrl('');
+    setContent('');
+    setFormData({
+      cvFiles: [],
+      psychometricTests: [],
+      jobDescriptionFile: null,
+      inverview_transcript: [],
+      discTests: [],
+      discSupervisorFile: null,
+    });
+  };
 
   // Función para generar un ID de tarea único
   const generateTaskId = () => {
@@ -145,7 +160,7 @@ export const InterviewAnalysisForm: React.FC = () => {
     setTaskId(taskData.id);
 
     // Append all text fields
-    data.append('taskId', taskId);
+    data.append('taskId', taskData.id);
 
     // Append all file arrays
     formData.cvFiles.forEach((file) => {
@@ -274,6 +289,7 @@ export const InterviewAnalysisForm: React.FC = () => {
           {currentStep === 2 && (
             <div className='flex flex-col gap-4 p-2'>
               <a target="_blank" className="text-center text-linkedin bg-linkedin hover:bg-linkedin text-white py-2 px-6 rounded-xl transition-all duration-200 md:flex items-center justify-center" href={url ? url : "#"}>Haga clic aquí para descargar el informe</a>
+              <Button onClick={handleReset} variant="outline" className="w-full">Realizar otro análisis</Button>
               {/*<Markdown>{content}</Markdown>*/}
             </div>
           )}

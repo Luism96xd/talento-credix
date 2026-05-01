@@ -31,6 +31,20 @@ export const CandidateAnalysisForm: React.FC = () => {
   const { toast } = useToast(); // Inicializa el hook de toast
   const { user } = useAuth();
 
+  const handleReset = () => {
+    setCurrentStep(1);
+    setTaskId(null);
+    setUrl('');
+    setContent('');
+    setFormData({
+      cvFiles: [],
+      psychometricTests: [],
+      jobDescriptionFile: null,
+      additionalContext: '',
+      discTests: [],
+      discSupervisorFile: null,
+    });
+  };
 
 
   useEffect(() => {
@@ -272,6 +286,7 @@ export const CandidateAnalysisForm: React.FC = () => {
           {currentStep === 2 && (
             <div className='flex flex-col gap-4 p-2'>
               <a target="_blank" className="text-center text-linkedin bg-linkedin hover:bg-linkedin text-white py-2 px-6 rounded-xl transition-all duration-200 md:flex items-center justify-center" href={url ? url : "#"}>Haga clic aquí para descargar el informe</a>
+              <Button onClick={handleReset} variant="outline" className="w-full">Realizar otro análisis</Button>
               {/*<Markdown>{content}</Markdown>*/}
             </div>
           )}
