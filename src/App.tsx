@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import ForgotPassword from "./pages/ForgotPassword";
 import ChangePassword from "./pages/ChangePassword";
+import ProfilePassword from "./pages/ProfilePassword";
 import CVAnalysisPage from "./pages/cv-analysis";
 import { Index } from "./pages/Index";
 import { Navbar } from "./components/Navbar";
@@ -36,6 +37,7 @@ const App = () => (
                   <div className="flex-1 ml-16">
                     <Routes>
                       <Route path="/" element={<Index />} />
+                      <Route path="/profile-security" element={<ProfilePassword />} />
                       <Route path="/candidate-analysis" element={
                         <ProtectedRoute requiredModule="comparativos" requiredPermission="read">
                           <CVAnalysisPage />

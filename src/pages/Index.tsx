@@ -19,7 +19,7 @@ export const Index = () => {
         path: '/search', // Ruta a la pantalla de búsqueda
       });
     }
-    if(hasPermission('comparativos','read')){
+    if (hasPermission('comparativos', 'read') || hasPermission('comparativos', 'write')) {
       items.push({
         name: 'Comparador de Candidatos',
         description: 'Compare perfiles de candidatos para tomar decisiones de contratación informadas.',
@@ -27,7 +27,7 @@ export const Index = () => {
         path: '/candidate-analysis', // Ruta a la pantalla del comparador
       });
     }
-    if (hasPermission('guiones', 'read')) {
+    if (hasPermission('guiones', 'read') || hasPermission('guiones', 'write')) {
       items.push({
         name: 'Guiones de Entrevistas',
         description: 'Cree guiones estructurados y personalizados para sus procesos de entrevista.',
@@ -35,7 +35,7 @@ export const Index = () => {
         path: '/interview-scripts', // Ruta a la gestión de guiones
       });
     }
-    if (hasRole('personal')) {
+    if (hasPermission('entrevistas', 'read') || hasPermission('entrevistas', 'write')) {
       items.push({
         name: 'Análisis de Entrevistas',
         description: 'Analice el rendimiento de las entrevistas, identifique patrones y obtenga insights valiosos.',

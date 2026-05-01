@@ -1,15 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FileUpload } from '../candidates/FileUpload';
+import { Textarea } from '../ui/textarea';
+import { Button } from '../ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader } from 'lucide-react';
-import { FileUpload } from './candidates/FileUpload';
-import { Button } from './ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 
-const WEBHOOK_URL = 'https://n8n.mayoreo.biz/webhook/c4407cf8-2c19-4b8c-997e-7294106a4eec';
+const WEBHOOK_URL = 'https://n8n.mayoreo.biz/webhook/c703822e-68e5-4a96-9152-5c35e9ae77fd';
 
-export const InterviewAnalysisForm: React.FC = () => {
+export const CandidateAnalysisForm: React.FC = () => {
   const [taskId, setTaskId] = useState(null);
   const [url, setUrl] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
@@ -19,7 +20,7 @@ export const InterviewAnalysisForm: React.FC = () => {
     cvFiles: [] as File[],
     psychometricTests: [] as File[],
     jobDescriptionFile: [] as File[] | null,
-    inverview_transcript: [] as File[],
+    additionalContext: '',
     discTests: [] as File[],
     discSupervisorFile: [] as File[] | null,
   });
@@ -30,10 +31,7 @@ export const InterviewAnalysisForm: React.FC = () => {
   const { toast } = useToast(); // Inicializa el hook de toast
   const { user } = useAuth();
 
-  // Función para generar un ID de tarea único
-  const generateTaskId = () => {
-    return 'task-' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  };
+
 
   useEffect(() => {
     // Verificar si supabase está inicializado
@@ -114,20 +112,19 @@ export const InterviewAnalysisForm: React.FC = () => {
       return;
     }
 
-    if (!formData.inverview_transcript || formData.inverview_transcript.length === 0) {
+    if (!formData.jobDescriptionFile || formData.jobDescriptionFile.length === 0) {
       toast({
         title: 'Archivo Faltante',
-        description: 'Por favor, carga la transcripción de la entrevista',
+        description: 'Por favor, carga la descripción del cargo.',
         variant: 'destructive',
       });
       return;
     }
 
-
-    if (!formData.jobDescriptionFile || formData.jobDescriptionFile.length === 0) {
+    if (formData.additionalContext.trim() === '') {
       toast({
-        title: 'Archivo Faltante',
-        description: 'Por favor, carga la descripción del cargo.',
+        title: 'Contexto Faltante',
+        description: 'Por favor, proporciona contexto adicional para la posición.',
         variant: 'destructive',
       });
       return;
@@ -145,7 +142,8 @@ export const InterviewAnalysisForm: React.FC = () => {
     setTaskId(taskData.id);
 
     // Append all text fields
-    data.append('taskId', taskId);
+    data.append('taskId', taskData.id);
+    data.append('additionalContext', formData.additionalContext);
 
     // Append all file arrays
     formData.cvFiles.forEach((file) => {
@@ -160,10 +158,7 @@ export const InterviewAnalysisForm: React.FC = () => {
         data.append('discTests', file);
       });
     }
-    // Append single file inputs
-    if (formData.inverview_transcript && formData.inverview_transcript.length > 0) {
-      data.append('transcript', formData.inverview_transcript[0]);
-    }
+
     // Append single file inputs
     if (formData.jobDescriptionFile && formData.jobDescriptionFile.length > 0) {
       data.append('jobDescriptionFile', formData.jobDescriptionFile[0]);
@@ -207,7 +202,7 @@ export const InterviewAnalysisForm: React.FC = () => {
       <CardHeader>
         <CardTitle>Subir Documentos</CardTitle>
         <CardDescription>
-          Carga el CV del candidato, la descripción del cargo y la transcripción de la entrevista
+          Carga los CVs de los candidatos, sus pruebas psicotécnicas y otra información que ayude a profundizar en el análisis
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -216,18 +211,18 @@ export const InterviewAnalysisForm: React.FC = () => {
             <div className="mb-4 flex justify-center">
               <Loader className="h-12 w-12 text-linkedin animate-spin" />
             </div>
-            <h3 className="text-xl font-medium text-gray-800 mb-2">Analizando entrevista</h3>
-            <p className="text-gray-500 mb-6">Analizando transcripción de la entrevista del candidato</p>
+            <h3 className="text-xl font-medium text-gray-800 mb-2">Analizando candidatos</h3>
+            <p className="text-gray-500 mb-6">Generando análisis multicriterio de los candidatos</p>
           </div>
         )}
         {!isLoading && <>
           {currentStep === 1 && (
             <div className='flex flex-col gap-2'>
               <FileUpload
-                label="CV del candidato"
-                description="Curriculum vitae del candidato en formato PDF."
+                label="CVs de los candidatos"
+                description="Curriculum vitae en formato PDF. Subir múltiples archivos."
                 files={formData.cvFiles}
-                multiple={false}
+                multiple={true}
                 onFileSelect={(files) => setFormData(prev => ({ ...prev, cvFiles: files as File[] }))}
               />
 
@@ -239,26 +234,29 @@ export const InterviewAnalysisForm: React.FC = () => {
                 onFileSelect={(file) => setFormData(prev => ({ ...prev, jobDescriptionFile: file ? file : null }))}
               />
               <FileUpload
-                label="Transcripción de la entrevista"
-                description="Archivo con la transcripción de la entrevista"
-                files={formData.inverview_transcript}
-                multiple={false}
-                onFileSelect={(files) => setFormData(prev => ({ ...prev, inverview_transcript: files as File[] }))}
-              />
-
-              <FileUpload
                 label="Pruebas psicotécnicas"
-                description="Resultados de las pruebas psicotécnicas."
+                description="Resultados de pruebas psicotécnicas. Subir múltiples archivos."
                 files={formData.psychometricTests}
                 multiple={true}
                 onFileSelect={(files) => setFormData(prev => ({ ...prev, psychometricTests: files as File[] }))}
               />
 
+              <div className='space-y-2'>
+                <label className="text-sm font-medium text-gray-700">Contexto de la posición</label>
+                <p className="text-xs text-gray-500">Escriba detalles adicionales sobre el cargo y el entorno</p>
+                <Textarea
+                  aria-label='Contexto de la posición'
+                  rows={5}
+                  placeholder='Sea detallado para mejorar la calidad de los resultados'
+                  onChange={(e) => setFormData(prev => ({ ...prev, additionalContext: e.target.value }))}
+                  value={formData.additionalContext}
+                />
+              </div>
               <FileUpload
-                label="Pruebas DISC del candidato"
-                description="Agregue la prueba DISC o cualquier otra prueba de personalidad que ayude a profundizar en el análisis."
+                label="Pruebas DISC de los candidatos"
+                description="Agregue la pruebas DISC o cualquier otra prueba de personalidad que ayude a profundizar en el análisis. Subir múltiples archivos."
                 files={formData.discTests}
-                multiple={false}
+                multiple={true}
                 onFileSelect={(files) => setFormData(prev => ({ ...prev, discTests: files as File[] }))}
               />
               <FileUpload
@@ -268,7 +266,7 @@ export const InterviewAnalysisForm: React.FC = () => {
                 multiple={false}
                 onFileSelect={(file) => setFormData(prev => ({ ...prev, discSupervisorFile: file ? file : null }))}
               />
-              <Button onClick={handleSubmit} className='bg-primary w-full'>Enviar</Button>
+              <Button onClick={handleSubmit} className='w-full'>Enviar</Button>
             </div>
           )}
           {currentStep === 2 && (

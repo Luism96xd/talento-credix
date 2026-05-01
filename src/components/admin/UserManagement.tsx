@@ -1,17 +1,31 @@
-
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Trash2, UserPlus} from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { Trash2, UserPlus, Search, Shield, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+
+export interface UserRoleData {
+  role: string;
+  is_active: boolean;
+}
+
+export interface UserRow {
+  id: string;
+  email: string;
+  full_name: string;
+  phone: string;
+  created_at: string;
+  is_active: boolean;
+  roles: UserRoleData[];
+}
 
 const roleLabels = {
   admin: 'Administrador',
@@ -20,17 +34,25 @@ const roleLabels = {
   usuario: 'Usuario'
 };
 
-export default function UserManagement({ users, onUsersChange}) {
+interface UserManagementProps {
+  users: UserRow[];
+  onUsersChange: () => void;
+}
+
+export default function UserManagement({ users, onUsersChange }: UserManagementProps) {
   const [createUserOpen, setCreateUserOpen] = useState(false);
   const [error, setError] = useState('');
   const [creating, setCreating] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     full_name: '',
     role: ''
   });
-  const { toast } = useToast()
+  const { toast } = useToast();
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,7 +96,7 @@ export default function UserManagement({ users, onUsersChange}) {
         if (roleError) throw roleError;
 
         toast({
-          title: "Success",
+          title: "Éxito",
           description: 'Usuario creado exitosamente'
         });
         setCreateUserOpen(false);
@@ -94,45 +116,63 @@ export default function UserManagement({ users, onUsersChange}) {
   };
 
   const handleDeleteUser = async (userId: string, email: string) => {
-    if (!confirm(`¿Estás seguro de eliminar el usuario ${email}?`)) return;
+    if (!confirm(`¿Estás seguro de eliminar el usuario ${email}? Esta acción no se puede deshacer.`)) return;
 
+    setDeletingId(userId);
     try {
       const { error } = await supabase.auth.admin.deleteUser(userId);
       if (error) throw error;
 
       toast({
-        title: "Success",
+        title: "Éxito",
         description: 'Usuario eliminado exitosamente'
-      }) ;
+      });
       onUsersChange();
     } catch (error) {
       console.error('Error deleting user:', error);
       toast({
         title: "Error",
-        description: 'Error al eliminar usuario'
+        description: 'Error al eliminar usuario',
+        variant: 'destructive'
       });
+    } finally {
+      setDeletingId(null);
     }
   };
 
+  const filteredUsers = users.filter(user =>
+    user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-2">
-          <UserPlus className="h-5 w-5" />
-          Usuarios del Sistema
-        </CardTitle>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-gray-900 flex items-center gap-2">
+            <Shield className="h-6 w-6 text-primary" />
+            Gestión de Usuarios
+          </h2>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Administra los accesos, roles y cuentas del sistema.
+          </p>
+        </div>
+
         <Dialog open={createUserOpen} onOpenChange={setCreateUserOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="shadow-sm hover:shadow-md transition-all">
               <UserPlus className="h-4 w-4 mr-2" />
-              Crear Usuario
+              Nuevo Usuario
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Crear Nuevo Usuario</DialogTitle>
+              <DialogTitle className="text-xl">Crear Nuevo Usuario</DialogTitle>
+              <DialogDescription>
+                Ingresa los datos para registrar un usuario y asignarle un rol inicial.
+              </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleCreateUser} className="space-y-4">
+            <form onSubmit={handleCreateUser} className="space-y-4 pt-4">
               {error && (
                 <Alert variant="destructive">
                   <AlertDescription>{error}</AlertDescription>
@@ -140,21 +180,11 @@ export default function UserManagement({ users, onUsersChange}) {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
                 <Label htmlFor="full_name">Nombre Completo</Label>
                 <Input
                   id="full_name"
                   type="text"
+                  placeholder="Ej. Juan Pérez"
                   value={formData.full_name}
                   onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                   required
@@ -162,10 +192,23 @@ export default function UserManagement({ users, onUsersChange}) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Contraseña</Label>
+                <Label htmlFor="email">Correo Electrónico</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="usuario@credix.com"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Contraseña Temporal</Label>
                 <Input
                   id="password"
                   type="password"
+                  placeholder="Mínimo 6 caracteres"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   required
@@ -174,8 +217,8 @@ export default function UserManagement({ users, onUsersChange}) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="role">Rol</Label>
-                <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
+                <Label htmlFor="role">Rol Principal</Label>
+                <Select required value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecciona un rol" />
                   </SelectTrigger>
@@ -188,62 +231,110 @@ export default function UserManagement({ users, onUsersChange}) {
                 </Select>
               </div>
 
-              <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => setCreateUserOpen(false)}>
+              <div className="flex justify-end gap-3 pt-4 border-t mt-6">
+                <Button type="button" variant="ghost" onClick={() => setCreateUserOpen(false)}>
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={creating}>
-                  {creating ? 'Creando...' : 'Crear Usuario'}
+                <Button type="submit" disabled={creating} className="min-w-[120px]">
+                  {creating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creando...
+                    </>
+                  ) : (
+                    'Crear Usuario'
+                  )}
                 </Button>
               </div>
             </form>
           </DialogContent>
         </Dialog>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Teléfono</TableHead>
-              <TableHead>Roles</TableHead>
-              <TableHead>Fecha de Creación</TableHead>
-              <TableHead>Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>{user.full_name}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.phone}</TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    {user.roles.map((role) => (
-                      <Badge key={role} variant="secondary">
-                        {roleLabels[role as keyof typeof roleLabels] || role}
-                      </Badge>
-                    ))}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {new Date(user.created_at).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDeleteUser(user.id, user.email)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
-  )
+      </div>
+
+      <Card className="border-none shadow-sm bg-white/50 backdrop-blur-sm">
+        <CardHeader className="pb-4">
+          <div className="flex items-center space-x-2">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nombre o correo..."
+                className="pl-9 bg-white"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-md border bg-white overflow-hidden">
+            <Table>
+              <TableHeader className="bg-slate-50">
+                <TableRow>
+                  <TableHead className="font-semibold">Nombre Completo</TableHead>
+                  <TableHead className="font-semibold">Email</TableHead>
+                  <TableHead className="font-semibold">Roles</TableHead>
+                  <TableHead className="font-semibold">Fecha de Creación</TableHead>
+                  <TableHead className="text-right font-semibold">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredUsers.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      No se encontraron usuarios que coincidan con la búsqueda.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredUsers.map((user) => (
+                    <TableRow key={user.id} className="hover:bg-slate-50/50 transition-colors">
+                      <TableCell className="font-medium">{user.full_name || 'Sin Nombre'}</TableCell>
+                      <TableCell className="text-muted-foreground">{user.email}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {user.roles && user.roles.length > 0 ? (
+                            user.roles.map((r, i) => (
+                              <Badge 
+                                key={i} 
+                                variant={r.role === 'admin' ? 'default' : 'secondary'}
+                                className={r.role === 'admin' ? 'bg-primary text-white hover:bg-primary/90' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}
+                              >
+                                {roleLabels[r.role as keyof typeof roleLabels] || r.role}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-xs text-muted-foreground italic">Sin roles</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {new Date(user.created_at).toLocaleDateString('es-ES', {
+                          year: 'numeric', month: 'short', day: 'numeric'
+                        })}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50 transition-colors"
+                          disabled={deletingId === user.id}
+                          onClick={() => handleDeleteUser(user.id, user.email)}
+                          title="Eliminar usuario"
+                        >
+                          {deletingId === user.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }

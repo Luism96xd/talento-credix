@@ -3,15 +3,24 @@ import React from 'react';
 import { User, LogOut, Users, ClipboardCheck, Speech, FolderSearch, Search, Briefcase, Home, KeyRound } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 
 export const Navbar = () => {
   const { user, hasPermission } = useAuth()
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -83,32 +92,36 @@ export const Navbar = () => {
         </div>
         {user && (
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                <User className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-sm font-medium text-gray-700">
-                {user.email}
-              </span>
-            </div>
-            <Button
-              onClick={() => navigate('/change-password')}
-              variant="outline"
-              size="sm"
-              className="border-gray-200 hover:bg-gray-50"
-            >
-              <KeyRound className="w-4 h-4 mr-2" />
-              Cambiar contraseña
-            </Button>
-            <Button
-              onClick={handleSignOut}
-              variant="outline"
-              size="sm"
-              className="border-gray-200 hover:bg-gray-50"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Cerrar sesión
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="flex items-center space-x-2 hover:bg-slate-100 rounded-lg px-2 py-1.5 h-auto">
+                  <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center shrink-0 shadow-sm">
+                    <User className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-700 hidden sm:inline-block">
+                    {user.email}
+                  </span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">Mi Perfil</p>
+                    <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/profile-security')} className="cursor-pointer">
+                  <KeyRound className="w-4 h-4 mr-2 text-muted-foreground" />
+                  <span>Cambiar contraseña</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50">
+                  <LogOut className="w-4 h-4 mr-2" />
+                  <span>Cerrar sesión</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         )}
       </div>

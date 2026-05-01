@@ -1,16 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileUpload } from './FileUpload';
-import { Textarea } from '../ui/textarea';
-import { Button } from '../ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader } from 'lucide-react';
+import { FileUpload } from '../candidates/FileUpload';
+import { Button } from '../ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 
-const WEBHOOK_URL = 'https://n8n.mayoreo.biz/webhook/c703822e-68e5-4a96-9152-5c35e9ae77fd';
+const WEBHOOK_URL = 'https://n8n.mayoreo.biz/webhook/3259cbaf-ff13-410b-aa93-fd73b67e9383';
 
-export const CandidateAnalysisForm: React.FC = () => {
+export const InterviewScriptForm: React.FC = () => {
   const [taskId, setTaskId] = useState(null);
   const [url, setUrl] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
@@ -18,11 +17,8 @@ export const CandidateAnalysisForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     cvFiles: [] as File[],
-    psychometricTests: [] as File[],
     jobDescriptionFile: [] as File[] | null,
-    additionalContext: '',
-    discTests: [] as File[],
-    discSupervisorFile: [] as File[] | null,
+    name: "" as string
   });
 
   // Ref para almacenar la suscripción de Supabase para poder desuscribirse
@@ -30,7 +26,6 @@ export const CandidateAnalysisForm: React.FC = () => {
 
   const { toast } = useToast(); // Inicializa el hook de toast
   const { user } = useAuth();
-
 
 
   useEffect(() => {
@@ -103,33 +98,6 @@ export const CandidateAnalysisForm: React.FC = () => {
       return;
     }
 
-    if (formData.psychometricTests.length === 0) {
-      toast({
-        title: 'Archivos Faltantes',
-        description: 'Por favor, carga al menos una prueba psicométrica.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (!formData.jobDescriptionFile || formData.jobDescriptionFile.length === 0) {
-      toast({
-        title: 'Archivo Faltante',
-        description: 'Por favor, carga la descripción del cargo.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (formData.additionalContext.trim() === '') {
-      toast({
-        title: 'Contexto Faltante',
-        description: 'Por favor, proporciona contexto adicional para la posición.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     const { data: taskData, error } = await supabase
       .from('task_progress')
       .insert({ step: 0, status: 'processing' })
@@ -143,30 +111,18 @@ export const CandidateAnalysisForm: React.FC = () => {
 
     // Append all text fields
     data.append('taskId', taskData.id);
-    data.append('additionalContext', formData.additionalContext);
 
     // Append all file arrays
     formData.cvFiles.forEach((file) => {
       data.append('cvFiles', file);
     });
-    formData.psychometricTests.forEach((file) => {
-      data.append('psychometricTests', file);
-    });
-
-    if (formData.discTests && formData.discTests.length > 0) {
-      formData.discTests.forEach((file) => {
-        data.append('discTests', file);
-      });
-    }
 
     // Append single file inputs
     if (formData.jobDescriptionFile && formData.jobDescriptionFile.length > 0) {
       data.append('jobDescriptionFile', formData.jobDescriptionFile[0]);
     }
-    if (formData.discSupervisorFile && formData.discSupervisorFile.length > 0) {
-      data.append('discSupervisorFile', formData.discSupervisorFile[0]);
-    }
 
+    data.append('name', formData.name)
     data.append('email', user.email)
 
     console.log('Sending FormData:', data);
@@ -202,7 +158,7 @@ export const CandidateAnalysisForm: React.FC = () => {
       <CardHeader>
         <CardTitle>Subir Documentos</CardTitle>
         <CardDescription>
-          Carga los CVs de los candidatos, sus pruebas psicotécnicas y otra información que ayude a profundizar en el análisis
+          Carga el CV del candidato, escribe el nombre del cargo o sube el archivo PDF
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -211,21 +167,13 @@ export const CandidateAnalysisForm: React.FC = () => {
             <div className="mb-4 flex justify-center">
               <Loader className="h-12 w-12 text-linkedin animate-spin" />
             </div>
-            <h3 className="text-xl font-medium text-gray-800 mb-2">Analizando candidatos</h3>
-            <p className="text-gray-500 mb-6">Generando análisis multicriterio de los candidatos</p>
+            <h3 className="text-xl font-medium text-gray-800 mb-2">Generando guión de entrevista</h3>
+            <p className="text-gray-500 mb-6">Generando guión de entrevista para el candidato...</p>
           </div>
         )}
         {!isLoading && <>
           {currentStep === 1 && (
             <div className='flex flex-col gap-2'>
-              <FileUpload
-                label="CVs de los candidatos"
-                description="Curriculum vitae en formato PDF. Subir múltiples archivos."
-                files={formData.cvFiles}
-                multiple={true}
-                onFileSelect={(files) => setFormData(prev => ({ ...prev, cvFiles: files as File[] }))}
-              />
-
               <FileUpload
                 label="Descripción del Cargo"
                 description="Documento con requisitos y competencias del puesto en formato PDF"
@@ -234,39 +182,14 @@ export const CandidateAnalysisForm: React.FC = () => {
                 onFileSelect={(file) => setFormData(prev => ({ ...prev, jobDescriptionFile: file ? file : null }))}
               />
               <FileUpload
-                label="Pruebas psicotécnicas"
-                description="Resultados de pruebas psicotécnicas. Subir múltiples archivos."
-                files={formData.psychometricTests}
-                multiple={true}
-                onFileSelect={(files) => setFormData(prev => ({ ...prev, psychometricTests: files as File[] }))}
+                label="CV del candidato"
+                description="Curriculum vitae del candidato en formato PDF."
+                files={formData.cvFiles}
+                multiple={false}
+                onFileSelect={(files) => setFormData(prev => ({ ...prev, cvFiles: files as File[] }))}
               />
 
-              <div className='space-y-2'>
-                <label className="text-sm font-medium text-gray-700">Contexto de la posición</label>
-                <p className="text-xs text-gray-500">Escriba detalles adicionales sobre el cargo y el entorno</p>
-                <Textarea
-                  aria-label='Contexto de la posición'
-                  rows={5}
-                  placeholder='Sea detallado para mejorar la calidad de los resultados'
-                  onChange={(e) => setFormData(prev => ({ ...prev, additionalContext: e.target.value }))}
-                  value={formData.additionalContext}
-                />
-              </div>
-              <FileUpload
-                label="Pruebas DISC de los candidatos"
-                description="Agregue la pruebas DISC o cualquier otra prueba de personalidad que ayude a profundizar en el análisis. Subir múltiples archivos."
-                files={formData.discTests}
-                multiple={true}
-                onFileSelect={(files) => setFormData(prev => ({ ...prev, discTests: files as File[] }))}
-              />
-              <FileUpload
-                label="Prueba DISC del Supervisor (Opcional)"
-                description="Resultados DISC del supervisor directo en formato PDF"
-                files={formData.discSupervisorFile}
-                multiple={false}
-                onFileSelect={(file) => setFormData(prev => ({ ...prev, discSupervisorFile: file ? file : null }))}
-              />
-              <Button onClick={handleSubmit} className='w-full'>Enviar</Button>
+              <Button onClick={handleSubmit} className='bg-primary w-full'>Enviar</Button>
             </div>
           )}
           {currentStep === 2 && (

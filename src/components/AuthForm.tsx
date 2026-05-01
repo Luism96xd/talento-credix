@@ -40,7 +40,18 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
 
         if (error) throw error;
 
-        if (data.user.id) {
+        //Create a user profile for the new user
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: data.user.id,
+            full_name: fullName,
+            email: email
+          });
+
+        if (profileError) throw profileError;
+
+        if (data.user.id && !profileError) {
           // Assign role
           const { error: roleError } = await supabase
             .from('user_roles')
@@ -48,7 +59,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
               user_id: data.user.id,
               role: 'personal_credix'
             });
-            if(roleError) throw roleError
+          if (roleError) throw roleError
         }
 
         toast({
